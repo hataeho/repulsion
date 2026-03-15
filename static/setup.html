@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>초기 설정 – 출하 시스템</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    body { background: var(--bg-primary); }
+    .setup { max-width: 960px; margin: 0 auto; padding: 32px; }
+    .setup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+    .setup-nav a { color: var(--text-muted); text-decoration: none; margin-left: 16px; font-size: 14px; }
+    .setup-nav a:hover { color: var(--accent); }
+    .section { margin-bottom: 32px; }
+    .section-title { font-size: 20px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  </style>
+</head>
+<body>
+<div class="setup">
+  <div class="setup-header">
+    <div>
+      <h1 style="font-size:28px;font-weight:800;">⚙️ 초기 설정</h1>
+      <p style="color:var(--text-secondary);margin-top:4px;">회차, 출하일수, 기사 관리</p>
+    </div>
+    <div class="setup-nav">
+      <a href="/">🖥️ 키오스크</a>
+      <a href="/report">📊 집계표</a>
+      <a href="/admin">🛠️ 데이터 수정</a>
+    </div>
+  </div>
+
+  <!-- 계량 설정 -->
+  <div class="section">
+    <div class="section-title">⚖️ 기본 설정</div>
+    <div class="card">
+        <div class="form-row">
+          <div class="form-group"><label>최소 공차 (kg)</label><input type="number" id="s-min" value="7000" style="padding:10px 14px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:16px;"></div>
+          <div class="form-group"><label>최대 공차 (kg)</label><input type="number" id="s-max" value="9000" style="padding:10px 14px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:16px;"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>일차 변경 기준 일시</label><input type="date" id="s-start-date" style="padding:10px 14px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:16px;"></div>
+          <div class="form-group"><label>평체 오차 허용 (g)</label><input type="number" id="s-err" value="200" placeholder="예: 200" style="padding:10px 14px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:16px;"></div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="saveSettings()">설정 저장</button>
+    </div>
+  </div>
+
+  <!-- 인쇄 설정 -->
+  <div class="section">
+    <div class="section-title">🖨️ 인쇄 설정</div>
+    <div class="card">
+      <p style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">출력물별 프린터와 용지 크기를 설정합니다. 인쇄 시 해당 프린터와 용지 안내가 표시됩니다.</p>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr style="border-bottom:1px solid var(--border);"><th style="text-align:left;padding:8px;font-size:13px;">출력물</th><th style="text-align:left;padding:8px;font-size:13px;">프린터명</th><th style="text-align:left;padding:8px;font-size:13px;">용지 크기</th></tr></thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:8px;font-size:14px;font-weight:600;">📄 계량증명서</td>
+            <td style="padding:8px;"><input type="text" id="pr-cert-name" value="Samsung" style="width:160px;padding:4px 8px;background:var(--bg-primary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:13px;"></td>
+            <td style="padding:8px;"><select id="pr-cert-size" style="padding:4px 8px;background:var(--bg-primary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:13px;">
+              <option value="A5">A5</option><option value="A4">A4</option><option value="B5">B5</option></select></td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:8px;font-size:14px;font-weight:600;">📊 출하 집계표</td>
+            <td style="padding:8px;"><input type="text" id="pr-report-name" value="Epson" style="width:160px;padding:4px 8px;background:var(--bg-primary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:13px;"></td>
+            <td style="padding:8px;"><select id="pr-report-size" style="padding:4px 8px;background:var(--bg-primary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:13px;">
+              <option value="A4">A4</option><option value="A3">A3</option></select></td>
+          </tr>
+
+        </tbody>
+      </table>
+      <button class="btn btn-primary btn-sm" onclick="savePrintSettings()" style="margin-top:12px;">인쇄 설정 저장</button>
+    </div>
+  </div>
+
+  <!-- 회차 관리 -->
+  <div class="section">
+    <div class="section-title">📋 회차 관리 <button class="btn btn-primary btn-sm" onclick="openBatchModal()">+ 새 회차</button></div>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <label style="font-weight:600;white-space:nowrap;">회차 선택</label>
+        <select id="batch-select" onchange="onBatchSelect()" style="flex:1;padding:10px 14px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:15px;font-weight:600;">
+          <option value="">-- 회차를 선택하세요 --</option>
+        </select>
+      </div>
+      <div id="batch-detail"></div>
+    </div>
+  </div>
+
+  <!-- 기사 관리 -->
+  <div class="section">
+    <div class="section-title">🚛 기사 관리 <button class="btn btn-primary btn-sm" onclick="openDriverModal()">+ 기사 등록</button></div>
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="driver-search" placeholder="기사명 또는 차량번호 검색..." oninput="loadDrivers()">
+    </div>
+    <div class="card" style="padding:0;">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>차량번호</th><th>기사명</th><th>전화번호</th><th>최근공차</th><th>관리</th></tr></thead>
+          <tbody id="driver-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Batch Modal -->
+<div class="modal-overlay" id="modal-batch">
+  <div class="modal">
+    <h2 class="modal-title" id="batch-modal-title">새 회차 생성</h2>
+    <input type="hidden" id="b-edit-id" value="">
+    <div class="form-group"><label>회차명</label><input type="text" id="b-name" placeholder="체리부로 27회차"></div>
+    <div class="form-group"><label>입추일</label><input type="date" id="b-start"></div>
+    <div class="form-group"><label>출하처</label><input type="text" id="b-dest" value="체리부로"></div>
+    <div class="form-group"><label>동별 입추수수 (쉼표 구분)</label>
+      <input type="text" id="b-houses" placeholder="38000,38000,38000,38000,38000,38000,30000,32000" oninput="calcTotal()">
+      <div id="b-houses-summary" style="font-size:12px;color:var(--text-muted);margin-top:4px;min-height:18px;"></div>
+    </div>
+    <div class="form-group"><label>총 입추수수</label><input type="number" id="b-total" placeholder="자동 계산" readonly style="background:var(--bg-secondary);font-weight:700;font-size:16px;color:var(--accent);"></div>
+    <div class="form-group"><label>🌾 총 사료량 (kg)</label><input type="number" id="b-feed" placeholder="예: 659110"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-batch')">취소</button>
+      <button class="btn btn-primary" id="batch-save-btn" onclick="saveBatch()">생성</button>
+    </div>
+  </div>
+</div>
+
+<!-- ShipDay Modal -->
+<div class="modal-overlay" id="modal-sd">
+  <div class="modal">
+    <h2 class="modal-title" id="sd-modal-title">출하일수 추가</h2>
+    <input type="hidden" id="sd-batch-id">
+    <input type="hidden" id="sd-edit-id" value="">
+    <div class="form-row">
+      <div class="form-group"><label>출하일수 (1~5)</label><input type="number" id="sd-num" placeholder="1" min="1" max="5"></div>
+      <div class="form-group"><label>일령</label><input type="number" id="sd-age" placeholder="30"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>목표체중 (kg)</label><input type="number" id="sd-wt" step="0.01" placeholder="1.75"></div>
+      <div class="form-group"><label>출하일</label><input type="date" id="sd-date"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>차량 댓수</label><input type="number" id="sd-trucks" placeholder="36" min="0"></div>
+      <div class="form-group"><label>기본 수수 (마리)</label><input type="number" id="sd-heads" placeholder="2480"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-sd')">취소</button>
+      <button class="btn btn-primary" id="sd-save-btn" onclick="saveSD()">생성</button>
+    </div>
+  </div>
+</div>
+
+<!-- Driver Modal -->
+<div class="modal-overlay" id="modal-driver">
+  <div class="modal">
+    <h2 class="modal-title" id="dm-title">기사 등록</h2>
+    <input type="hidden" id="d-id">
+    <div class="form-row">
+      <div class="form-group"><label>기사명</label><input type="text" id="d-name"></div>
+      <div class="form-group"><label>차량번호</label><input type="number" id="d-vehicle"></div>
+    </div>
+    <div class="form-group"><label>전화번호</label><input type="text" id="d-phone"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-driver')">취소</button>
+      <button class="btn btn-primary" onclick="saveDriver()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Close Shipment Modal -->
+<div class="modal-overlay" id="modal-close-shipment">
+  <div class="modal">
+    <h2 class="modal-title">📦 출하 종료</h2>
+    <input type="hidden" id="cs-batch-id">
+    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:16px;">출하를 종료하면 집계 페이지 상단에<br>생산성 표지가 표시됩니다.</p>
+    <div id="cs-feed-display" style="padding:12px 16px;background:var(--bg-secondary);border-radius:8px;font-size:14px;margin-bottom:16px;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-close-shipment')">취소</button>
+      <button class="btn btn-primary" onclick="confirmCloseShipment()">출하 종료 확인</button>
+    </div>
+  </div>
+</div>
+
+<script src="/static/common.js"></script>
+<script>
+// ── Batches ──
+let allBatches=[];
+async function loadBatches(){
+  allBatches=await api('/api/batches');
+  const sel=document.getElementById('batch-select');
+  const prevVal=sel.value;
+  sel.innerHTML='<option value="">-- 회차를 선택하세요 --</option>';
+  for(const b of allBatches){
+    const closed=b.shipment_closed?' (종료)':'';
+    sel.innerHTML+=`<option value="${b.id}">${b.name}${closed}</option>`;
+  }
+  if(prevVal && allBatches.find(b=>b.id==prevVal)){sel.value=prevVal;}
+  else if(allBatches.length>0){sel.value=allBatches[0].id;}
+  onBatchSelect();
+}
+async function onBatchSelect(){
+  const bid=document.getElementById('batch-select').value;
+  const c=document.getElementById('batch-detail');
+  if(!bid){c.innerHTML='<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-text">회차를 선택하세요</div></div>';return;}
+  const d=await api('/api/batches/'+bid);
+  const b=allBatches.find(x=>x.id==parseInt(bid));
+  const isClosed=!!b.shipment_closed;
+  const closedBadge=isClosed?'<span style="display:inline-block;padding:2px 10px;border-radius:8px;font-size:12px;font-weight:700;background:rgba(16,185,129,.12);color:#10b981;margin-left:8px;">출하종료 ✅</span>':'';
+  const closeBtn=isClosed
+    ?`<button class="btn btn-ghost btn-sm" onclick="reopenBatch(${b.id})">🔄 재개</button>`
+    :`<button class="btn btn-sm" style="background:#dc2626;color:#fff;border:none;" onclick="openCloseShipment(${b.id})">📦 출하종료</button>`;
+  let h=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+    <span style="font-size:18px;font-weight:700;">🐔 ${b.name}${closedBadge}</span>
+    <div><button class="btn btn-ghost btn-sm" onclick='editBatch(${JSON.stringify(b)})'>✏️ 수정</button>
+    <button class="btn btn-primary btn-sm" onclick="openSDModal(${b.id})">+ 출하일수</button>
+    ${closeBtn}</div></div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">입추일</div><div class="stat-value" style="font-size:16px;">${b.start_date||'-'}</div></div>
+    <div class="stat-card"><div class="stat-label">총수수</div><div class="stat-value accent" style="font-size:20px;">${fmt(b.total_count)}수</div></div>
+    <div class="stat-card"><div class="stat-label">🌾 사료량</div><div class="stat-value" style="font-size:16px;color:${b.feed_amount?'var(--text-primary)':'var(--text-muted)'};">${b.feed_amount ? fmt(b.feed_amount)+'kg' : '미입력'}</div></div>
+  </div>`;
+  if(d.shipment_days.length){
+    h+=`<div class="table-wrap" style="margin-top:12px;"><table><thead><tr><th>출하일수</th><th>일령</th><th>목표체중</th><th>차량</th><th>출하일</th><th>관리</th></tr></thead><tbody>
+    ${d.shipment_days.map(s=>`<tr><td><strong>${s.day_number}일차</strong></td><td>${s.age_days}일</td><td>${s.target_weight}kg</td><td>${s.truck_count||'-'}대</td><td>${s.ship_date||'-'}</td><td><button class="btn btn-ghost btn-sm" onclick='editSD(${JSON.stringify(s)},${b.id})'>✏️</button> <button class="btn btn-danger btn-sm" onclick="deleteSD(${s.id})">🗑️</button></td></tr>`).join('')}
+    </tbody></table></div>`;
+  } else {
+    h+='<p style="color:var(--text-muted);font-size:13px;margin-top:12px;">출하일수를 추가하세요</p>';
+  }
+  c.innerHTML=h;
+}
+function openBatchModal(){document.getElementById('b-edit-id').value='';document.getElementById('batch-modal-title').textContent='새 회차 생성';document.getElementById('batch-save-btn').textContent='생성';
+  document.getElementById('b-name').value='';const t=new Date().toISOString().slice(0,10);document.getElementById('b-start').value=t;
+  document.getElementById('b-dest').value='체리부로';document.getElementById('b-total').value='';document.getElementById('b-houses').value='';
+  document.getElementById('b-houses-summary').textContent='';document.getElementById('b-feed').value='';
+  openModal('modal-batch');}
+function editBatch(b){document.getElementById('b-edit-id').value=b.id;document.getElementById('batch-modal-title').textContent='회차 수정';document.getElementById('batch-save-btn').textContent='수정';
+  document.getElementById('b-name').value=b.name||'';document.getElementById('b-start').value=b.start_date||'';
+  document.getElementById('b-dest').value=b.destination||'체리부로';
+  document.getElementById('b-houses').value=b.house_counts||'';
+  document.getElementById('b-feed').value=b.feed_amount||'';
+  calcTotal();
+  openModal('modal-batch');}
+function calcTotal(){
+  const raw=document.getElementById('b-houses').value;
+  const nums=raw.split(',').map(s=>s.trim()).filter(s=>s!=='').map(Number).filter(n=>!isNaN(n)&&n>0);
+  const totalEl=document.getElementById('b-total');
+  const sumEl=document.getElementById('b-houses-summary');
+  if(nums.length===0){totalEl.value='';sumEl.textContent='';return;}
+  const total=nums.reduce((a,b)=>a+b,0);
+  totalEl.value=total;
+  sumEl.textContent=`${nums.length}개동: ${nums.map(n=>fmt(n)).join(' + ')} = ${fmt(total)}수`;
+}
+async function saveBatch(){
+  const d={name:document.getElementById('b-name').value.trim(),start_date:document.getElementById('b-start').value,
+    destination:document.getElementById('b-dest').value.trim(),
+    total_count:parseInt(document.getElementById('b-total').value)||0,house_counts:document.getElementById('b-houses').value.trim(),
+    feed_amount:parseInt(document.getElementById('b-feed').value)||0};
+  if(!d.name){toast('회차명을 입력하세요','error');return;}
+  const editId = document.getElementById('b-edit-id').value;
+  if(editId) {
+    await api('/api/batches/'+editId,'PUT',d); toast('회차 수정 완료');
+  } else {
+    await api('/api/batches','POST',d); toast('회차 생성 완료');
+  }
+  closeModal('modal-batch');loadBatches();
+}
+function openSDModal(bid){
+  document.getElementById('sd-batch-id').value=bid;
+  document.getElementById('sd-edit-id').value='';
+  document.getElementById('sd-modal-title').textContent='출하일수 추가';
+  document.getElementById('sd-save-btn').textContent='생성';
+  document.getElementById('sd-num').value='';document.getElementById('sd-age').value='';
+  document.getElementById('sd-wt').value='';document.getElementById('sd-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('sd-trucks').value='';
+  document.getElementById('sd-heads').value='2480';
+  openModal('modal-sd');
+}
+function editSD(s,batchId){
+  document.getElementById('sd-batch-id').value=batchId;
+  document.getElementById('sd-edit-id').value=s.id;
+  document.getElementById('sd-modal-title').textContent='출하일수 수정';
+  document.getElementById('sd-save-btn').textContent='수정';
+  document.getElementById('sd-num').value=s.day_number||'';
+  document.getElementById('sd-age').value=s.age_days||'';
+  document.getElementById('sd-wt').value=s.target_weight||'';
+  document.getElementById('sd-date').value=s.ship_date||'';
+  document.getElementById('sd-trucks').value=s.truck_count||'';
+  document.getElementById('sd-heads').value=s.default_head_count||'2480';
+  openModal('modal-sd');
+}
+async function deleteSD(sdId){
+  if(!confirm('이 출하일수를 삭제하시겠습니까?'))return;
+  try{await api('/api/shipment-days/'+sdId,'DELETE');toast('출하일수 삭제 완료');loadBatches();
+  }catch(e){alert('삭제 실패: '+e.message);}
+}
+async function saveSD(){
+  const editId=document.getElementById('sd-edit-id').value;
+  const d={day_number:parseInt(document.getElementById('sd-num').value),
+    age_days:parseInt(document.getElementById('sd-age').value)||0,
+    target_weight:parseFloat(document.getElementById('sd-wt').value)||0,
+    ship_date:document.getElementById('sd-date').value,
+    truck_count:parseInt(document.getElementById('sd-trucks').value)||0,
+    default_head_count:parseInt(document.getElementById('sd-heads').value)||2480};
+  if(!d.day_number){toast('출하일수를 입력하세요','error');return;}
+  if(editId){
+    await api('/api/shipment-days/'+editId,'PUT',d);toast('출하일수 수정 완료');
+  }else{
+    d.batch_id=parseInt(document.getElementById('sd-batch-id').value);
+    await api('/api/shipment-days','POST',d);toast('출하일수 추가 완료');
+  }
+  closeModal('modal-sd');loadBatches();
+}
+
+// ── Drivers ──
+let allD=[];
+async function loadDrivers(){
+  const q=document.getElementById('driver-search').value;
+  allD=await api('/api/drivers?q='+encodeURIComponent(q));
+  document.getElementById('driver-table').innerHTML=allD.map(d=>`<tr>
+    <td class="num"><strong>${d.vehicle_no}</strong></td><td>${d.name}</td><td>${d.phone||'-'}</td>
+    <td class="num">${d.last_empty_weight?fmt(d.last_empty_weight)+' kg':'-'}</td>
+    <td><button class="btn btn-ghost btn-sm" onclick="editDriver(${d.id})">수정</button>
+    <button class="btn btn-danger btn-sm" onclick="delDriver(${d.id},'${d.name}')">삭제</button></td></tr>`).join('');
+}
+function openDriverModal(d=null){
+  document.getElementById('dm-title').textContent=d?'기사 수정':'기사 등록';
+  document.getElementById('d-id').value=d?d.id:'';
+  document.getElementById('d-name').value=d?d.name:'';
+  document.getElementById('d-vehicle').value=d?d.vehicle_no:'';
+  document.getElementById('d-phone').value=d?d.phone:'';
+  openModal('modal-driver');
+}
+function editDriver(id){const d=allD.find(x=>x.id===id);if(d)openDriverModal(d);}
+async function saveDriver(){
+  const id=document.getElementById('d-id').value;
+  const d={name:document.getElementById('d-name').value.trim(),vehicle_no:parseInt(document.getElementById('d-vehicle').value),phone:document.getElementById('d-phone').value.trim()};
+  if(!d.name||!d.vehicle_no){toast('기사명과 차량번호를 입력하세요','error');return;}
+  if(id)await api('/api/drivers/'+id,'PUT',d);else await api('/api/drivers','POST',d);
+  toast('저장 완료');closeModal('modal-driver');loadDrivers();
+}
+async function delDriver(id,name){if(!confirm(name+' 삭제?'))return;await api('/api/drivers/'+id,'DELETE');toast('삭제');loadDrivers();}
+
+// ── Settings ──
+async function loadSettings(){
+  try {
+    const s=await api('/api/settings');
+    if(s.min_empty_weight) document.getElementById('s-min').value=s.min_empty_weight;
+    if(s.max_empty_weight) document.getElementById('s-max').value=s.max_empty_weight;
+    if(s.weight_error_gram) document.getElementById('s-err').value=s.weight_error_gram;
+    else document.getElementById('s-err').value=200;
+    document.getElementById('s-start-date').value=s.start_date||new Date().toISOString().slice(0,10);
+  } catch(e){
+    document.getElementById('s-start-date').value=new Date().toISOString().slice(0,10);
+    document.getElementById('s-err').value=200;
+  }
+}
+async function saveSettings(){
+  const d={min_empty_weight:parseInt(document.getElementById('s-min').value)||7000,
+    max_empty_weight:parseInt(document.getElementById('s-max').value)||9000,
+    weight_error_gram:parseInt(document.getElementById('s-err').value)||200,
+    start_date:document.getElementById('s-start-date').value};
+  await api('/api/settings','PUT',d);toast('설정 저장 완료');
+}
+
+// ── Print Settings (localStorage) ──
+function loadPrintSettings(){
+  try{const ps=JSON.parse(localStorage.getItem('printSettings')||'{}');
+    if(ps.cert_printer) document.getElementById('pr-cert-name').value=ps.cert_printer;
+    if(ps.cert_size) document.getElementById('pr-cert-size').value=ps.cert_size;
+    if(ps.report_printer) document.getElementById('pr-report-name').value=ps.report_printer;
+    if(ps.report_size) document.getElementById('pr-report-size').value=ps.report_size;
+
+  }catch(e){}
+}
+function savePrintSettings(){
+  const ps={cert_printer:document.getElementById('pr-cert-name').value,
+    cert_size:document.getElementById('pr-cert-size').value,
+    report_printer:document.getElementById('pr-report-name').value,
+    report_size:document.getElementById('pr-report-size').value};
+  localStorage.setItem('printSettings',JSON.stringify(ps));
+  toast('인쇄 설정 저장 완료');
+}
+
+// ── Close/Reopen Shipment ──
+async function openCloseShipment(batchId){
+  document.getElementById('cs-batch-id').value=batchId;
+  try{
+    const b=await api('/api/batches/'+batchId);
+    const feedStr = b.feed_amount ? `🌾 사료량: <strong>${fmt(b.feed_amount)} kg</strong>` : '⚠️ 사료량이 입력되지 않았습니다. 회차 수정에서 입력해주세요.';
+    document.getElementById('cs-feed-display').innerHTML=feedStr;
+  }catch(e){}
+  openModal('modal-close-shipment');
+}
+async function confirmCloseShipment(){
+  const bid=document.getElementById('cs-batch-id').value;
+  try{
+    const b=await api('/api/batches/'+bid);
+    await api('/api/batches/'+bid+'/close','PUT',{feed_amount:b.feed_amount||0});
+    toast('출하 종료 완료');closeModal('modal-close-shipment');loadBatches();
+  }catch(e){alert('오류: '+e.message);}
+}
+async function reopenBatch(batchId){
+  if(!confirm('출하를 재개하시겠습니까?'))return;
+  try{await api('/api/batches/'+batchId+'/reopen','PUT');toast('출하 재개');loadBatches();
+  }catch(e){alert('오류: '+e.message);}
+}
+
+loadSettings();loadBatches();loadDrivers();loadPrintSettings();
+</script>
+</body>
+</html>

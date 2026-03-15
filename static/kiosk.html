@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="viewport" content="width=1920">
+  <title>출하 계량 키오스크</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/dseg@0.46.0/css/dseg.css" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#0a0e1a;font-family:'Segoe UI','Noto Sans KR',sans-serif;color:#e8ecf4;width:1920px;height:1080px;overflow:hidden}
+
+    .kiosk{width:1920px;height:1080px;display:flex;flex-direction:column}
+    .kiosk-top{display:flex;align-items:center;justify-content:space-between;padding:4px 40px;height:40px;border-bottom:1px solid #1e293b}
+    .kiosk-title{font-size:18px;font-weight:700}
+    .kiosk-info{font-size:13px;color:#64748b;margin-left:14px}
+    .kiosk-links a{font-size:13px;color:#94a3b8;text-decoration:none;margin-left:16px;transition:color .2s}
+    .kiosk-links a:hover{color:#e2e8f0}
+
+    /* 계근소 디스플레이 */
+    .scale-panel{background:#000;border:3px solid #333;border-radius:12px;padding:16px 40px;
+      box-shadow:inset 0 0 40px rgba(0,0,0,.8);display:flex;align-items:center;justify-content:space-between;height:140px}
+    .scale-label-left{font-size:16px;color:#555;font-weight:600}
+    .scale-weight{font-family:'DSEG7 Classic','Orbitron',monospace;font-size:76px;font-weight:400;color:#ff1a1a;
+      text-shadow:0 0 25px rgba(255,26,26,.6),0 0 60px rgba(255,26,26,.2);letter-spacing:4px;line-height:1}
+    .scale-weight-unit{font-family:'Orbitron',monospace;font-size:24px;color:#991111;margin-left:10px}
+    .scale-mode-badge{display:inline-block;padding:4px 16px;border-radius:6px;font-size:16px;font-weight:700;margin-top:4px}
+    .scale-mode-badge.empty{background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid #f59e0b}
+    .scale-mode-badge.gross{background:rgba(16,185,129,.15);color:#10b981;border:1px solid #10b981}
+    .scale-mode-badge.wait{background:rgba(100,116,139,.15);color:#64748b;border:1px solid #475569}
+    .scale-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+    .scale-dot.green{background:#22c55e;box-shadow:0 0 6px #22c55e}
+    .scale-dot.yellow{background:#f59e0b;box-shadow:0 0 6px #f59e0b}
+    .scale-dot.red{background:#ef4444;box-shadow:0 0 6px #ef4444}
+
+    /* 3분할 메인 */
+    .kiosk-body{flex:1;display:flex;overflow:hidden}
+    .col-left{width:380px;border-right:1px solid #1e293b;display:flex;flex-direction:column;justify-content:flex-start;align-items:center;padding:30px;overflow-y:auto}
+    .col-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+    .col-right{width:620px;border-left:1px solid #1e293b;padding:24px;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
+
+    /* 좌측 안내/등록 */
+    .left-guide{text-align:center}
+    .left-guide h2{font-size:26px;font-weight:800;margin-bottom:12px}
+    .left-guide p{font-size:18px;color:#e8ecf4;line-height:1.8}
+    .left-guide .step-icon{font-size:56px;margin-bottom:16px}
+    .pending-area{width:100%;margin-top:20px}
+    .pending-title{font-size:15px;color:#94a3b8;margin-bottom:8px}
+    .pending-count{padding:3px 10px;border-radius:8px;font-size:13px;font-weight:600;background:rgba(245,158,11,.1);color:#f59e0b}
+    .pending-list{display:flex;flex-direction:column;gap:5px}
+    .pending-chip{background:#111827;border:1px solid #1e293b;border-radius:8px;padding:8px 12px;font-size:15px;display:flex;justify-content:space-between;align-items:center}
+    .pending-chip .p-v{font-weight:800;color:#f59e0b;font-family:'Orbitron',monospace;font-size:16px}
+
+    .reg-form{width:100%}
+    .reg-input{font-size:24px;font-weight:700;text-align:center;background:#111827;border:2px solid #1e293b;border-radius:10px;padding:12px;color:#000;width:100%;margin-bottom:10px}
+    .reg-input:focus{border-color:#f59e0b;outline:none}
+    .reg-label{font-size:15px;color:#94a3b8;margin-bottom:4px;display:block}
+
+    /* 중앙 */
+    .step-guide{font-size:38px;font-weight:800;text-align:center;line-height:1.3;margin-bottom:10px}
+    .step-sub{font-size:17px;color:#94a3b8;text-align:center;margin-bottom:16px}
+    .input-display{font-family:'IBM Plex Sans','Orbitron',monospace;font-size:56px;font-weight:700;text-align:center;
+      background:#000;border:3px solid #333;border-radius:12px;padding:14px 24px;color:#22d3ee;
+      width:400px;min-height:84px;display:flex;align-items:center;justify-content:center;
+      letter-spacing:6px;margin-bottom:14px;box-shadow:inset 0 0 20px rgba(0,0,0,.5)}
+    .input-display.empty{color:#1e293b}
+    .numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:400px}
+    .numpad-btn{font-size:38px;font-weight:700;padding:20px 0;border:2px solid #1e293b;border-radius:14px;
+      background:#111827;color:#e8ecf4;cursor:pointer;transition:all .1s;user-select:none;font-family:'IBM Plex Sans',sans-serif}
+    .numpad-btn:hover{background:#1e293b}
+    .numpad-btn:active{background:#334155;transform:scale(.96)}
+    .numpad-btn.del{font-size:26px;color:#ef4444}
+    .numpad-btn.enter{font-size:22px;background:#1d4ed8;color:#fff;border-color:#2563eb}
+    .numpad-btn.enter:hover{background:#2563eb}
+
+    .big-btn{font-size:22px;font-weight:700;padding:16px 40px;border:none;border-radius:14px;cursor:pointer;transition:all .15s;font-family:inherit}
+    .big-btn-primary{background:#1d4ed8;color:#fff}
+    .big-btn-primary:hover{background:#2563eb}
+    .big-btn-success{background:#059669;color:#fff}
+    .big-btn-success:hover{background:#10b981}
+    .big-btn-ghost{background:transparent;color:#94a3b8;border:2px solid #1e293b;font-size:18px;padding:12px 28px}
+    .btn-row{display:flex;gap:12px;margin-top:14px;justify-content:center}
+
+    .driver-card{background:#111827;border:2px solid #1e293b;border-radius:14px;padding:24px;text-align:center;width:100%}
+    .driver-card.found{border-color:#10b981}
+    .driver-card.warning{border-color:#f59e0b}
+    .driver-name{font-size:36px;font-weight:800;color:#10b981}
+    .driver-vehicle{font-size:20px;color:#94a3b8;margin-top:6px}
+
+    .result-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;margin:14px 0}
+    .result-item{background:#111827;border:1px solid #1e293b;border-radius:10px;padding:14px;text-align:center}
+    .result-label{font-size:14px;color:#94a3b8}
+    .result-value{font-size:26px;font-weight:800;margin-top:4px}
+
+    /* 우측 증명서 미리보기 */
+    .cert-preview{background:#fff;color:#111;border-radius:10px;padding:28px;width:100%;
+      box-shadow:0 4px 20px rgba(0,0,0,.3);font-family:'Noto Sans KR','Segoe UI',sans-serif}
+    .cert-preview .cert-title{font-size:22px;font-weight:800;text-align:center;border-bottom:3px double #333;padding-bottom:12px;margin-bottom:16px}
+    .cert-preview table{width:100%;border-collapse:collapse;margin:10px 0}
+    .cert-preview th,.cert-preview td{border:1px solid #999;padding:10px 14px;font-size:18px;text-align:center}
+    .cert-preview th{background:#f0f0f0;font-weight:600;width:28%;font-size:20px}
+    .cert-preview td{font-weight:700}
+    .cert-preview .cert-footer{margin-top:14px;font-size:14px;text-align:center;color:#555}
+    .cert-preview .cert-sign{margin-top:16px;text-align:center;font-size:16px;font-weight:600}
+    .cert-empty-state{color:#ccc;font-size:16px;text-align:center;padding:40px 0}
+
+    /* Steps within center */
+    .center-step{display:none;flex-direction:column;align-items:center;width:100%}
+    .center-step.active{display:flex}
+
+    /* 인쇄 */
+    @media print{body{width:auto!important;height:auto!important;overflow:visible!important;background:#fff!important}
+      .no-print{display:none!important}.print-only{display:block!important}@page{size:A5 portrait;margin:0}}
+    .print-only{display:none}
+    .certificate{background:#fff;color:#000;padding:15mm 15mm;width:148mm;font-family:'Noto Sans KR',sans-serif;margin:0 auto}
+    .certificate .cert-title{font-size:22px;font-weight:800;text-align:center;border-bottom:3px double #000;padding-bottom:12px;margin-bottom:16px}
+    .certificate table{width:100%;border-collapse:collapse;margin:12px 0}
+    .certificate th,.certificate td{border:1px solid #333;padding:10px 12px;font-size:18px;text-align:center;color:#000!important}
+    .certificate th{background:#f0f0f0;font-weight:600;width:30%}
+    .certificate td{font-weight:700;word-break:keep-all;overflow:visible}
+    .certificate .cert-footer{margin-top:20px;font-size:13px;text-align:center}
+    .certificate .cert-sign{margin-top:24px;text-align:center;font-size:15px;font-weight:600}
+
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+    @keyframes blinkBlue{0%,100%{background:#0a0e1a}50%{background:#1e3a5f}}
+    .col-left.blink-active{animation:blinkBlue 1s ease-in-out 10;}
+    .pending-chip.blink-active{animation:blinkBlue 1s ease-in-out 10;border-color:#3b82f6!important;}
+  </style>
+</head>
+<body>
+<div class="kiosk no-print">
+  <div class="kiosk-top">
+    <div><span class="kiosk-title">🐔 체리부로 출하</span><span class="kiosk-info" id="k-info">설정 필요</span></div>
+    <div class="kiosk-links"><a href="/setup">⚙️ 설정</a><a href="/report">📊 집계</a><a href="/admin">🛠️ 데이터 수정</a></div>
+  </div>
+
+  <div class="kiosk-body">
+    <!-- ═══ 좌측: 안내/등록/대기 ═══ -->
+    <div class="col-left">
+      <div id="left-guide" class="left-guide">
+        <div class="step-icon">🚛</div>
+        <h2>계량정보</h2>
+      </div>
+      <div class="pending-area" id="pending-area"></div>
+      <div id="register-form" style="display:none" class="reg-form">
+        <div class="driver-card warning">
+          <div style="font-size:20px;font-weight:700;color:#f59e0b">⚠️ 미등록 차량</div>
+          <div style="font-size:15px;color:#e8ecf4;margin:6px 0">등록하시겠습니까?</div>
+          <label class="reg-label">업체명</label><input type="text" class="reg-input" id="reg-company" placeholder="업체명">
+          <label class="reg-label">기사 이름</label><input type="text" class="reg-input" id="reg-name" placeholder="홍길동">
+          <div class="btn-row"><button class="big-btn big-btn-ghost" onclick="cancelRegister()">취소</button><button class="big-btn big-btn-success" onclick="registerDriver()">등록 ✅</button></div>
+        </div>
+      </div>
+      <div style="width:100%;margin-top:20px;background:#111827;border:2px solid #1e293b;border-radius:12px;padding:16px;text-align:center;">
+        <div style="font-size:14px;color:#e8ecf4;font-weight:600;margin-bottom:6px;">출하담당자 전화</div>
+        <div style="font-size:22px;font-weight:800;color:#e8ecf4;">성태규</div>
+        <div style="font-size:20px;font-weight:700;color:#22d3ee;margin-top:4px;font-family:'Orbitron',monospace;letter-spacing:2px;">010-2122-3773</div>
+      </div>
+      <div style="width:100%;margin-top:12px;background:#111827;border:2px solid #1e293b;border-radius:12px;padding:12px;">
+        <div style="font-size:14px;color:#64748b;font-weight:600;margin-bottom:6px;text-align:center;">📝 메모</div>
+        <textarea id="kiosk-memo" oninput="localStorage.setItem('kiosk_memo',this.value)" style="width:100%;height:300px;background:#0a0e1a;border:1px solid #1e293b;border-radius:8px;color:#e8ecf4;font-size:22px;font-weight:800;padding:10px;resize:none;font-family:'Segoe UI','Noto Sans KR',sans-serif;line-height:1.4;" placeholder="메모 입력..."></textarea>
+      </div>
+    </div>
+
+    <!-- ═══ 우측 영역: 저울 + 중앙 작업 ═══ -->
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+      <div class="scale-panel" style="margin:4px 30px 0 30px;flex-shrink:0">
+        <div><div class="scale-label-left">⚖️ WEIGHT</div><div style="margin-top:2px"><span class="scale-dot yellow" id="scale-dot"></span><span style="color:#64748b;font-size:12px" id="scale-conn">TCP 대기</span></div></div>
+        <div style="display:flex;align-items:baseline"><span class="scale-weight" id="live-weight">0</span><span class="scale-weight-unit">kg</span></div>
+        <div><div class="scale-mode-badge wait" id="scale-badge">대기</div></div>
+      </div>
+      <div class="col-center" style="flex:1">
+      <!-- Step 1: 차량번호 -->
+      <div class="center-step active" id="cs-1">
+        <div class="step-guide">차량번호 4자리를 입력하세요</div>
+        <div class="input-display empty" id="disp-vehicle">____</div>
+        <div class="numpad">
+          <button class="numpad-btn" onclick="NI('vehicle','1')">1</button><button class="numpad-btn" onclick="NI('vehicle','2')">2</button><button class="numpad-btn" onclick="NI('vehicle','3')">3</button>
+          <button class="numpad-btn" onclick="NI('vehicle','4')">4</button><button class="numpad-btn" onclick="NI('vehicle','5')">5</button><button class="numpad-btn" onclick="NI('vehicle','6')">6</button>
+          <button class="numpad-btn" onclick="NI('vehicle','7')">7</button><button class="numpad-btn" onclick="NI('vehicle','8')">8</button><button class="numpad-btn" onclick="NI('vehicle','9')">9</button>
+          <button class="numpad-btn del" onclick="ND('vehicle')">⌫</button><button class="numpad-btn" onclick="NI('vehicle','0')">0</button><button class="numpad-btn enter" onclick="findDriver()">확인</button>
+        </div>
+        <div class="btn-row" style="width:400px; margin-top:16px; gap:8px;">
+          <button class="big-btn big-btn-ghost" onclick="reprintCert()" style="flex:1; border-color:#334155; color:#cbd5e1; font-size:14px; padding:10px 8px;">🖨️ 증명서 재발행</button>
+          <button class="big-btn big-btn-ghost" onclick="editHeadCount()" style="flex:1; border-color:#334155; color:#cbd5e1; font-size:14px; padding:10px 8px;">✏️ 수수 수정</button>
+        </div>
+      </div>
+      <!-- Step 2: 기사 확인 -->
+      <div class="center-step" id="cs-2">
+        <div class="step-guide">기사님 정보가<br>맞습니까?</div>
+        <div class="step-sub">확인 후 버튼을 눌러주세요</div>
+        <div class="driver-card found" style="max-width:400px">
+          <div class="driver-name" id="k-driver-name">-</div>
+          <div class="driver-vehicle">차량: <strong id="k-driver-vehicle">-</strong></div>
+        </div>
+        <div id="step2-mode" style="font-size:20px;font-weight:700;margin-top:8px"></div>
+        <div class="btn-row"><button class="big-btn big-btn-ghost" onclick="resetK()">◀ 다시입력</button><button class="big-btn big-btn-success" onclick="onDriverOK()">맞습니다</button></div>
+      </div>
+      <!-- Step 3: 저울 확인 -->
+      <div class="center-step" id="cs-3">
+        <div class="step-guide" id="cs3-guide">저울 위에 차량을<br>올려주세요</div>
+        <div class="step-sub" id="cs3-sub">중량 안정 후 확인</div>
+        <!-- 자동/수동 모드 토글 -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+          <button id="scale-mode-toggle" class="big-btn" style="font-size:14px;padding:8px 18px;border-radius:8px;background:#1e293b;color:#94a3b8;border:1px solid #334155" onclick="toggleScaleMode()">
+            <span id="scale-mode-icon">⚖️</span> <span id="scale-mode-text">자동</span>
+          </button>
+          <span id="scale-mode-status" style="font-size:13px;color:#475569">저울 연결 대기 중...</span>
+        </div>
+        <!-- 자동모드: 저울 실시간 표시 -->
+        <div id="auto-weight-area">
+          <div class="input-display" id="disp-weight-auto" style="color:#ff1a1a;position:relative">0
+            <span id="stable-badge" style="display:none;position:absolute;top:8px;right:12px;font-size:14px;padding:4px 12px;border-radius:6px;background:rgba(16,185,129,.15);color:#10b981;border:1px solid #10b981;font-family:'Segoe UI',sans-serif">● 안정</span>
+          </div>
+          <div style="text-align:center;margin-bottom:14px">
+            <button class="big-btn big-btn-success" id="auto-confirm-btn" onclick="confirmWt()" style="font-size:22px;padding:16px 50px;opacity:0.5;pointer-events:none">확인</button>
+          </div>
+        </div>
+        <!-- 수동모드: 숫자패드 -->
+        <div id="manual-weight-area" style="display:none">
+          <div class="input-display" id="disp-weight" style="color:#ff1a1a">0</div>
+          <div class="numpad">
+            <button class="numpad-btn" onclick="NI('weight','1')">1</button><button class="numpad-btn" onclick="NI('weight','2')">2</button><button class="numpad-btn" onclick="NI('weight','3')">3</button>
+            <button class="numpad-btn" onclick="NI('weight','4')">4</button><button class="numpad-btn" onclick="NI('weight','5')">5</button><button class="numpad-btn" onclick="NI('weight','6')">6</button>
+            <button class="numpad-btn" onclick="NI('weight','7')">7</button><button class="numpad-btn" onclick="NI('weight','8')">8</button><button class="numpad-btn" onclick="NI('weight','9')">9</button>
+            <button class="numpad-btn del" onclick="ND('weight')">⌫</button><button class="numpad-btn" onclick="NI('weight','0')">0</button><button class="numpad-btn enter" onclick="confirmWt()">확인</button>
+          </div>
+        </div>
+        <div class="btn-row"><button class="big-btn big-btn-ghost" onclick="resetK()">◀ 처음</button></div>
+      </div>
+      <!-- Step 4: 수수 -->
+      <div class="center-step" id="cs-4">
+        <div class="step-guide">상차 수수를<br>입력하세요</div>
+        <div class="step-sub" id="cs4-sub">마릿수 입력 후 확정</div>
+        <div class="input-display" id="disp-heads" style="color:#10b981">0</div>
+        <div class="numpad">
+          <button class="numpad-btn" onclick="NI('heads','1')">1</button><button class="numpad-btn" onclick="NI('heads','2')">2</button><button class="numpad-btn" onclick="NI('heads','3')">3</button>
+          <button class="numpad-btn" onclick="NI('heads','4')">4</button><button class="numpad-btn" onclick="NI('heads','5')">5</button><button class="numpad-btn" onclick="NI('heads','6')">6</button>
+          <button class="numpad-btn" onclick="NI('heads','7')">7</button><button class="numpad-btn" onclick="NI('heads','8')">8</button><button class="numpad-btn" onclick="NI('heads','9')">9</button>
+          <button class="numpad-btn del" onclick="ND('heads')">⌫</button><button class="numpad-btn" onclick="NI('heads','0')">0</button><button class="numpad-btn enter" onclick="confirmHeads()">확정</button>
+        </div>
+        <div class="btn-row"><button class="big-btn big-btn-ghost" onclick="cancelHeads()">◀ 이전/취소</button></div>
+      </div>
+      <!-- Step 5: 공차 완료 -->
+      <div class="center-step" id="cs-5">
+        <div class="step-guide" style="color:#f59e0b">공차 등록 완료!</div>
+        <div class="step-sub" style="font-size:20px">상차 후 다시 오세요</div>
+        <div class="driver-card" style="border-color:#f59e0b;max-width:400px">
+          <div style="font-size:24px;font-weight:800;color:#f59e0b" id="r-empty-name">-</div>
+          <div style="font-size:18px;color:#64748b;margin-top:6px">공차: <strong id="r-empty-wt">-</strong> kg | <strong style="color:#f59e0b" id="r-empty-seq">대기중</strong></div>
+        </div>
+        <button class="big-btn big-btn-primary" onclick="resetK()" style="font-size:24px;padding:18px 50px;margin-top:20px">🔄 다음 차량</button>
+      </div>
+      <!-- Step 6: 완료 -->
+      <div class="center-step" id="cs-6">
+        <div class="step-guide" style="color:#10b981;font-size:36px;line-height:1.4;margin-bottom:16px;">계량증명서를<br>인쇄 합니다</div>
+        <div class="step-sub" style="font-size:22px;color:#e8ecf4;line-height:1.5;margin-bottom:24px;">프린터 앞쪽으로<br>계량증명서가 출력됩니다</div>
+        <div style="font-size:18px;color:#94a3b8;background:#1e293b;padding:12px 24px;border-radius:10px;">10초후 첫화면으로 복귀합니다</div>
+        <div class="result-grid" style="max-width:400px;display:none">
+          <div class="result-item"><div class="result-label">실중량</div><div class="result-value" id="r-net" style="color:#22d3ee">-</div></div>
+          <div class="result-item"><div class="result-label">평균체중</div><div class="result-value" id="r-avg" style="color:#10b981">-</div></div>
+          <div class="result-item"><div class="result-label">수수</div><div class="result-value" id="r-heads">-</div></div>
+          <div class="result-item"><div class="result-label">순번</div><div class="result-value" id="r-seq">-</div></div>
+        </div>
+      </div>
+    </div>
+    </div><!-- end right wrapper -->
+    <!-- ═══ 우측: 증명서 미리보기 ═══ -->
+    <div class="col-right">
+      <div id="pv-title" style="font-size:30px;color:#e8ecf4;margin-bottom:12px;font-weight:800;text-align:center;letter-spacing:6px">📄 계 량 증 명 서</div>
+      
+      <!-- 공차 시 안내 배너 -->
+      <div id="pv-empty-msg" style="display:none;flex:1;flex-direction:column;justify-content:center;align-items:center;width:100%;text-align:center;">
+        <div style="font-size:60px;font-weight:900;color:#f59e0b;margin-bottom:20px;line-height:1.3;">공차 계량 완료<br>상차후 다시오세요 !</div>
+      </div>
+
+      <!-- 총중량 시/기본 증명서 미리보기 -->
+      <div class="cert-preview" id="cert-preview" style="padding:24px 28px;">
+        <div class="cert-title" style="font-size:30px;letter-spacing:8px;margin-bottom:12px;padding-bottom:14px;">계 량 증 명 서</div>
+        <table>
+          <tr><th style="font-size:20px;">계량일시</th><td id="pv-date" colspan="3" style="font-size:22px;">-</td></tr>
+          <tr><th style="font-size:20px;">차량</th><td id="pv-vehicle" style="font-size:28px;">-</td><th style="font-size:20px;">기사명</th><td id="pv-driver" style="font-size:28px;">-</td></tr>
+          <tr><th style="font-size:20px;">거래처</th><td id="pv-dest" colspan="3" style="font-size:24px;">체리부로</td></tr>
+        </table>
+        <table>
+          <tr><th style="font-size:22px;">공차중량</th><td id="pv-empty" style="font-size:36px;font-weight:900;color:#f59e0b;">-</td><td style="width:44px;font-size:20px;">Kg</td></tr>
+          <tr><th style="font-size:22px;">총 중 량</th><td id="pv-gross" style="font-size:36px;font-weight:900;color:#10b981;">-</td><td style="font-size:20px;">Kg</td></tr>
+          <tr><th style="font-size:22px;color:#c00;">실 중 량</th><td id="pv-net" style="font-size:36px;font-weight:900;color:#c00;">-</td><td style="font-size:20px;">Kg</td></tr>
+          <tr><th style="font-size:22px;">평 체</th><td id="pv-avg" style="font-size:36px;font-weight:900;">-</td><td style="font-size:20px;">Kg</td></tr>
+          <tr><th style="font-size:22px;">수 수</th><td id="pv-heads" style="font-size:36px;font-weight:900;">-</td><td style="font-size:20px;">수</td></tr>
+        </table>
+        <div class="cert-footer" style="font-size:14px;margin-top:12px;">상기와 같이 계량하였음을 증명함.</div>
+        <div style="margin-top:20px;text-align:center;">
+          <div style="display:flex;align-items:center;justify-content:center;gap:12px;font-size:24px;font-weight:900;color:#111;">
+            <span id="pv-farm" style="display:inline;">공암산성</span>
+            <span style="margin-left:8px;">윤은희</span>
+            <img src="/static/stamp.png" style="width:60px;height:60px;margin-left:4px;object-fit:contain;" alt="인">
+          </div>
+          <div id="pv-address" style="font-size:16px;color:#555;margin-top:10px;font-weight:600;">경남 합천군 용주면 공암길 245-260</div>
+          <div id="pv-phone" style="font-size:16px;color:#555;margin-top:4px;font-weight:600;">010-8643-8959, FAX(070)4015-3999</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="print-only" id="print-cert">
+  <div class="certificate">
+    <div class="cert-title">계 량 증 명 서</div>
+    <table>
+      <tr><th>계량일시</th><td id="c-date" colspan="3"></td></tr>
+      <tr><th>차 량</th><td id="c-vehicle"></td><th>기사명</th><td id="c-driver"></td></tr>
+      <tr><th>거래처</th><td id="c-dest" colspan="3"></td></tr>
+    </table>
+    <table>
+      <tr><th>공차중량</th><td id="c-empty"></td><td style="width:40px;font-size:15px;font-weight:600;">Kg</td></tr>
+      <tr><th>총 중 량</th><td id="c-gross"></td><td style="width:40px;font-size:15px;font-weight:600;">Kg</td></tr>
+      <tr><th>실 중 량</th><td id="c-net"></td><td style="width:40px;font-size:15px;font-weight:600;">Kg</td></tr>
+      <tr><th>평균체중</th><td id="c-avg"></td><td style="width:40px;font-size:15px;font-weight:600;">Kg</td></tr>
+      <tr><th>수 수</th><td id="c-heads"></td><td style="width:40px;font-size:15px;font-weight:600;">수</td></tr>
+    </table>
+    <div class="cert-footer" style="font-size:15px;margin-top:24px;">상기와 같이 계량하였음을 증명함.</div>
+    <div style="margin-top:30px;text-align:center;">
+      <div style="display:flex;align-items:center;justify-content:center;gap:12px;font-size:20px;font-weight:800;">
+        <span id="c-farm"></span>
+        <span style="margin-left:8px;">윤은희</span>
+        <img src="/static/stamp.png" style="width:54px;height:54px;margin-left:4px;object-fit:contain;" alt="인">
+      </div>
+      <div id="c-address" style="font-size:14px;color:#333;margin-top:8px;font-weight:600;">경남 합천군 용주면 공암길 245-260</div>
+      <div id="c-phone" style="font-size:14px;color:#333;margin-top:4px;font-weight:600;">010-8643-8959, FAX(070)4015-3999</div>
+    </div>
+  </div>
+</div>
+
+<script>
+let settings={},B={vehicle:'',weight:'',heads:''};
+let activeSD=null,currentDriver=null,pendingLoadId=null,weightMode=null,currentWeight=0;
+let autoResetTimer=null,autoConfirmPending=false;
+let scaleConnected=false,liveScaleWeight=0,scaleStable=false;
+let scaleInputMode='auto';
+let editingLoad=null;
+let editingGlobalHeadMode = false;
+let globalPrevHead=0;
+
+async function updateGlobalPrevHead(){
+  const override = localStorage.getItem('kiosk_override_head');
+  if(override) {
+    globalPrevHead = parseInt(override);
+    return;
+  }
+  globalPrevHead=parseInt(settings.default_head_count)||2480;
+  if(!activeSD)return;
+  try{const res=await api(`/api/kiosk/last-heads/${activeSD.id}`);globalPrevHead=res.head_count;}catch(e){}
+}
+
+function fmt(n){if(!n&&n!==0)return'-';return Number(n).toLocaleString();}
+async function api(url,method='GET',body=null){
+  const opt={method,headers:{'Content-Type':'application/json'}};
+  if(body)opt.body=JSON.stringify(body);
+  const r=await fetch(url,opt);
+  if(!r.ok){const e=await r.json().catch(()=>({detail:r.statusText}));throw new Error(e.detail||'오류');}
+  return r.json();
+}
+
+function UD(f){const d=document.getElementById('disp-'+f);if(!d)return;const v=B[f];
+  if(f==='vehicle'){d.textContent=v?(v+'____').slice(0,4):('____');d.classList.toggle('empty',!v);}
+  else{d.textContent=v?fmt(parseInt(v)):'0';}}
+function NI(f,n){
+  if(f==='vehicle'&&B[f].length>=4)return;
+  if(f==='weight'&&B[f].length>=6)return;
+  if(f==='heads'&&B[f].length>=5)return;
+  B[f]+=n;UD(f);
+}
+function ND(f){B[f]=B[f].slice(0,-1);UD(f);}
+
+function goCS(n){
+  document.querySelectorAll('.center-step').forEach(s=>s.classList.remove('active'));
+  const t=document.getElementById('cs-'+n);if(t)t.classList.add('active');
+  if(n===1){B.vehicle='';UD('vehicle');refreshPending();showGuide();}
+  if(n===3){B.weight='';UD('weight');currentWeight=0;autoConfirmPending=false;}
+  if(n===4){B.heads='';UD('heads');}
+}
+
+function connectScale(){
+  const ws=new WebSocket(`ws://${location.host}/ws/scale`);
+  ws.onopen=()=>{scaleConnected=true;document.getElementById('scale-dot').className='scale-dot green';document.getElementById('scale-conn').textContent='연결됨';};
+  ws.onclose=()=>{scaleConnected=false;document.getElementById('scale-dot').className='scale-dot red';document.getElementById('scale-conn').textContent='연결 끊김';setTimeout(connectScale,3000);};
+  ws.onerror=()=>ws.close();
+  ws.onmessage=(e)=>{
+    try{const d=JSON.parse(e.data);
+      liveScaleWeight=d.weight||0;scaleStable=d.stable||false;
+      document.getElementById('live-weight').textContent=fmt(liveScaleWeight);
+      if(scaleInputMode==='auto') updateAutoWeight(liveScaleWeight,scaleStable);
+    }catch(err){}
+  };
+}
+
+function updateAutoWeight(weight,stable){
+  const disp=document.getElementById('disp-weight-auto');
+  if(disp) disp.textContent=fmt(weight);
+  const badge=document.getElementById('stable-badge');
+  if(badge){badge.style.display=stable?'':'none';}
+  const btn=document.getElementById('auto-confirm-btn');
+  if(btn){
+    if(stable&&weight>100){btn.style.opacity='1';btn.style.pointerEvents='auto';}
+    else{btn.style.opacity='0.5';btn.style.pointerEvents='none';}
+  }
+  const cs3=document.getElementById('cs-3');
+  if(stable&&weight>100&&cs3&&cs3.classList.contains('active')&&scaleInputMode==='auto'&&!autoConfirmPending){
+    autoConfirmPending=true;
+    setTimeout(()=>{ confirmWt(); }, 300);
+  }
+  
+  if(weight>0){
+    const cs6 = document.getElementById('cs-6');
+    if(!(cs6 && cs6.classList.contains('active'))) {
+      const wStr=fmt(weight);
+      const minE=parseInt(settings.min_empty_weight)||7000;
+      const maxE=parseInt(settings.max_empty_weight)||9000;
+      
+      const pvH=document.getElementById('pv-heads');
+      if(pvH.textContent==='-') pvH.textContent=fmt(globalPrevHead || parseInt(settings.default_head_count)||2480);
+
+      if(weight <= maxE){
+        document.getElementById('pv-empty').textContent=wStr;
+        document.getElementById('pv-empty').style.color=stable?'#f59e0b':'#cca600';
+        if(!weightMode){document.getElementById('pv-gross').textContent='-';document.getElementById('pv-net').textContent='-';document.getElementById('pv-avg').textContent='-';}
+        
+        document.getElementById('pv-title').style.display = 'none';
+        document.getElementById('cert-preview').style.display = 'none';
+        document.getElementById('pv-empty-msg').style.display = 'flex';
+      } else {
+        document.getElementById('pv-gross').textContent=wStr;
+        document.getElementById('pv-gross').style.color=stable?'#10b981':'#0d9668';
+        document.getElementById('pv-empty').textContent='-';
+        document.getElementById('pv-empty').style.color='#f59e0b';
+
+        document.getElementById('pv-title').style.display = '';
+        document.getElementById('cert-preview').style.display = '';
+        document.getElementById('pv-empty-msg').style.display = 'none';
+      }
+
+      if(weightMode==='gross'){
+        document.getElementById('pv-gross').textContent=wStr;
+        document.getElementById('pv-gross').style.color=stable?'#10b981':'#0d9668';
+        const ew=parseInt(document.getElementById('pv-empty').textContent.replace(/,/g,''))||0;
+        if(ew>0){
+          const net=weight-ew;
+          const hc=parseInt(document.getElementById('pv-heads').textContent.replace(/,/g,''))||0;
+          document.getElementById('pv-net').textContent=fmt(net);
+          if(hc>0) document.getElementById('pv-avg').textContent=(net/hc).toFixed(3);
+        }
+      }
+    }
+  }
+  
+  const now=new Date();
+  document.getElementById('pv-date').textContent=`${now.getFullYear()}.${now.getMonth()+1}.${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+  
+  const modeStatus=document.getElementById('scale-mode-status');
+  if(modeStatus){if(weight>0) modeStatus.textContent=stable?'✅ 안정':'⏳ 안정 대기...';}
+}
+
+function toggleScaleMode(){
+  if(scaleInputMode==='auto'){scaleInputMode='manual';
+    document.getElementById('scale-mode-text').textContent='수동';
+    document.getElementById('scale-mode-icon').textContent='✋';
+    document.getElementById('auto-weight-area').style.display='none';
+    document.getElementById('manual-weight-area').style.display='';
+  }else{scaleInputMode='auto';
+    document.getElementById('scale-mode-text').textContent='자동';
+    document.getElementById('scale-mode-icon').textContent='⚖️';
+    document.getElementById('auto-weight-area').style.display='';
+    document.getElementById('manual-weight-area').style.display='none';
+  }
+}
+function uLW(w){document.getElementById('live-weight').textContent=fmt(w);}
+
+async function init(){try{settings=await api('/api/settings');activeSD=await api('/api/active-shipment-day');
+  document.getElementById('k-info').textContent=`${activeSD.batch_name} | ${activeSD.day_number}일 | ${activeSD.age_days}일령`;
+  await updateGlobalPrevHead();
+  refreshPending();connectScale();
+  const memo=localStorage.getItem('kiosk_memo');if(memo)document.getElementById('kiosk-memo').value=memo;
+  clearPreview(); // 최초 화면 렌더링 시 우측 미리보기 칸 초기화 (상차수수, 날짜 등)
+}catch(e){document.getElementById('k-info').textContent='설정을 확인하세요';}}
+window.onload=init;
+
+document.addEventListener('keydown',function(e){
+  if(e.target.tagName==='INPUT' || e.target.tagName==='TEXTAREA') return;
+  const cs1=document.getElementById('cs-1'), cs2=document.getElementById('cs-2'),
+        cs3=document.getElementById('cs-3'), cs4=document.getElementById('cs-4'),
+        cs5=document.getElementById('cs-5'), cs6=document.getElementById('cs-6');
+  let activeField=null,confirmFn=null;
+  if(cs1 && cs1.classList.contains('active')){ activeField='vehicle'; confirmFn=findDriver; }
+  else if(cs2 && cs2.classList.contains('active')){ confirmFn=onDriverOK; }
+  else if(cs3 && cs3.classList.contains('active')){ 
+    if(scaleInputMode==='manual') activeField='weight'; 
+    confirmFn=confirmWt; 
+  }
+  else if(cs4 && cs4.classList.contains('active')){ activeField='heads'; confirmFn=confirmHeads; }
+  else if(cs5 && cs5.classList.contains('active')){ confirmFn=resetK; }
+  else if(cs6 && cs6.classList.contains('active')){ confirmFn=kioskPrint; }
+  
+  if(e.key>='0'&&e.key<='9'){ if(activeField){NI(activeField,e.key);e.preventDefault();} }
+  else if(e.key==='Backspace'){ if(activeField){ND(activeField);e.preventDefault();} }
+  else if(e.key==='Enter' || e.keyCode===13 || e.key==='NumpadEnter'){ if(confirmFn){confirmFn();e.preventDefault();} }
+});
+
+async function resetK(){if(autoResetTimer){clearTimeout(autoResetTimer);autoResetTimer=null;}
+  currentDriver=null;pendingLoadId=null;weightMode=null;currentWeight=0;autoConfirmPending=false;editingLoad=null;
+  editingGlobalHeadMode=false;
+  B.vehicle='';B.weight='';B.heads='';
+  await updateGlobalPrevHead();
+  uLW(liveScaleWeight);clearPreview();goCS(1);}
+function showGuide(){document.getElementById('left-guide').style.display='';document.getElementById('register-form').style.display='none';}
+function showRegForm(){document.getElementById('left-guide').style.display='none';document.getElementById('register-form').style.display='';}
+function clearPreview(){['pv-vehicle','pv-driver','pv-empty','pv-gross','pv-net','pv-avg','pv-address','pv-phone'].forEach(id=>{if(document.getElementById(id)) document.getElementById(id).textContent='-';});
+  document.getElementById('pv-dest').textContent='체리부로';
+  const now=new Date();
+  document.getElementById('pv-date').textContent=`${now.getFullYear()}.${now.getMonth()+1}.${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+  document.getElementById('pv-heads').textContent=fmt(globalPrevHead || parseInt(settings.default_head_count) || 2480);
+  document.getElementById('pv-farm').textContent=settings.farm_name||'공암산성';
+  document.getElementById('pv-address').textContent=settings.address||'경남 합천군 용주면 공암길 245-260';
+  document.getElementById('pv-phone').textContent=settings.phone||'010-8643-8959, FAX(070)4015-3999';
+  document.getElementById('pv-title').style.display = 'none';
+  document.getElementById('cert-preview').style.display = 'none';
+  document.getElementById('pv-empty-msg').style.display = 'none';
+}
+
+let pendingVN=null;
+async function findDriver(){const vno=B.vehicle;if(!vno)return;showGuide();
+  try{currentDriver=await api(`/api/drivers/by-vehicle/${parseInt(vno)}`);
+    document.getElementById('k-driver-name').textContent=currentDriver.name;document.getElementById('k-driver-vehicle').textContent=currentDriver.vehicle_no;
+    document.getElementById('pv-vehicle').textContent=currentDriver.vehicle_no;document.getElementById('pv-driver').textContent=currentDriver.name;
+    const now=new Date();document.getElementById('pv-date').textContent=`${now.getFullYear()}.${now.getMonth()+1}.${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+    
+    // DB에서 기존 pending 이 있는지 확인
+    let p = null;
+    try { p = await api(`/api/kiosk/pending/${currentDriver.vehicle_no}`); } catch(e) { p = null; }
+
+    const maxE = parseInt(settings.max_empty_weight) || 9000;
+    
+    // 1) 저울이 안정화되어 있고 중량이 파악된 경우 (완전 원패스 자동)
+    // 혹은 저울이 아직 불안정이지만 중량으로 상태를 미리 추정
+    if (liveScaleWeight > 0) {
+      if (liveScaleWeight > maxE) {
+        weightMode = 'gross';
+      } else {
+        weightMode = 'empty';
+      }
+    } else {
+      // 저울 값이 아예 안 올라온 경우 기존 DB상태에 의존
+      weightMode = p ? 'gross' : 'empty';
+    }
+
+    if (weightMode === 'gross') {
+      // 거미줄 같이 얽힌 gross 시나리오: 미리보기 다시 보여줌
+      document.getElementById('pv-title').style.display = '';
+      document.getElementById('cert-preview').style.display = '';
+      document.getElementById('pv-empty-msg').style.display = 'none';
+
+      // 총중량인데 pending이 없을 경우 (공차 계량 누락) 대비 0kg로 가상 pending 생성 가능성 고려
+      if (!p) {
+        // 임시로 화면에는 0kg로 처리하지만, 서버측 gross.load_id를 위해 필요.
+        // 바로 이 단계에서 empty 생성하면 원패스가 깨지지 않지만 일단 기존 에러회피를 위해 빈 객체 할당
+        pendingLoadId = null;
+        document.getElementById('pv-empty').textContent = '0';
+      } else {
+        pendingLoadId = p.id;
+        document.getElementById('pv-empty').textContent = fmt(p.empty_weight);
+      }
+      document.getElementById('cs3-guide').innerHTML = '병아리를 싣고<br>저울 위에 올려주세요';
+      document.getElementById('cs3-sub').textContent = '총중량 측정';
+      document.getElementById('step2-mode').innerHTML = '<span style="color:#10b981">📦 총중량 측정</span>';
+      
+      let prevHead = globalPrevHead || parseInt(settings.default_head_count) || 2480;
+      document.getElementById('pv-heads').textContent = fmt(prevHead);
+      // B.heads에도 세팅 (수동 확정 시 사용)
+      B.heads = String(prevHead);
+
+    } else {
+      pendingLoadId = null; 
+      document.getElementById('cs3-guide').innerHTML = '빈 차를 저울 위에<br>올려주세요';
+      document.getElementById('cs3-sub').textContent = '공차 측정';
+      document.getElementById('step2-mode').innerHTML = '<span style="color:#f59e0b">🚛 공차 측정</span>';
+      
+      // 공차이므로 미리보기 숨김 처리 및 안내 표시!
+      document.getElementById('pv-title').style.display = 'none';
+      document.getElementById('cert-preview').style.display = 'none';
+      document.getElementById('pv-empty-msg').style.display = 'flex';
+    }
+
+    // 만약 입장 타이밍에 이미 저울이 안정화되어 있다면 "즉시 확인" 단계로 돌입 (원패스 핵심)
+    if (scaleConnected && liveScaleWeight > 0 && scaleStable) {
+       currentWeight = liveScaleWeight;
+       // confirmWt() 안에서 pendingLoadId 가 없는데 weightMode == gross 라면 등록 시 에러남.
+       confirmWt();
+    } else {
+       goCS(3);
+    }
+  } catch(e) { pendingVN=parseInt(vno); showRegForm(); }
+}
+function cancelRegister(){showGuide();B.vehicle='';UD('vehicle');}
+async function registerDriver(){const c=document.getElementById('reg-company').value.trim(),n=document.getElementById('reg-name').value.trim();if(!n){alert('이름을 입력하세요');return;}
+  try{const dn=c?`${n}(${c})`:n;await api('/api/drivers','POST',{name:dn,vehicle_no:pendingVN,phone:''});
+    currentDriver=await api(`/api/drivers/by-vehicle/${pendingVN}`);document.getElementById('k-driver-name').textContent=currentDriver.name;document.getElementById('k-driver-vehicle').textContent=currentDriver.vehicle_no;
+    document.getElementById('pv-vehicle').textContent=currentDriver.vehicle_no;document.getElementById('pv-driver').textContent=currentDriver.name;
+    pendingLoadId=null;weightMode='empty';
+    document.getElementById('cs3-guide').innerHTML='빈 차를 저울 위에<br>올려주세요';
+    document.getElementById('cs3-sub').textContent='공차 측정';
+    document.getElementById('step2-mode').innerHTML='<span style="color:#f59e0b">🚛 공차 측정</span>';
+    document.getElementById('pv-title').style.display='none';
+    document.getElementById('cert-preview').style.display='none';
+    document.getElementById('pv-empty-msg').style.display='flex';
+    showGuide();
+    if(scaleConnected && liveScaleWeight>0 && scaleStable){currentWeight=liveScaleWeight;confirmWt();}
+    else{goCS(3);}
+  }catch(e){alert('등록 오류: '+e.message);}}
+
+async function refreshPending(){try{const pl=await api('/api/kiosk/pending');const a=document.getElementById('pending-area');if(!pl.length){a.innerHTML='';return;}
+  a.innerHTML=`<div class="pending-title">🚛 상차 대기 <span class="pending-count">${pl.length}대</span></div><div class="pending-list">${pl.map(p=>`<div class="pending-chip"><span class="p-v">${p.vehicle_no}</span><span style="color:#e8ecf4">${p.driver_name}</span><span style="color:#f59e0b;font-size:15px;font-weight:700">${fmt(p.empty_weight)}kg</span></div>`).join('')}</div>`;}catch(e){}}
+
+async function onDriverOK(){goCS(3);}
+
+async function confirmWt(){
+  const wt=(scaleInputMode==='auto')?liveScaleWeight:currentWeight;
+  if(scaleInputMode==='auto') currentWeight=wt;
+  if(!wt){alert('중량을 확인하세요');return;}
+  if(!activeSD){alert('설정에서 회차/출하일수를 등록하세요');return;}
+  if(weightMode==='empty'){
+    const minEw=parseInt(settings.min_empty_weight)||0;
+    const maxEw=parseInt(settings.max_empty_weight)||99999;
+    if(wt<minEw||wt>maxEw){
+      showWeightWarningModal('empty', wt, minEw, maxEw, 0, 0);
+      B.weight='';UD('weight');currentWeight=0;autoConfirmPending=false;if(scaleInputMode==='auto')updateAutoWeight(liveScaleWeight,scaleStable);return;
+    }
+    try{const r=await api('/api/kiosk/empty','POST',{driver_id:currentDriver.id,vehicle_no:currentDriver.vehicle_no,driver_name:currentDriver.name,weight:wt});
+    const tripStr = r.trip_number === 2 ? ' (2차)' : '';
+    document.getElementById('r-empty-name').textContent=`${currentDriver.name} (${currentDriver.vehicle_no})${tripStr}`;
+    document.getElementById('r-empty-wt').textContent=fmt(wt);document.getElementById('r-empty-seq').textContent='대기중';
+    
+    // 이 시점에 완료 안내(안내문) 한 번 더 확실하게 표시
+    document.getElementById('pv-title').style.display = 'none';
+    document.getElementById('cert-preview').style.display = 'none';
+    document.getElementById('pv-empty-msg').style.display = 'flex';
+
+    goCS(5); // Show success message
+    if(autoResetTimer) clearTimeout(autoResetTimer);
+    autoResetTimer = setTimeout(() => { resetK(); }, 5000);
+  }catch(e){autoConfirmPending=false;alert('오류: '+e.message);}}
+  else{
+    const pvHc=parseInt(document.getElementById('pv-heads').textContent.replace(/,/g,''))||0;
+    const hc=pvHc>0?pvHc:(parseInt(settings.default_head_count)||2480);
+    B.heads=String(hc);
+    
+    // 만약 pendingLoadId가 없다면 임의로 공차 기록을 0으로라도 생성해서 통과시켜야 함
+    if (!pendingLoadId) {
+      try {
+        const eRes = await api('/api/kiosk/empty','POST',{driver_id:currentDriver.id,vehicle_no:currentDriver.vehicle_no,driver_name:currentDriver.name,weight:currentDriver.last_empty_weight||8500});
+        pendingLoadId = eRes.id;
+      } catch(e) {
+        autoConfirmPending = false; alert('공차 자동생성 오류: ' + e.message); return;
+      }
+    }
+
+    const ewText = document.getElementById('pv-empty').textContent.replace(/,/g,'');
+    const ew = parseInt(ewText)||0;
+    if (ew > 0 && hc > 0 && activeSD && activeSD.target_weight > 0) {
+      const net = wt - ew;
+      const avg = net / hc;
+      const tw = parseFloat(activeSD.recent_3_avg_weight || activeSD.target_weight);
+      const errGram = parseInt(settings.weight_error_gram) || 200;
+      const errKg = errGram / 1000;
+      if (Math.abs(avg - tw) > errKg) { // 선행 3대 평균 기준 이탈 시 경고
+        showWeightWarningModal('gross', wt, 0, 0, avg, tw, errGram);
+        B.weight='';UD('weight');currentWeight=0;autoConfirmPending=false;if(scaleInputMode==='auto')updateAutoWeight(liveScaleWeight,scaleStable);return;
+      }
+    }
+
+    try{const r=await api('/api/kiosk/gross','POST',{load_id:pendingLoadId,weight:currentWeight,head_count:hc});
+      localStorage.removeItem('kiosk_override_head');
+      document.getElementById('r-net').textContent=`${fmt(r.net_weight)} kg`;document.getElementById('r-avg').textContent=`${Number(r.avg_weight).toFixed(3)} kg`;
+      document.getElementById('r-heads').textContent=`${fmt(r.head_count)} 수`;document.getElementById('r-seq').textContent=`${r.sequence}번`;
+      fillCert(r);
+      goCS(6);
+      
+      // 자동 인쇄! (버튼 안 눌러도 즉시 인쇄 화면 호출 후 15초 뒤 초기화)
+      setTimeout(() => { kioskPrint(); }, 500);
+      
+    }catch(e){autoConfirmPending=false;alert('오류: '+e.message);}
+  }}
+
+async function submitGross(){const hc=parseInt(B.heads)||0;if(!hc){alert('수수를 입력하세요');return;}
+  if(hc>=5000){alert('5000수 이상은 입력할 수 없습니다.');return;}
+  try{const r=await api('/api/kiosk/gross','POST',{load_id:pendingLoadId,weight:currentWeight,head_count:hc});
+    localStorage.removeItem('kiosk_override_head');
+    document.getElementById('r-net').textContent=`${fmt(r.net_weight)} kg`;document.getElementById('r-avg').textContent=`${Number(r.avg_weight).toFixed(3)} kg`;
+    document.getElementById('r-heads').textContent=`${fmt(r.head_count)} 수`;document.getElementById('r-seq').textContent=`${r.sequence}번`;
+    fillCert(r);
+    goCS(6);
+    setTimeout(() => { kioskPrint(); }, 500);
+  }catch(e){alert('오류: '+e.message);}}
+
+async function reprintCert(){const vno=B.vehicle;if(!vno){alert('재발행할 차량번호 4자리를 먼저 입력하세요.');return;}
+  if(!activeSD){alert('활성 출하일차가 없습니다.');return;}
+  try{const r=await api(`/api/kiosk/last-done/${parseInt(vno)}?sd_id=${activeSD.id}`);
+    document.getElementById('r-net').textContent=`${fmt(r.net_weight)} kg`;document.getElementById('r-avg').textContent=`${Number(r.avg_weight).toFixed(3)} kg`;
+    document.getElementById('r-heads').textContent=`${fmt(r.head_count)} 수`;document.getElementById('r-seq').textContent=`${r.sequence}번`;
+    document.getElementById('pv-title').style.display='';
+    document.getElementById('cert-preview').style.display='';
+    document.getElementById('pv-empty-msg').style.display='none';
+    fillCert(r);
+    goCS(6);
+    setTimeout(() => { kioskPrint(); }, 500);
+  }catch(e){alert('해당 일차에 이 차량의 계량 자료가 없습니다.');B.vehicle='';UD('vehicle');}}
+
+function cancelHeads() {
+  if (editingGlobalHeadMode) {
+    editingGlobalHeadMode = false;
+    goCS(1);
+  } else if (editingLoad) {
+    editingLoad = null;
+    goCS(1);
+  } else {
+    goCS(3);
+  }
+}
+
+async function editHeadCount(){
+  editingGlobalHeadMode = true;
+  document.getElementById('cs4-sub').textContent = '';
+  B.heads = ''; UD('heads');
+  goCS(4);
+}
+
+async function confirmHeads(){
+  const hc=parseInt(B.heads)||0;if(!hc){alert('수수를 입력하세요');return;}
+  if(hc>=5000){alert('5000수 이상은 입력할 수 없습니다.');return;}
+  if(editingGlobalHeadMode){
+    globalPrevHead = hc;
+    localStorage.setItem('kiosk_override_head', hc);
+    document.getElementById('pv-heads').textContent = fmt(hc);
+    editingGlobalHeadMode = false;
+    if(activeSD) {
+      api(`/api/shipment-days/${activeSD.id}`, 'PUT', {default_head_count: hc}).catch(()=>{});
+    }
+    goCS(1);
+    return;
+  }
+  if(editingLoad){
+    const net=editingLoad.net_weight;
+    const avg=Math.round(net/hc*10000)/10000;
+    await api(`/api/admin/loads/${editingLoad.id}`,'PUT',{vehicle_no:editingLoad.vehicle_no,driver_name:editingLoad.driver_name,empty_weight:editingLoad.empty_weight,gross_weight:editingLoad.gross_weight,net_weight:net,head_count:hc,avg_weight:avg});
+    document.getElementById('pv-heads').textContent=fmt(hc);
+    document.getElementById('pv-avg').textContent=avg.toFixed(3);
+    const updated=Object.assign({},editingLoad,{head_count:hc,avg_weight:avg});
+    fillCert(updated);
+    editingLoad=null;
+    goCS(6);
+  } else {
+    submitGross();
+  }
+}
+
+function fillCert(ld){const now=new Date(),bi=ld.batch_info||{};
+  const dt=`${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 ${now.getHours()}시 ${String(now.getMinutes()).padStart(2,'0')}분`;
+  document.getElementById('c-date').textContent=dt;
+  document.getElementById('c-vehicle').textContent=ld.vehicle_no;
+  document.getElementById('c-driver').textContent=ld.driver_name;
+  document.getElementById('c-dest').textContent=bi.company||settings.company_name||'체리부로';
+  document.getElementById('c-empty').textContent=fmt(ld.empty_weight);
+  document.getElementById('c-gross').textContent=fmt(ld.gross_weight);
+  document.getElementById('c-net').textContent=fmt(ld.net_weight);
+  document.getElementById('c-avg').textContent=Number(ld.avg_weight).toFixed(3);
+  document.getElementById('c-heads').textContent=fmt(ld.head_count);
+  document.getElementById('c-farm').textContent=bi.farm_name||settings.farm_name||'공암산성';
+  document.getElementById('c-address').textContent=bi.address||settings.address||'경남 합천군 용주면 공암길 245-260';
+  document.getElementById('c-phone').textContent=bi.phone||settings.phone||'010-8643-8959, FAX(070)4015-3999';
+  document.getElementById('pv-date').textContent=dt;
+  document.getElementById('pv-vehicle').textContent=ld.vehicle_no;
+  document.getElementById('pv-driver').textContent=ld.driver_name;
+  document.getElementById('pv-empty').textContent=fmt(ld.empty_weight);
+  document.getElementById('pv-gross').textContent=fmt(ld.gross_weight);
+  document.getElementById('pv-net').textContent=fmt(ld.net_weight);
+  document.getElementById('pv-avg').textContent=Number(ld.avg_weight).toFixed(3);
+  document.getElementById('pv-heads').textContent=fmt(ld.head_count);
+}
+
+function kioskPrint(){window.print();
+  autoResetTimer=setTimeout(()=>{resetK();},10000);}
+
+let lastAlertId = 0;
+async function checkGlobalAlerts() {
+  try {
+    const a = await api('/api/alerts');
+    if (a && a.id > lastAlertId) {
+      lastAlertId = a.id;
+      if (a.level === 'error') {
+        document.getElementById('gab-title').textContent = a.title;
+        document.getElementById('gab-message').textContent = a.message;
+        document.getElementById('modal-global-alert').style.display = 'flex';
+      }
+    }
+  } catch(e) {}
+}
+setInterval(checkGlobalAlerts, 10000);
+
+function dismissGlobalAlert() {
+  document.getElementById('modal-global-alert').style.display = 'none';
+}
+
+function showWeightWarningModal(type, currentVal, minVal, maxVal, currentAvg, targetAvg, errGram) {
+  const c = document.getElementById('weight-alert-content');
+  let alertTitle = '';
+  let alertMsg = '';
+  if (type === 'empty') {
+    alertTitle = '⚠️ 공차 중량 이상 감지';
+    alertMsg = `현재 측정된 공차중량(${fmt(currentVal)}kg)이 허용 범위(${fmt(minVal)}~${fmt(maxVal)}kg)를 크게 벗어났습니다.`;
+    c.innerHTML = `현재 측정된 <b>공차중량</b>이 지정된 정상 범위를 크게 벗어났습니다.<br>
+      <br><span style="color:#f87171;font-size:24px;font-weight:bold;">측정값: ${fmt(currentVal)} kg</span>
+      <br><span style="color:#94a3b8;font-size:16px;">(정상 허용 범위: ${fmt(minVal)} ~ ${fmt(maxVal)} kg)</span>`;
+  } else {
+    alertTitle = '⚠️ 총중량 평체 이상 감지';
+    alertMsg = `계산된 평체(${currentAvg.toFixed(3)}kg)가 기준치(${targetAvg.toFixed(3)}kg)에서 오차 범위를 이탈했습니다.`;
+    c.innerHTML = `현재 계산된 <b>평균 체중(평체)</b>이 선행 차량들의 평균값과 크게 다릅니다.<br>
+      <br><span style="color:#f87171;font-size:24px;font-weight:bold;">계산된 평체: ${currentAvg.toFixed(3)} kg</span>
+      <br><span style="color:#94a3b8;font-size:16px;">(최근 3대 평균(기준): ${targetAvg.toFixed(3)} kg, 허용 오차 ±${errGram}g 이탈)</span>`;
+  }
+  document.getElementById('weight-alert-modal').style.display = 'flex';
+  
+  // 서버를 통해 사무실 집계표 화면으로도 커스텀 알람 브로드캐스트
+  api('/api/alerts', 'POST', { level: 'error', title: alertTitle, message: alertMsg }).catch(()=>{});
+}
+</script>
+
+<div id="weight-alert-modal" class="modal-overlay" style="display:none;z-index:9999;">
+  <div class="modal" style="max-width:550px;border:3px solid #dc2626;background:#0f172a;">
+    <h2 class="modal-title" style="color:#ef4444;font-size:28px;text-align:center;font-weight:900;">⚠️ 중량 이상 감지</h2>
+    <div id="weight-alert-content" style="font-size:18px;line-height:1.6;color:#e8ecf4;margin:20px 0;text-align:center;">
+    </div>
+    <div style="background:#1e293b;padding:16px;border-radius:12px;margin-bottom:24px;">
+      <div style="font-size:16px;font-weight:700;color:#f59e0b;margin-bottom:8px;">💡 다음 항목을 즉시 확인해 주세요:</div>
+      <ul style="margin:0;padding-left:24px;color:#cbd5e1;font-size:16px;line-height:1.5;">
+        <li style="margin-bottom:8px;">차량이 계근대(저울) <strong>정중앙</strong>에 올바로 위치해 있나요?</li>
+        <li style="margin-bottom:8px;"><strong>바퀴 일부가 계근대 밖으로</strong> 삐져나오거나 걸쳐있지 않나요?</li>
+        <li style="margin-bottom:8px;">차량 외에 다른 인원이나 이물질이 저울 위에 올라가 있지 않나요?</li>
+        <li>(상차 시) 입력된 <strong>수수(마릿수)</strong>가 실제 상차량과 정확히 일치하나요?</li>
+      </ul>
+    </div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="big-btn" style="background:#dc2626;color:#fff;border:none;width:100%;font-size:20px;padding:16px;font-weight:800;" onclick="document.getElementById('weight-alert-modal').style.display='none'">확인했습니다 (다시 측정하기)</button>
+    </div>
+  </div>
+</div>
+
+<!-- 전역 시스템 알람 모달 -->
+<div id="modal-global-alert" class="modal-overlay" style="display:none;z-index:99999;">
+  <div class="modal" style="max-width:600px;border:4px solid #ef4444;background:#1e1e1e;box-shadow:0 0 40px rgba(239,68,68,0.5);">
+    <h2 class="modal-title" style="color:#ef4444;font-size:32px;text-align:center;font-weight:900;margin-bottom:20px;">🚨 긴급 상황 발생 🚨</h2>
+    <div id="gab-title" style="font-size:24px;font-weight:bold;color:#fca5a5;text-align:center;margin-bottom:16px;">알람 제목</div>
+    <div id="gab-message" style="font-size:18px;line-height:1.6;color:#fff;text-align:center;background:#2d3748;padding:20px;border-radius:8px;margin-bottom:24px;">알람 세부 내용</div>
+    <div class="modal-actions" style="justify-content:center;">
+      <button class="btn btn-primary" style="background:#ef4444;font-size:20px;padding:12px 40px;height:auto;border:none;" onclick="dismissGlobalAlert()">확인 (알람 끄기)</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

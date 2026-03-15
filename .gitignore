@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.etl
+shipment.db
+logs/
+temp_excel/
+*.csv
+*.txt
+*.vbs
+*.bat
+*.ps1
+!start_server.bat
