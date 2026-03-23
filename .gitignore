@@ -1,0 +1,9 @@
+# AI 및 시스템 인증/보안 파일 강제 배제
+*.pem
+CREDENTIALS.md
+*.key
+.env
+
+# OS 생성 불필요 파일
+.DS_Store
+Thumbs.db
