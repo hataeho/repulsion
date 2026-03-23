@@ -1,9 +1,20 @@
 # AI 및 시스템 인증/보안 파일 강제 배제
-*.pem
-CREDENTIALS.md
+# *.pem (사용자 전권 오버라이드: Private Repo 한정 9대 PC 통합 동기화 허가)
+# CREDENTIALS.md (사용자 전권 오버라이드: Private Repo 한정 9대 PC 통합 동기화 허가)
 *.key
 .env
 
 # OS 생성 불필요 파일
 .DS_Store
 Thumbs.db
+
+# 언어 패키지 및 통계 로깅 배제
+node_modules/
+__pycache__/
+*.log
+
+# AI(제미나이) 무거운 구동 파일(동영상/스크린샷/캐시) 원격 동기화 전면 차단
+*.webp
+*.mp4
+.gemini/*
+!.gemini/AGENTS.md
