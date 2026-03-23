@@ -1,0 +1,60 @@
+version: '3.8'
+
+# 사용자의 "망가지면 버튼 하나로 다시 세팅하는" 자동 복구 인프라의 심장(Core)이 될 설정 파일입니다.
+
+services:
+  # 트래픽 분배기 (라우터): AWS 80/443 포트를 받아 3개 도메인으로 찢어줍니다.
+  nginx-proxy:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx_config:/etc/nginx/conf.d  # 호스트(Host)의 Nginx 설정 파일을 컨테이너에 덮어씌움
+    restart: unless-stopped
+    depends_on:
+      - bigmap-app
+      - petpharm-app
+      - broiler-app
+
+  # 1) bigmap.ai (인공지능 연구/추론 로직 컨테이너)
+  bigmap-app:
+    image: python:3.10-slim  # AI 뼈대 파이썬
+    working_dir: /app
+    volumes:
+      - ./bigmap.ai:/app
+    command: sh -c "pip install -r requirements.txt && python main.py"
+    restart: unless-stopped
+
+  # 2) petpharm.ai (육계농장 투약증빙 등 서비스 컨테이너)
+  petpharm-app:
+    image: node:18-alpine  # 웹 프론트/백엔드 뼈대 노드
+    working_dir: /app
+    volumes:
+      - ./petpharm.ai:/app
+    command: sh -c "npm install && npm start"
+    restart: unless-stopped
+
+  # 3) broiler.kr (육계 사양관리 기록 로직 컨테이너)
+  broiler-app:
+    image: node:18-alpine
+    working_dir: /app
+    volumes:
+      - ./broiler.kr:/app
+    command: sh -c "npm install && npm start"
+    restart: unless-stopped
+    
+  # 통합 단일 진실 공급원 DB (3개 도메인이 공유/분석할 데이터 파이프라인)
+  postgres-db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-mangagimyeon_dasi} # 임시 패스워드
+      POSTGRES_DB: repulsion_core
+    volumes:
+      - pgdata:/var/lib/postgresql/data # 컨테이너가 폭파되어도 데이터는 보존됨
+
+volumes:
+  pgdata:
+    # 물리적 디스크 매핑 선언 (AWS 인스턴스가 날아가기 전까지 데이터는 이곳에 캐싱됨)
