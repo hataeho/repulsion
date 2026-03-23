@@ -1,0 +1,688 @@
+﻿
+============================================================
+CMD: cat /home/pi/projects/observer/EVModules/EVCommon.h
+============================================================
+#pragma once
+
+
+
+#include <string>
+
+#include <algorithm> 
+
+#include <limits.h>
+
+#include <syslog.h>
+
+#include <stdarg.h>
+
+
+
+#include "./Socket/EVServerSocket.h"
+
+#include "./Socket/EVServerSocketWorker.h"
+
+ 
+
+using namespace std;
+
+
+
+
+
+// 20231207���� ����
+
+#define PROGRAM_VERSION	"1.0.0.3"
+
+
+
+#define EVLOG_BUF_SIZE		512
+
+
+
+#define MAX_PATH			PATH_MAX
+
+
+
+#define SOCKET_BUFFER_SIZE		2048
+
+
+
+#define ASCII_STX		0x02
+
+#define ASCII_ETX		0x03
+
+#define ASCII_ACK		0x06
+
+#define ASCII_NAK		0x15
+
+
+
+#define ASCII_LF		0x0A
+
+#define ASCII_CR		0x0D
+
+
+
+// Separator (File, Group, Record, Unit)
+
+#define ASCII_FS		0x1C
+
+#define ASCII_GS		0x1D
+
+#define ASCII_RS		0x1E
+
+#define ASCII_US		0x1F
+
+
+
+#define ASCII_SPACE		0x20
+
+
+
+
+
+//#define DEFAULT_DIR		"/home/pi/projects/observer/bin/ARM64/Debug"
+
+
+
+#define DEBUG
+
+
+
+
+
+
+
+// trim from start (in place)
+
+static inline void ltrim(std::string& s)
+
+{
+
+	s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+
+		return !std::isspace(ch);
+
+		}));
+
+}
+
+
+
+// trim from end (in place)
+
+static inline void rtrim(std::string& s)
+
+{
+
+	s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+
+		return !std::isspace(ch);
+
+		}).base(), s.end());
+
+}
+
+
+
+// trim from both ends (in place)
+
+static inline void trim(std::string& s)
+
+{
+
+	rtrim(s);
+
+	ltrim(s);
+
+}
+
+
+
+/*
+
+static inline void writeSystemError(const string strFormat, ...)
+
+{
+
+	va_list list;
+
+	char szBuf[EVLOG_BUF_SIZE];
+
+
+
+	va_start(list, strFormat.c_str());
+
+	vsprintf(szBuf, strFormat.c_str(), list);
+
+	va_end(list);
+
+
+
+	perror(szBuf);
+
+	syslog(LOG_ERR, szBuf);
+
+
+
+}
+
+*/
+
+static inline void writeSystemError(const char* szFormat, ...)
+
+{
+
+	va_list list;
+
+	char szBuf[EVLOG_BUF_SIZE];
+
+
+
+	va_start(list, szFormat);
+
+	vsprintf(szBuf, szFormat, list);
+
+	va_end(list);
+
+
+
+	
+
+	//perror(szBuf);
+
+
+
+	syslog(LOG_ERR, szBuf);
+
+
+
+}
+
+
+
+static inline void writeSystemWarning(const char* szFormat, ...)
+
+{
+
+	va_list list;
+
+	char szBuf[EVLOG_BUF_SIZE];
+
+
+
+	va_start(list, szFormat);
+
+	vsprintf(szBuf, szFormat, list);
+
+	va_end(list);
+
+
+
+	syslog(LOG_WARNING, szBuf);
+
+}
+
+
+
+
+
+static inline void writeSystemInfo(const char* szFormat, ...)
+
+{
+
+	va_list list;
+
+	char szBuf[EVLOG_BUF_SIZE];
+
+
+
+	va_start(list, szFormat);
+
+	vsprintf(szBuf, szFormat, list);
+
+	va_end(list);
+
+
+
+	syslog(LOG_INFO, szBuf);
+
+}
+
+
+
+
+
+static inline void writeSystemDebug(const char* szFormat, ...)
+
+{
+
+	va_list list;
+
+	char szBuf[EVLOG_BUF_SIZE];
+
+
+
+	va_start(list, szFormat);
+
+	vsprintf(szBuf, szFormat, list);
+
+	va_end(list);
+
+
+
+	syslog(LOG_DEBUG, szBuf);
+
+}
+
+
+
+
+
+============================================================
+CMD: cat /home/pi/projects/observer/Handler/StatusHandler.h
+============================================================
+#pragma once
+
+
+
+#include "../EVModules/EVCommon.h"
+
+#include "../EVModules/Core/EVSharedMemory.h"
+
+#include "DIOHandler.h"
+
+#include "MessageQueueDIO.h"
+
+#include <iostream>
+
+#include <vector>
+
+#include <mutex>
+
+#include <deque>
+
+#include <queue>
+
+#include <thread>
+
+
+
+#define PERSISTANCE_FILE		"persistance"
+
+
+
+#define SHARED_MEMORY_ID		1551
+
+
+
+#define SERIAL_PORT_COUNT		8
+
+#define SERIAL_SLAVE_COUNT		16
+
+#define DEV_NAME_SIZE			33
+
+//#define GPIO_INPUT_COUNT		10
+
+//#define GPIO_OUTPUT_COUNT		8
+
+
+
+#define RESULT_VARIABLE_CNT		10
+
+
+
+// �� ���� systeminfo�� SOCKET_COUNT���� �����ȴ�. SOCKET_COUNT���� �� ���ǵ� ���� �ʰ��� �� ����.
+
+#define SOCKET_DEV_COUNT		4
+
+
+
+#define PERSISTANCE_SAVE_COUNT	5
+
+
+
+typedef struct _tagDevResultStruct
+
+{
+
+	tm tmRecv;
+
+
+
+	int nValue;
+
+	float fValue;
+
+	int nErrorNo;				// 0:��������, 9999:������ �̼���
+
+	int nExtra1;
+
+} DevResultStruct;
+
+
+
+
+
+typedef struct _tagStructSharedMemory
+
+{
+
+	unsigned char windowClientCount;
+
+	unsigned char MESCount;
+
+	char aszSerialDevName[SERIAL_PORT_COUNT][SERIAL_SLAVE_COUNT][DEV_NAME_SIZE];
+
+	float afSerialDevValue[SERIAL_PORT_COUNT][SERIAL_SLAVE_COUNT];
+
+	char aszSocketDevName[SOCKET_DEV_COUNT][DEV_NAME_SIZE];
+
+	int anSocketDevValue[SOCKET_DEV_COUNT];
+
+	bool abIOInputStatus[GPIO_IN_COUNT];
+
+	char aszIOInputDevName[GPIO_IN_COUNT][DEV_NAME_SIZE];
+
+	bool abIOOutputStatus[GPIO_OUT_COUNT];
+
+	char aszIOOutputDevName[GPIO_OUT_COUNT][DEV_NAME_SIZE];
+
+	unsigned int anIOInputCount[GPIO_IN_COUNT];
+
+} StructSharedMemory;
+
+
+
+typedef struct _tagStructMESSend
+
+{
+
+	tm tmRecv;
+
+	StructSharedMemory data;
+
+} StructMESSend;
+
+
+
+
+
+
+
+
+
+typedef struct _tagStructBinarySend
+
+{
+
+	char cType;
+
+	char cMSIndex;
+
+	char cIndex1;
+
+	char cIndex2;
+
+	char szDevName[32];
+
+	union
+
+	{
+
+		float fValue;
+
+		int nValue;
+
+	};
+
+	char cUnit;
+
+	float fMinValue;
+
+	float fMaxValue;
+
+	char cRS;
+
+} StructBinarySend;
+
+
+
+
+
+typedef struct _tagStructResultVariable
+
+{
+
+	int nValue;
+
+	float fValue;
+
+	char szUnit[10];
+
+	char szData[32];
+
+} StructResultVariable;
+
+
+
+
+
+
+
+class CStatusHandler
+
+{
+
+public:
+
+	CStatusHandler();
+
+	~CStatusHandler();
+
+
+
+	bool start();
+
+	void stop();
+
+
+
+	bool setSerialResult(int nPortNo, int nSlaveID, const DevResultStruct data);
+
+	DevResultStruct getSerialResult(int nPortNo, int nSlaveID);
+
+
+
+	bool setSocketResult(int nSeqNo, const DevResultStruct data);
+
+	DevResultStruct getSocketResult(int nSeqNo);
+
+
+
+	void setDigitalInput(int pinIndex, int value);
+
+	void setDigitalOutput(int pinIndex, int value);
+
+	void applyToSharedMemForDIO();
+
+
+
+	void increaseDIOCount(int pinIndex, bool bRising, int nRemainCount = 1);
+
+	void resetDIOCount(int pinIndex);
+
+
+
+	void setWindowClientCount(int nCount);
+
+	void setMESClientCount();
+
+
+
+
+
+	void initSerialResultList();
+
+
+
+	size_t getMESListCount();
+
+
+
+	StructResultVariable getResultVariable(int nIndex);
+
+	void setResultVariable(int nIndex, StructResultVariable vars);
+
+
+
+protected:
+
+	void recvHandler(CEVServerSocketWorker* pWorker, ssize_t nLen);
+
+
+
+	bool readPersistanceFile();
+
+	bool savePersistanceFile();
+
+private:
+
+
+
+	void setStatusStruct();
+
+	void writeStatusToSharedMem();
+
+
+
+
+
+	int checkRequestProtocol(CEVServerSocketWorker* pWorker, char* szJobType);
+
+
+
+	void processSocketASCII(CEVServerSocketWorker* pWorker, ssize_t nLen);
+
+	void processSocketBinary(CEVServerSocketWorker* pWorker, ssize_t nLen);
+
+	void processSocketJson(CEVServerSocketWorker* pWorker, ssize_t nLen, const char* szJobType);
+
+
+
+
+
+	//std::string getResultForMESReportUseHttpGET();
+
+	//std::string getResultForMESReportUseHttpPOST();
+
+	std::string getResultForMESReportUseHttp(bool isGetType);
+
+
+
+	std::string sendHttpGET(std::string strURL);
+
+	std::string sendHttpPOST(std::string strURL, std::string strData);
+
+	void runMESThread(void* arg);
+
+
+
+
+
+	void pushCurrentValueToMESList();
+
+	StructMESSend getCurrentValueToMESList();
+
+	void popCurrentValueToMESList();
+
+
+
+
+
+	void sendLineMessage(int nPortNo, int nSlave, int nTokenIndex);
+
+
+
+private:
+
+	std::vector<std::vector<DevResultStruct>> m_vvSerialResultList;
+
+	std::vector<DevResultStruct> m_vvSocketResultList;
+
+	std::queue<StructMESSend> m_queMESSendList;			// MES���� ����Ʈ
+
+	unsigned int m_anDInUnitCount[GPIO_IN_COUNT];	
+
+	int m_nLastDataSerialPort;
+
+	int m_nLastDataSerialSlave;
+
+
+
+	CEVServerSocket* m_pServerSoc;
+
+
+
+	CEVSharedMemory m_sharedMem;
+
+	StructSharedMemory m_Status;
+
+
+
+	std::deque<unsigned char> m_dequeRecv;
+
+
+
+	std::mutex m_mutexSerialResultList;
+
+	std::mutex m_mutexSocketResultList;
+
+
+
+	std::mutex m_mutexSharedMem;
+
+	std::mutex m_mutexRecvBuf;
+
+	std::mutex m_mutexIOCount;
+
+	std::mutex m_mutexMESList;
+
+	std::mutex m_mutexResultVar;
+
+
+
+	std::string m_strRecvBuf;
+
+
+
+	bool m_bIsStarted;
+
+
+
+
+
+
+
+	std::thread* m_pThreadMES;
+
+	bool m_bMESThreadRun;
+
+	int m_nPersistanceSaveCnt;
+
+	
+
+
+
+	std::vector<StructResultVariable> m_vResultVariable;
+
+
+
+	//////////////////////////////
+
+	// Line Messaging ����
+
+	time_t m_tmSendLine[SERIAL_PORT_COUNT][SERIAL_SLAVE_COUNT];
+
+};

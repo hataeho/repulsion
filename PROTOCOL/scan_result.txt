@@ -1,0 +1,37 @@
+스캔 대상: 192.168.0.150
+스캔 시간: 2026-03-09 13:14:01
+열린 포트 수: 33
+
+포트    80 (http) - HTTP 웹서버
+포트   443 (https) - HTTPS
+포트   554 (rtsp) - 
+포트  1935 (unknown) - 
+포트  2002 (unknown) - 
+포트  9010 (unknown) - 
+포트  9020 (unknown) - 
+포트 18001 (unknown) - 
+포트 18002 (unknown) - 
+포트 18003 (unknown) - 
+포트 18004 (unknown) - 
+포트 18005 (unknown) - 
+포트 18006 (unknown) - 
+포트 18007 (unknown) - 
+포트 18008 (unknown) - 
+포트 18009 (unknown) - 
+포트 18010 (unknown) - 
+포트 18011 (unknown) - 
+포트 18012 (unknown) - 
+포트 18013 (unknown) - 
+포트 18014 (unknown) - 
+포트 18015 (unknown) - 
+포트 18016 (unknown) - 
+포트 19000 (unknown) - 
+포트 19001 (unknown) - 
+포트 19002 (unknown) - 
+포트 19003 (unknown) - 
+포트 25000 (unknown) - 
+포트 25003 (unknown) - 
+포트 25004 (unknown) - 
+포트 25005 (unknown) - 
+포트 25006 (unknown) - 
+포트 39628 (unknown) - 

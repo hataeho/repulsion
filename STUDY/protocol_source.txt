@@ -1,0 +1,8887 @@
+﻿
+============================================================
+FILE: /home/pi/projects/observer/Handler/StatusHandler.cpp
+============================================================
+#include "StatusHandler.h"
+
+#include <time.h>
+
+#include <string.h>
+
+#include <stdio.h>
+
+#include <iostream>
+
+#include <string>
+
+#include "../Handler/ParameterHandler.h"
+
+#include "../EVModules/Etc/EVUtils.h"
+
+#include "../Outer/json/json.h"
+
+
+
+extern CParameterHandler* gpParam;
+
+extern char gszHomeDir[256];
+
+
+
+CStatusHandler::CStatusHandler()
+
+{
+
+	m_bIsStarted = false;
+
+	m_pServerSoc = NULL;
+
+	m_nPersistanceSaveCnt = 0;
+
+	m_nLastDataSerialPort = 0;
+
+	m_nLastDataSerialPort = 0;
+
+
+
+
+
+	for (int i = 0; i < GPIO_IN_COUNT; i++)
+
+		m_anDInUnitCount[i] = 0;
+
+
+
+
+
+	for (int i = 0; i < RESULT_VARIABLE_CNT; i++)
+
+	{
+
+		//std::vector<StructResultVariable> m_vResultVariable;
+
+		StructResultVariable vars;
+
+
+
+		vars.nValue = 0;
+
+		vars.fValue = 0;
+
+		memset(vars.szData, 0, sizeof(vars.szData));
+
+		memset(vars.szUnit, 0, sizeof(vars.szUnit));
+
+
+
+		m_vResultVariable.push_back(vars);
+
+	}
+
+}
+
+
+
+CStatusHandler::~CStatusHandler()
+
+{
+
+	if (m_pThreadMES != NULL)
+
+		this->stop();
+
+}
+
+
+
+bool CStatusHandler::start()
+
+{
+
+	memset(&m_Status, 0, sizeof(StructSharedMemory));
+
+
+
+	if (!m_sharedMem.create((key_t)SHARED_MEMORY_ID, sizeof(StructSharedMemory), true))
+
+	{
+
+		writeSystemError("Shared Memory creation failed.\n");
+
+		exit(EXIT_FAILURE);
+
+	}
+
+
+
+
+
+	initSerialResultList();
+
+
+
+	this->setStatusStruct();
+
+
+
+	// Counter Persistance ���� �б�
+
+	this->readPersistanceFile();
+
+
+
+
+
+	// �������� ����
+
+	m_pServerSoc = new CEVServerSocket((uint16_t)atoi(gpParam->getStrOpt("STATUSHND_PORT")));
+
+
+
+	if (m_pServerSoc == NULL)
+
+	{
+
+		writeSystemError("[CStatusHandler] CServerSock allocation failed.");
+
+		return false;
+
+	}
+
+
+
+	m_pServerSoc->bindRecvCallback(std::bind(&CStatusHandler::recvHandler, this, std::placeholders::_1, std::placeholders::_2));
+
+	m_pServerSoc->setMaxClient(gpParam->getIntOpt("STATUSHND_CLIENT_MAX"));
+
+
+
+	m_pServerSoc->start();
+
+
+
+
+
+
+
+	m_bIsStarted = true;
+
+
+
+
+
+
+
+	// MES���� ������ ����
+
+	m_bMESThreadRun = true;
+
+	m_pThreadMES = new std::thread(&CStatusHandler::runMESThread, this, (void*)NULL);
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+
+
+
+
+
+
+
+
+	return true;
+
+}
+
+
+
+void CStatusHandler::stop()
+
+{
+
+	this->savePersistanceFile();
+
+
+
+	if (!m_bIsStarted)
+
+		return;
+
+
+
+	if (m_pServerSoc != NULL)
+
+	{
+
+		m_pServerSoc->stop();
+
+		delete m_pServerSoc;
+
+		m_pServerSoc = NULL;
+
+	}
+
+
+
+
+
+	if (m_pThreadMES != NULL && m_bMESThreadRun == true)
+
+	{
+
+		m_bMESThreadRun = false;
+
+		m_pThreadMES->join();
+
+		delete m_pThreadMES;
+
+		m_pThreadMES = NULL;
+
+		
+
+
+
+	}
+
+
+
+
+
+	m_sharedMem.remove();
+
+}
+
+
+
+// Persistance������ �о ���� Status���� �����Ѵ�.
+
+bool CStatusHandler::readPersistanceFile()
+
+{
+
+	FILE* fp;
+
+	char szFile[256] = { 0, }, buf[1024] = { 0, };
+
+	int nChIndex = 0;
+
+	unsigned int nVal = 0;
+
+	std::string strLine;
+
+
+
+	sprintf(szFile, "%s/%s", gszHomeDir, PERSISTANCE_FILE);
+
+	fp = fopen(szFile, "r");
+
+
+
+	if (fp == nullptr)
+
+	{
+
+		writeSystemError("[CStatusHandler] persistance file can't read.");
+
+		return false;
+
+	}
+
+
+
+	while (!feof(fp))
+
+	{
+
+		strLine.clear();
+
+
+
+		fgets(buf, sizeof(buf), fp);
+
+		strLine.append(buf);
+
+
+
+		trim(strLine);
+
+
+
+		if (strLine[0] != '#' && strLine[0] != '\r' && strLine[0] != '\n' && strLine.size() > (size_t)0)
+
+		{
+
+			vector<string> tokens;
+
+			stringstream sstream(strLine);
+
+			string strTemp;
+
+
+
+			while (getline(sstream, strTemp, '\t'))
+
+			{
+
+				tokens.push_back(strTemp);
+
+			}
+
+
+
+			if (tokens.size() < (size_t)1)
+
+				continue;
+
+
+
+			if (tokens[0].find("DIN_", 0) != std::string::npos)
+
+			{
+
+				nChIndex = atoi(tokens[0].substr(tokens[0].find("_", 0) + 1).c_str());
+
+				nVal = (unsigned int)atoi(tokens[1].c_str());
+
+				m_Status.anIOInputCount[nChIndex] = nVal;
+
+			}
+
+		}
+
+	}
+
+
+
+	fclose(fp);
+
+
+
+	return true;
+
+}
+
+
+
+/*
+
+Persistance���Ͽ� ������ ����Ѵ�.
+
+���� �����͸� Ŭ���� �������� ������ ������ �ӵ��鿡�� �����ϰ����� ����� ���� ������������ OS�� ����Ǵ� ���
+
+������ ���ռ��� ������ �� �����Ƿ� �̷� ���ɼ��� ���̱� ���� ȣ��ɶ����� ���� ����/�ݱ⸦ �����ϵ��� �Ѵ�.
+
+*/
+
+bool CStatusHandler::savePersistanceFile()
+
+{
+
+
+
+	FILE* fp;
+
+	char szFile[256] = { 0, };
+
+	int i;
+
+
+
+	sprintf(szFile, "%s/%s", gszHomeDir, PERSISTANCE_FILE);
+
+	fp = fopen(szFile, "w");
+
+
+
+	if (fp == nullptr)
+
+	{
+
+		writeSystemError("[CStatusHandler] persistance file can't open.");
+
+		return false;
+
+	}
+
+
+
+
+
+	for (i = 0; i < GPIO_IN_COUNT; i++)
+
+	{
+
+		fprintf(fp, "DIN_%d\t%d\n", i, m_Status.anIOInputCount[i]);
+
+	}
+
+
+
+	fflush(fp);
+
+	fclose(fp);
+
+
+
+	return true;
+
+}
+
+
+
+
+
+
+
+void CStatusHandler::initSerialResultList()
+
+{
+
+	int nSerialCnt = 8;//gpParam->getIntOpt("SERIAL_COUNT");		// ������ 8��
+
+	int nSlaveCnt = 0;
+
+	int nSC = 0, nSlaveC = 0;
+
+	char buf[256] = { 0, };
+
+	DevResultStruct item;
+
+
+
+	memset(&item, 0, sizeof(item));
+
+
+
+	m_vvSerialResultList.clear();
+
+
+
+
+
+	for (nSC = 0; nSC < nSerialCnt; nSC++)
+
+	{
+
+		std::vector<DevResultStruct> vSlave;
+
+		vSlave.clear();
+
+
+
+		sprintf(buf, "SERIAL_DEVCNT_%d", nSC);
+
+		nSlaveCnt = gpParam->getIntOpt(buf);
+
+		
+
+		for (nSlaveC = 0; nSlaveC < nSlaveCnt; nSlaveC++)
+
+			vSlave.push_back(item);
+
+
+
+
+
+		m_vvSerialResultList.push_back(vSlave);
+
+	}
+
+}
+
+
+
+
+
+bool CStatusHandler::setSerialResult(int nPortNo, int nSlaveID, const DevResultStruct data)
+
+{
+
+	float fValue = 0.f;
+
+	char buf[64] = { 0, };
+
+
+
+	m_mutexSerialResultList.lock();
+
+
+
+	m_nLastDataSerialPort = nPortNo;
+
+	m_nLastDataSerialSlave = nSlaveID;
+
+
+
+	m_vvSerialResultList[nPortNo][nSlaveID] = data;
+
+
+
+	time_t curTime = time(NULL);
+
+	struct tm* pLocatTime = localtime(&curTime);
+
+	memcpy(&m_vvSerialResultList[nPortNo][nSlaveID].tmRecv, pLocatTime, sizeof(struct tm));
+
+
+
+	sprintf(buf, "SERIAL_FACTOR_%d_%d", nPortNo, nSlaveID);
+
+	fValue = data.fValue * (float)gpParam->getDblOpt(buf);
+
+
+
+
+
+	m_Status.afSerialDevValue[nPortNo][nSlaveID] = fValue;
+
+
+
+	m_mutexSerialResultList.unlock();
+
+
+
+
+
+	this->writeStatusToSharedMem();
+
+
+
+	/*������ ��� ��
+
+	{ 
+
+		char buf[256] = { 0, };
+
+		sprintf(buf, "SERIAL_NAME_%d_%d", nPortNo, nSlaveID);
+
+		printf("Serial Response(%s) : %f\n", gpParam->getStrOpt(buf),  data.fValue);
+
+	}
+
+	*/
+
+
+
+	// ���ġ�� ������� Line Messanger�� �޽��� ����
+
+	if (gpParam->getIntOpt("MES_LINE_SEND_YN") == 1)
+
+	{
+
+		char szMinKey[64] = { 0, }, szMaxKey[64] = { 0, };
+
+
+
+		sprintf(szMinKey, "SERIAL_MINVALUE_%d_%d", nPortNo, nSlaveID);
+
+		sprintf(szMaxKey, "SERIAL_MAXVALUE_%d_%d", nPortNo, nSlaveID);
+
+
+
+		if (fValue > gpParam->getDblOpt(szMaxKey) || fValue < gpParam->getDblOpt(szMinKey))
+
+			this->sendLineMessage(nPortNo, nSlaveID, nPortNo < 4 ? 0 : 1);
+
+	}
+
+
+
+	return true;
+
+}
+
+
+
+DevResultStruct CStatusHandler::getSerialResult(int nPortNo, int nSlaveID)
+
+{
+
+	return m_vvSerialResultList[nPortNo][nSlaveID];
+
+}
+
+
+
+
+
+bool CStatusHandler::setSocketResult(int nSeqNo, const DevResultStruct data)
+
+{
+
+	m_mutexSocketResultList.lock();
+
+
+
+	m_vvSocketResultList[nSeqNo] = data;
+
+
+
+	time_t curTime = time(NULL);
+
+	struct tm* pLocatTime = localtime(&curTime);
+
+	memcpy(&m_vvSocketResultList[nSeqNo].tmRecv, pLocatTime, sizeof(struct tm));
+
+
+
+	m_Status.anSocketDevValue[nSeqNo] = data.nValue;
+
+
+
+	m_mutexSocketResultList.unlock();
+
+
+
+
+
+	this->writeStatusToSharedMem();
+
+
+
+	return true;
+
+}
+
+
+
+DevResultStruct CStatusHandler::getSocketResult(int nSeqNo)
+
+{
+
+	return m_vvSocketResultList[nSeqNo];
+
+}
+
+
+
+
+
+
+
+void CStatusHandler::setDigitalInput(int pinIndex, int value)
+
+{	
+
+	m_Status.abIOInputStatus[pinIndex] = value == 1 ? true : false;	
+
+}
+
+
+
+void CStatusHandler::setDigitalOutput(int pinIndex, int value)
+
+{
+
+	m_Status.abIOOutputStatus[pinIndex] = value == 1 ? true : false;
+
+}
+
+
+
+void CStatusHandler::increaseDIOCount(int pinIndex, bool bRising, int nRemainCount/*=1*/)
+
+{
+
+
+
+	char szKey[32] = { 0, };
+
+	int nRising = 0;
+
+
+
+	// ī���� �ϴ� INPUT IO�� �ƴ� ��� ���
+
+	sprintf(szKey, "DIO_IN_ISCOUNT_%d", pinIndex);
+
+	if (gpParam->getIntOpt(szKey) != 1)
+
+		return;
+
+
+
+	// Rising/Fallingüũ�ؼ� �Էµ� ���¿� �´� ��츸 ó��
+
+	sprintf(szKey, "DIO_IN_CNT_RISING_%d", pinIndex);
+
+	nRising = gpParam->getIntOpt(szKey);
+
+
+
+	if (nRising != (bRising ? 1 : 0))
+
+		return;
+
+
+
+	m_mutexIOCount.lock();
+
+	m_Status.anIOInputCount[pinIndex] += 1;
+
+	m_anDInUnitCount[pinIndex] += 1;
+
+
+
+	//if (m_nPersistanceSaveCnt++ % PERSISTANCE_SAVE_COUNT == 0)		// ���Ͽ� ���� ī��Ʈ���� �����Ѵ�.(�ӵ��� ���� �Ź� ���� �ʰ� PERSISTANCE_SAVE_COUNT��ŭ�� �����Ѵ�.)
+
+	// 20231015 : Channel�� �������� ��� ���⼭ ���������� ����� �ִ�.(1���� ����� ���� �׽�Ʈ��� ��������)
+
+	// ���� Queue�� �����ִ� �������� ���ų� 5ȸ�̻� Skip�� ��츸 ����
+
+	if(nRemainCount <= 0 || m_nPersistanceSaveCnt++ % PERSISTANCE_SAVE_COUNT == 0)	
+
+		this->savePersistanceFile();
+
+
+
+
+
+	m_mutexIOCount.unlock();
+
+
+
+
+
+}
+
+
+
+void CStatusHandler::resetDIOCount(int pinIndex)
+
+{
+
+	m_mutexIOCount.lock();
+
+	m_Status.anIOInputCount[pinIndex] = 0;
+
+	m_anDInUnitCount[pinIndex] = 0;
+
+	this->savePersistanceFile();
+
+	m_mutexIOCount.unlock();
+
+}
+
+
+
+
+
+void CStatusHandler::applyToSharedMemForDIO()
+
+{
+
+	this->writeStatusToSharedMem();
+
+}
+
+
+
+
+
+
+
+void CStatusHandler::setWindowClientCount(int nCount)
+
+{
+
+	m_Status.windowClientCount = (unsigned char)nCount;
+
+	this->writeStatusToSharedMem();
+
+}
+
+
+
+void CStatusHandler::setMESClientCount()
+
+{
+
+	m_Status.MESCount = (unsigned char)this->m_pServerSoc->getConnectedClientCount();
+
+	this->writeStatusToSharedMem();
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+�� ��ġ�� ��ġ������ �����Ѵ�.
+
+CStatusHandler �����ڿ��� �ѹ� ȣ�����
+
+
+
+CParameterHandler���� �Ķ���� ������ ���������� ȣ�����־�� �Ѵ�.
+
+
+
+*/
+
+void CStatusHandler::setStatusStruct()
+
+{
+
+	int nPort, nSlave;
+
+	int nDevCnt = 0;
+
+	char buf[256] = { 0, };
+
+
+
+
+
+	m_Status.windowClientCount = (unsigned char)gpParam->getCurrentConnectedClient();
+
+	if (m_pServerSoc != NULL)
+
+		m_Status.MESCount = (unsigned char)m_pServerSoc->getConnectedClientCount();
+
+	else
+
+		m_Status.MESCount = 0;
+
+
+
+
+
+	// Serial��ġ �̸� ����
+
+	for (nPort = 0; nPort < SERIAL_PORT_COUNT; nPort++)
+
+	{
+
+		sprintf(buf, "SERIAL_DEVCNT_%d", nPort);
+
+		nDevCnt = gpParam->getIntOpt(buf);
+
+
+
+		for (nSlave = 0; nSlave < nDevCnt; nSlave++)
+
+		{
+
+			sprintf(buf, "SERIAL_NAME_%d_%d", nPort, nSlave);			
+
+			strcpy(m_Status.aszSerialDevName[nPort][nSlave], gpParam->getStrOpt(buf));
+
+		} // for SERIAL_DEVCNT_%d
+
+
+
+	} // for SERIAL_PORT_COUNT
+
+
+
+
+
+	// Socket ��ġ �̸� ����
+
+	for (nPort = 0; nPort < SOCKET_DEV_COUNT; nPort++)
+
+	{
+
+		sprintf(buf, "SOCKET_USE_%d", nPort);
+
+
+
+		if (gpParam->getIntOpt(buf) == 1)
+
+		{
+
+			sprintf(buf, "SOCKET_NAME_%d", nPort);
+
+			strcpy(m_Status.aszSocketDevName[nPort], gpParam->getStrOpt(buf));
+
+		}
+
+		else
+
+		{
+
+			strcpy(m_Status.aszSocketDevName[nPort], "-");
+
+		}
+
+	}
+
+
+
+	for (nPort = 0; nPort < GPIO_IN_COUNT; nPort++)
+
+	{
+
+		sprintf(buf, "DIO_IN_NAME_%d", nPort);
+
+		strcpy(m_Status.aszIOInputDevName[nPort], gpParam->getStrOpt(buf));
+
+
+
+
+
+		m_Status.abIOInputStatus[nPort] = 0;
+
+	}
+
+
+
+	for (nPort = 0; nPort < GPIO_OUT_COUNT; nPort++)
+
+	{
+
+		sprintf(buf, "DIO_OUT_NAME_%d", nPort);
+
+		strcpy(m_Status.aszIOOutputDevName[nPort], gpParam->getStrOpt(buf));
+
+
+
+
+
+		m_Status.abIOOutputStatus[nPort] = 0;
+
+	}
+
+}
+
+
+
+
+
+void CStatusHandler::writeStatusToSharedMem()
+
+{
+
+	m_mutexSharedMem.lock();
+
+	m_sharedMem.write(0, &m_Status, sizeof(m_Status));
+
+	m_mutexSharedMem.unlock();
+
+}
+
+
+
+
+
+
+
+
+
+void CStatusHandler::recvHandler(CEVServerSocketWorker* pWorker, ssize_t nLen)
+
+{
+
+	char buf[SOCKET_BUFFER_SIZE] = { 0, };
+
+	int nRecvLen = 0, i;
+
+	char cLastChr = 0x00;// , cCurChr = 0x00;
+
+	char cIsLastEtx = 0x00;
+
+	char szJobType[16] = { 0, };
+
+
+
+	if (pWorker == NULL) return;
+
+	if (nLen <= 0) return;
+
+
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+
+
+
+
+	m_mutexRecvBuf.lock();
+
+
+
+
+
+	// ���ŵ� ������ ó��
+
+	pWorker->getRecvData(buf, sizeof(buf), nRecvLen);
+
+	cLastChr = buf[nRecvLen - 1];
+
+	cIsLastEtx = buf[nRecvLen - 3];
+
+
+
+	for (i = 0; i < nRecvLen; i++)
+
+		m_dequeRecv.push_back(buf[i]);
+
+
+
+
+
+	//if (cLastChr != ASCII_ETX && cLastChr != '}')
+
+	if (cIsLastEtx != ASCII_ETX && cLastChr != '}')
+
+	{
+
+		m_mutexRecvBuf.unlock();
+
+		return;
+
+	}
+
+
+
+	// ���� ���ʿ� STX �Ǵ� "{"�� �ƴ϶�� ������ ���� ������.
+
+	while ((m_dequeRecv.front() != ASCII_STX && m_dequeRecv.front() != '{') && !m_dequeRecv.empty())
+
+	{
+
+		m_dequeRecv.pop_front();
+
+	}
+
+
+
+
+
+	if (m_dequeRecv.size() > 2)
+
+	{
+
+		
+
+		int nProtocolType = checkRequestProtocol(pWorker, szJobType);
+
+		
+
+
+
+
+
+		if (nProtocolType == 0)
+
+		{	// ASCII ���
+
+			processSocketASCII(pWorker, nLen);
+
+		}
+
+		else if (nProtocolType == 1)
+
+		{	// Binary ���
+
+			processSocketBinary(pWorker, nLen);
+
+		}
+
+		else if (nProtocolType == 2)
+
+		{	// Json ���
+
+			processSocketJson(pWorker, nLen, szJobType);
+
+		}		
+
+
+
+	}
+
+
+
+	m_mutexRecvBuf.unlock();
+
+
+
+}
+
+
+
+
+
+int CStatusHandler::checkRequestProtocol(CEVServerSocketWorker* pWorker, char* szJobType)
+
+{
+
+	//int nProtocolType = 0;
+
+
+
+
+
+
+
+	if (m_dequeRecv[0] == ASCII_STX)
+
+	{
+
+		if (m_dequeRecv[1] == 'a')
+
+		{
+
+			//nProtocolType = 0;		// ASCII ���
+
+			return 0;
+
+		}
+
+		else if (m_dequeRecv[1] == 'b')
+
+		{
+
+			//nProtocolType = 1;		// Binary ���
+
+			return 1;
+
+		}		
+
+		else
+
+			return -1;
+
+	}
+
+	else if (m_dequeRecv[0] == '{')
+
+	{
+
+		std::istringstream streamRecv;
+
+		std::string strRecv, strSend;
+
+		Json::CharReaderBuilder builder;
+
+		Json::Value main;
+
+		JSONCPP_STRING jsonErr;
+
+
+
+		builder["collectComments"] = false;
+
+
+
+		while (!m_dequeRecv.empty())
+
+		{
+
+			strRecv += m_dequeRecv.front();
+
+			m_dequeRecv.pop_front();
+
+		}
+
+
+
+		streamRecv.str(strRecv);	// ���� �����͸� Stream�� �ִ´�.
+
+
+
+		//////////////////////////////////////////////////////////////////
+
+		// Parsing�� ��ȿ�� üũ
+
+		if (!Json::parseFromStream(builder, streamRecv, &main, &jsonErr))			// Parsing
+
+		{
+
+			Json::StreamWriterBuilder writerBuilder;
+
+
+
+			writerBuilder["commentStyle"] = "None";
+
+			writerBuilder["indentation"] = "\t";		// Tab
+
+			writerBuilder["useSpecialFloats"] = false;
+
+			writerBuilder["precision"] = 5;				// �Ҽ���
+
+
+
+			// ERRORó��
+
+			main.clear();
+
+
+
+			main["protocol"] = "ms";
+
+			main["direction"] = "response";
+
+			main["errno"] = 1;
+
+			main["errtxt"] = "Invalid Data. Json data can't to parse.";
+
+
+
+			strSend = Json::writeString(writerBuilder, main);
+
+			pWorker->send(strSend.c_str(), strSend.size());
+
+
+
+			return -1;
+
+		}
+
+		else
+
+		{
+
+			bool bCorrect = true;
+
+
+
+			if(main["protocol"].empty() || main["direction"].empty() || main["job"].empty())
+
+				bCorrect = false;
+
+
+
+			if (bCorrect)
+
+			{
+
+				if (strcmp(main["protocol"].asCString(), "ms") != 0 ||
+
+					strcmp(main["direction"].asCString(), "request") != 0
+
+					)
+
+					bCorrect = false;
+
+			}
+
+
+
+			if (!bCorrect)
+
+			{
+
+				if (strcmp(main["protocol"].asCString(), "ms") != 0 ||
+
+					strcmp(main["direction"].asCString(), "request") != 0)
+
+				{
+
+					Json::StreamWriterBuilder writerBuilder;
+
+
+
+					writerBuilder["commentStyle"] = "None";
+
+					writerBuilder["indentation"] = "\t";		// Tab
+
+					writerBuilder["useSpecialFloats"] = false;
+
+					writerBuilder["precision"] = 5;				// �Ҽ���
+
+
+
+
+
+					// ERRORó��
+
+					main.clear();
+
+
+
+					main["protocol"] = "ms";
+
+					main["direction"] = "response";
+
+					main["errno"] = 2;
+
+					main["errtxt"] = "Protocol not matched.(protocol, direction)";
+
+
+
+					strSend = Json::writeString(writerBuilder, main);
+
+					pWorker->send(strSend.c_str(), strSend.size());
+
+
+
+					return -1;
+
+				}
+
+			}
+
+		}
+
+
+
+		strcpy(szJobType, main["job"].asCString());
+
+
+
+		return 2;
+
+
+
+	}
+
+	else
+
+		return -1;
+
+
+
+	return -1;
+
+}
+
+
+
+
+
+
+
+// �ٸ� ���α׷����� ��û�Ǵ� ������ ��û��ȣ ����(ASCII ����� ����� ó��)
+
+void CStatusHandler::processSocketASCII(CEVServerSocketWorker* pWorker, ssize_t nLen)
+
+{
+
+	int nRecvLen = 0, i;
+
+	bool bExistSTX = false, bExistETX = false;
+
+	char sCRC[3] = { 0, }, sProtocol[128] = { 0, }, szKey[64] = { 0, }, szEucKr[64] = { 0, };
+
+	char szUS[2] = { ASCII_US, 0 };
+
+	unsigned short usCRC = 0;
+
+	std::string strOneProtocol, strOrgProtocol, strSend;
+
+	std::string strJobType;
+
+	int nRtn = 0, nIndex = 0;
+
+	int nPort = 0, nSlave = 0;
+
+	
+
+	int nSlaveCnt = 0, n485PortCnt = 0;
+
+
+
+
+
+
+
+	nRecvLen = (int)m_dequeRecv.size();
+
+
+
+
+
+	for (i = 0; i < nRecvLen; i++)
+
+	{
+
+		strOrgProtocol += m_dequeRecv.front();		// CRC����� ���� <STX><ETX>���ŵ��� ���� ������ �����Ѵ�.
+
+
+
+		if (m_dequeRecv.front() == ASCII_STX)
+
+		{			
+
+			m_dequeRecv.pop_front();				// STX�� �����Ѵ�.
+
+			bExistSTX = true;
+
+			continue;
+
+		}
+
+
+
+		if (m_dequeRecv.front() == ASCII_ETX)
+
+		{
+
+			m_dequeRecv.pop_front();				// ETX���� �� ���Ĵ� �����Ѵ�.
+
+			bExistETX = true;
+
+			break;
+
+		}
+
+
+
+		strOneProtocol += m_dequeRecv.front();		// strOneProtocol�� <STX>�� <ETX>������ ���ڿ�(STX,ETX����)
+
+		m_dequeRecv.pop_front();
+
+	}
+
+
+
+	// CRCüũ
+
+	bool bCRCSuccess = false;
+
+
+
+	if (m_dequeRecv.size() >= 2)
+
+	{
+
+		sCRC[0] = m_dequeRecv.front();		m_dequeRecv.pop_front();
+
+		sCRC[1] = m_dequeRecv.front();		m_dequeRecv.pop_front();
+
+
+
+		usCRC = gpParam->getCRC16(0, (unsigned char*)strOrgProtocol.c_str(), (int)strOrgProtocol.size());
+
+
+
+		if (((usCRC & 0xFF00) >> 8) == sCRC[1] && (usCRC & 0x00FF) == sCRC[0])
+
+			bCRCSuccess = true;
+
+	}
+
+
+
+	if (bCRCSuccess == false)
+
+	{
+
+		sprintf(sProtocol, "%ca%cerror%c%d%c", ASCII_STX, ASCII_GS, ASCII_US, 99, ASCII_ETX);
+
+		pWorker->send(sProtocol, strlen(sProtocol));
+
+
+
+		return;
+
+	}
+
+
+
+	
+
+
+
+	if (bExistSTX && bExistETX && strOneProtocol[0] == 'a' && strOneProtocol[1] == ASCII_GS)
+
+	{
+
+		std::vector<string> vTokens;
+
+		std::stringstream ss(strOneProtocol);
+
+		std::string token, strKey, strValue;
+
+
+
+		char cDelim = '.';
+
+
+
+		while (std::getline(ss, token, cDelim))
+
+			vTokens.push_back(token);
+
+
+
+		if (vTokens.size() >= 3 || (vTokens[2] == "485" && vTokens.size() >= 4))
+
+		{
+
+			strJobType = vTokens[2];
+
+					
+
+			if (strJobType == "485all" || strJobType == "485" || strJobType == "232" || strJobType == "soc")
+
+			{
+
+				if (vTokens.size() < 4)
+
+				{
+
+					sprintf(sProtocol, "%ca%cerror%c%d%c", ASCII_STX, ASCII_GS, ASCII_US, 1, ASCII_ETX);
+
+					pWorker->send(sProtocol, strlen(sProtocol));
+
+					return;
+
+				}
+
+
+
+
+
+				nPort = (int)atoi(vTokens[3].c_str());
+
+			}
+
+
+
+			if (strJobType == "485")
+
+			{
+
+				if (vTokens.size() < 5)
+
+				{
+
+					sprintf(sProtocol, "%ca%cerror%c%d%c", ASCII_STX, ASCII_GS, ASCII_US, 1, ASCII_ETX);
+
+					pWorker->send(sProtocol, strlen(sProtocol));
+
+					return;
+
+				}
+
+
+
+				nSlave = (int)atoi(vTokens[4].c_str());
+
+			}
+
+
+
+
+
+			////////////////////////////////
+
+			// Header
+
+			sprintf(sProtocol, "%cms.res.%s%c", ASCII_STX, strJobType.c_str(), ASCII_GS);
+
+			strSend.append(sProtocol);
+
+			
+
+
+
+
+
+			////////////////////////////////
+
+			// 485 �ۼ�
+
+			if (strJobType == "all" || (int)strJobType.find("485", 0) >= 0)
+
+			{
+
+				n485PortCnt = 4;//gpParam->getIntOpt("SERIAL_COUNT") == 8 ? 4 : 2;	 // �ϴ� ������ 4��. ���ο��� ��뿩�η� �������� ������ ���� ����
+
+
+
+
+
+				if (strJobType == "485all" || strJobType == "485")
+
+				{	// Ư�� ��Ʈ 1��					
+
+					n485PortCnt = nPort + 1;
+
+				}
+
+				else
+
+					nPort = 0;
+
+
+
+
+
+				for (/*nPort = 0*/; nPort < n485PortCnt; nPort++)
+
+				{
+
+					sprintf(szKey, "SERIAL_USE_%d", nPort);
+
+					if (gpParam->getIntOpt(szKey) == 0) continue;		// ��뿩�� üũ
+
+										
+
+					nIndex = 0;
+
+
+
+
+
+					sprintf(szKey, "SERIAL_DEVCNT_%d", nPort);
+
+					nSlaveCnt = gpParam->getIntOpt(szKey);
+
+
+
+
+
+					if (strJobType == "485")
+
+					{	// Ư�� Slave 1��
+
+						nSlaveCnt = nSlave + 1;
+
+					}
+
+					else
+
+						nSlave = 0;
+
+
+
+
+
+					for (/*nSlave = 0*/; nSlave < nSlaveCnt; nSlave++)
+
+					{
+
+						nIndex++;		// �ؿ� ��뿩�ε��� continue�� ���̹Ƿ� �ϴ� ������ ����(����  -1 �ؼ� ����Ұ�-Zero Base)
+
+
+
+						sprintf(szKey, "SERIAL_DEV_USE_%d_%d", nPort, nSlave);
+
+						if (gpParam->getIntOpt(szKey) == 0) continue;		// �ش� Slave ��뿩�� üũ
+
+												
+
+
+
+
+
+						strSend.append("0");						// Type : 485
+
+						strSend.append(szUS);					// US
+
+
+
+						sprintf(sProtocol, "%d", nIndex - 1);
+
+						strSend.append(sProtocol);				// MS Index
+
+						strSend.append(szUS);					// US
+
+
+
+						sprintf(sProtocol, "%d%c%d", nPort, ASCII_US, nSlave);
+
+						strSend.append(sProtocol);				// Port, Slave
+
+						strSend.append(szUS);					// US
+
+
+
+						sprintf(szKey, "SERIAL_NAME_%d_%d", nPort, nSlave);
+
+						memset(szEucKr, 0, sizeof(szEucKr));
+
+						CEVUtils::evUtf8ToEucKr((char*)gpParam->getStrOpt(szKey), szEucKr, sizeof(szEucKr));		// �ѱ� ĳ���ͼ� ��ȯ
+
+						strSend.append(szEucKr);		//strSend.append(gpParam->getStrOpt(szKey));
+
+						strSend.append(szUS);					// US
+
+
+
+						sprintf(sProtocol, "%.1f", m_Status.afSerialDevValue[nPort][nSlave]);
+
+						strSend.append(sProtocol);				// Value
+
+						strSend.append(szUS);					// US
+
+
+
+						sprintf(szKey, "SERIAL_UNIT_%d_%d", nPort, nSlave);
+
+						sprintf(sProtocol, "%d", gpParam->getIntOpt(szKey));
+
+						strSend.append(sProtocol);				// Unit
+
+						strSend.append(szUS);					// US
+
+
+
+						sprintf(szKey, "SERIAL_MINVALUE_%d_%d", nPort, nSlave);
+
+						sprintf(sProtocol, "%.1f", gpParam->getDblOpt(szKey));
+
+						strSend.append(sProtocol);				// Min Value
+
+						strSend.append(szUS);					// US
+
+						
+
+						sprintf(szKey, "SERIAL_MAXVALUE_%d_%d", nPort, nSlave);
+
+						sprintf(sProtocol, "%.1f", gpParam->getDblOpt(szKey));
+
+						strSend.append(sProtocol);				// Max Value
+
+						
+
+						sprintf(sProtocol, "%c", ASCII_RS);
+
+						strSend.append(sProtocol);				// RS
+
+												
+
+					}
+
+
+
+				}
+
+
+
+			} // if (strJobType == "all" || strJobType == "485")
+
+
+
+
+
+			////////////////////////////////
+
+			// 232 �ۼ�
+
+			if (strJobType == "all" || (int)strJobType.find("232") >= 0)
+
+			{
+
+				int n232PortCnt = 4;
+
+
+
+				if (strJobType == "232all")
+
+				{
+
+					nPort = 0;
+
+					n232PortCnt = 4;
+
+				}
+
+				else if (strJobType == "232")
+
+				{					
+
+					n232PortCnt = nPort + 1;
+
+				}
+
+				else
+
+					nPort = 0;
+
+
+
+				for (/*nPort = 0*/; nPort < n232PortCnt; nPort++)
+
+				{
+
+					sprintf(szKey, "SERIAL_USE_%d", nPort + 4);			// RS232�� 4~7������
+
+					if (gpParam->getIntOpt(szKey) == 0) continue;		// ��뿩�� üũ
+
+
+
+
+
+					strSend.append("1");					// Type : 232
+
+					strSend.append(szUS);					// US
+
+										
+
+					strSend.append("0");					// MS Index
+
+					strSend.append(szUS);					// US
+
+
+
+					sprintf(sProtocol, "%d%c0", nPort, ASCII_US);
+
+					strSend.append(sProtocol);				// Port, Slave = 0
+
+					strSend.append(szUS);					// US
+
+
+
+					sprintf(szKey, "SERIAL_NAME_%d_%d", nPort + 4, 0);
+
+					memset(szEucKr, 0, sizeof(szEucKr));
+
+					CEVUtils::evUtf8ToEucKr((char*)gpParam->getStrOpt(szKey), szEucKr, sizeof(szEucKr));		// �ѱ� ĳ���ͼ� ��ȯ
+
+					strSend.append(szEucKr);		//strSend.append(gpParam->getStrOpt(szKey));
+
+					strSend.append(szUS);					// US
+
+
+
+					sprintf(sProtocol, "%.1f", m_Status.afSerialDevValue[nPort + 4][0]);
+
+					strSend.append(sProtocol);				// Value
+
+					strSend.append(szUS);					// US
+
+
+
+					sprintf(szKey, "SERIAL_UNIT_%d_%d", nPort + 4, 0);
+
+					sprintf(sProtocol, "%d", gpParam->getIntOpt(szKey));
+
+					strSend.append(sProtocol);				// Unit
+
+					strSend.append(szUS);					// US
+
+
+
+					sprintf(szKey, "SERIAL_MINVALUE_%d_%d", nPort + 4, 0);
+
+					sprintf(sProtocol, "%.1f", gpParam->getDblOpt(szKey));
+
+					strSend.append(sProtocol);				// Min Value
+
+					strSend.append(szUS);					// US
+
+
+
+					sprintf(szKey, "SERIAL_MAXVALUE_%d_%d", nPort + 4, 0);
+
+					sprintf(sProtocol, "%.1f", gpParam->getDblOpt(szKey));
+
+					strSend.append(sProtocol);				// Max Value
+
+
+
+					sprintf(sProtocol, "%c", ASCII_RS);
+
+					strSend.append(sProtocol);				// RS
+
+				}
+
+
+
+			} // if (strJobType == "all" || (int)strJobType.find("232") >= 0)
+
+
+
+
+
+			/////////////////////////////
+
+			// Socket�ۼ�
+
+			if (strJobType == "all" || (int)strJobType.find("soc") >= 0)
+
+			{
+
+				int nSocPortCnt = SOCKET_DEV_COUNT;
+
+
+
+				if (strJobType == "socall")
+
+				{
+
+					nPort = 0;
+
+					nSocPortCnt = SOCKET_DEV_COUNT;
+
+				}
+
+				else if (strJobType == "soc")
+
+				{
+
+					nSocPortCnt = nPort + 1;
+
+				}
+
+				else
+
+					nPort = 0;
+
+
+
+				for (/*nPort = 0*/; nPort < nSocPortCnt; nPort++)
+
+				{
+
+					sprintf(szKey, "SOCKET_USE_%d", nPort);
+
+					if (gpParam->getIntOpt(szKey) == 0) continue;		// ��뿩�� üũ
+
+
+
+
+
+					strSend.append("2");					// Type : Socket
+
+					strSend.append(szUS);					// US
+
+
+
+					strSend.append("0");					// MS Index
+
+					strSend.append(szUS);					// US
+
+
+
+					sprintf(sProtocol, "%d%c0", nPort, ASCII_US);
+
+					strSend.append(sProtocol);				// Port, Slave = 0
+
+					strSend.append(szUS);					// US
+
+
+
+					sprintf(szKey, "SOCKET_NAME_%d", nPort);
+
+					memset(szEucKr, 0, sizeof(szEucKr));
+
+					CEVUtils::evUtf8ToEucKr((char*)gpParam->getStrOpt(szKey), szEucKr, sizeof(szEucKr));		// �ѱ� ĳ���ͼ� ��ȯ
+
+					strSend.append(szEucKr);		//strSend.append(gpParam->getStrOpt(szKey));
+
+					strSend.append(szUS);					// US
+
+
+
+					sprintf(sProtocol, "%d", m_Status.anSocketDevValue[nPort]);
+
+					strSend.append(sProtocol);				// Value
+
+					strSend.append(szUS);					// US
+
+										
+
+					strSend.append("99");					// Unit
+
+					strSend.append(szUS);					// US
+
+										
+
+					strSend.append("0");					// Min Value
+
+					strSend.append(szUS);					// US
+
+
+
+					strSend.append("0");					// Max Value
+
+
+
+					sprintf(sProtocol, "%c", ASCII_RS);
+
+					strSend.append(sProtocol);				// RS
+
+
+
+				}
+
+			}
+
+
+
+
+
+			/////////////////////////////
+
+			// DIO
+
+			if (strJobType == "all" || strJobType == "dio")
+
+			{
+
+				// DIO (Input)
+
+				for (i = 0; i < GPIO_IN_COUNT; i++)
+
+				{
+
+
+
+					strSend.append("3");					// Type : DIO
+
+					strSend.append(szUS);					// US
+
+
+
+					strSend.append("0");					// MS Index
+
+					strSend.append(szUS);					// US
+
+
+
+					sprintf(sProtocol, "0%c%d", ASCII_US, i);
+
+					strSend.append(sProtocol);				// INDEX1 = 0(Input), INDEX = Channel No
+
+					strSend.append(szUS);					// US
+
+
+
+					sprintf(szKey, "DIO_IN_NAME_%d", i);
+
+					memset(szEucKr, 0, sizeof(szEucKr));
+
+					CEVUtils::evUtf8ToEucKr((char*)gpParam->getStrOpt(szKey), szEucKr, sizeof(szEucKr));		// �ѱ� ĳ���ͼ� ��ȯ
+
+					strSend.append(szEucKr);		//strSend.append(gpParam->getStrOpt(szKey));
+
+					strSend.append(szUS);					// US
+
+
+
+					sprintf(szKey, "DIO_IN_ISCOUNT_%d", i);
+
+					if(gpParam->getIntOpt(szKey) == 0)
+
+						sprintf(sProtocol, "%d", (int)m_Status.abIOInputStatus[i]);		// Input�뵵�� ���
+
+					else
+
+						sprintf(sProtocol, "%d", (int)m_Status.anIOInputCount[i]);		// Counter�뵵�� ���
+
+					strSend.append(sProtocol);				// Value
+
+					strSend.append(szUS);					// US
+
+
+
+					strSend.append("99");					// Unit
+
+					strSend.append(szUS);					// US
+
+
+
+					strSend.append("0");					// Min Value
+
+					strSend.append(szUS);					// US
+
+
+
+					strSend.append("0");					// Max Value
+
+					/*
+
+					strSend.append(szUS);					// US
+
+
+
+					sprintf(sProtocol, "%d", (unsigned int)m_Status.anIOInputCount[i]);
+
+					strSend.append(sProtocol);				// Counter�� ��� Counter��
+
+					*/
+
+					sprintf(sProtocol, "%c", ASCII_RS);
+
+					strSend.append(sProtocol);				// RS
+
+
+
+				}
+
+
+
+				// DIO (Output)
+
+				for (i = 0; i < 8; i++)
+
+				{
+
+					strSend.append("3");					// Type : DIO
+
+					strSend.append(szUS);					// US
+
+
+
+					strSend.append("0");					// MS Index
+
+					strSend.append(szUS);					// US
+
+
+
+					sprintf(sProtocol, "1%c%d", ASCII_US, i);
+
+					strSend.append(sProtocol);				// INDEX1 = 1(Output), INDEX = Channel No
+
+					strSend.append(szUS);					// US
+
+
+
+					sprintf(szKey, "DIO_OUT_NAME_%d", i);
+
+					memset(szEucKr, 0, sizeof(szEucKr));
+
+					CEVUtils::evUtf8ToEucKr((char*)gpParam->getStrOpt(szKey), szEucKr, sizeof(szEucKr));		// �ѱ� ĳ���ͼ� ��ȯ
+
+					strSend.append(szEucKr);		//strSend.append(gpParam->getStrOpt(szKey));
+
+					strSend.append(szUS);					// US
+
+
+
+					sprintf(sProtocol, "%d", (int)m_Status.abIOOutputStatus[i]);
+
+					strSend.append(sProtocol);				// Value
+
+					strSend.append(szUS);					// US
+
+
+
+					strSend.append("99");					// Unit
+
+					strSend.append(szUS);					// US
+
+
+
+					strSend.append("0");					// Min Value
+
+					strSend.append(szUS);					// US
+
+
+
+					strSend.append("0");					// Max Value
+
+
+
+					sprintf(sProtocol, "%c", ASCII_RS);
+
+					strSend.append(sProtocol);				// RS
+
+				}
+
+
+
+
+
+				//main["dio"].setComment("// DIO", Json::commentBefore);
+
+			}
+
+
+
+
+
+
+
+			/////////////////////////////
+
+			// Tail
+
+			sprintf(sProtocol, "%c", ASCII_ETX);
+
+			strSend.append(sProtocol);					// ETX
+
+
+
+			/*
+
+			/////////////////////////////
+
+			// �ѱ۶����� UTF-8 -> EUC-KR�� ��ȯ�۾� ���� ->20230907 ����. �� NAME���� ������ ����
+
+			char* pBufConv = nullptr;
+
+			nLen = strSend.size();
+
+
+
+			pBufConv = new char[nLen];
+
+			memset(pBufConv, 0, nLen);
+
+			//memcpy(pBufConv, strSend.c_str(), strSend.size());
+
+
+
+			CEVUtils::evUtf8ToEucKr((char*)strSend.c_str(), pBufConv, nLen);
+
+			
+
+			strSend.clear();			
+
+			strSend.append(pBufConv);
+
+
+
+			delete[] pBufConv;
+
+			*/
+
+
+
+			/////////////////////////////
+
+			// CRC
+
+			usCRC = gpParam->getCRC16(0, (unsigned char*)strSend.c_str(), (int)strSend.size());
+
+			//usCRC = gpParam->getCRC16(0, (unsigned char*)pBufConv, nLen);
+
+
+
+			sCRC[0] = (unsigned char)(usCRC & 0x00FF);							// CRC(LO)
+
+			sCRC[1] = (unsigned char)((usCRC & 0xFF00) >> 8);				// CRC(HI)
+
+			sCRC[2] = 0;
+
+			strSend.append(sCRC);
+
+
+
+
+
+
+
+			pWorker->send(strSend.c_str(), strSend.size());
+
+
+
+
+
+			nRtn = 1;
+
+		}
+
+		else
+
+			nRtn = 0;
+
+	}
+
+	
+
+	if(nRtn == 0)
+
+	{
+
+		sprintf(sProtocol, "%ca%cerror%c%d%c", ASCII_STX, ASCII_GS, ASCII_US, 1, ASCII_ETX);	// Invalid Protocol
+
+		pWorker->send(sProtocol, strlen(sProtocol));
+
+	}
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// �ٸ� ���α׷����� ��û�Ǵ� ������ ��û��ȣ ����(Binary ����� ����� ó��)
+
+void CStatusHandler::processSocketBinary(CEVServerSocketWorker* pWorker, ssize_t nLen)
+
+{
+
+	int nRecvLen = 0, i;
+
+	bool bExistSTX = false, bExistETX = false;
+
+	char sCRC[3] = { 0, }, sProtocol[128] = { 0, }, szKey[64] = { 0, }, szEucKr[64] = { 0, };
+
+	//char szUS[2] = { ASCII_US, 0 };
+
+	unsigned short usCRC = 0;
+
+	std::string strOneProtocol, strOrgProtocol;// , strSend;
+
+	std::string strJobType;
+
+	int nRtn = 0, nIndex = 0;
+
+	int nPort = 0, nSlave = 0;
+
+
+
+	int nSlaveCnt = 0, n485PortCnt = 0;
+
+
+
+	std::vector<StructBinarySend> vSend;
+
+	StructBinarySend structBinary;
+
+
+
+
+
+	nRecvLen = (int)m_dequeRecv.size();
+
+
+
+
+
+	for (i = 0; i < nRecvLen; i++)
+
+	{
+
+		strOrgProtocol += m_dequeRecv.front();		// CRC����� ���� <STX><ETX>���ŵ��� ���� ������ �����Ѵ�.
+
+
+
+		if (m_dequeRecv.front() == ASCII_STX)
+
+		{
+
+			m_dequeRecv.pop_front();				// STX�� �����Ѵ�.
+
+			bExistSTX = true;
+
+			continue;
+
+		}
+
+
+
+		if (m_dequeRecv.front() == ASCII_ETX)
+
+		{
+
+			m_dequeRecv.pop_front();				// ETX���� �� ���Ĵ� �����Ѵ�.
+
+			bExistETX = true;
+
+			break;
+
+		}
+
+
+
+		strOneProtocol += m_dequeRecv.front();		// strOneProtocol�� <STX>�� <ETX>������ ���ڿ�(STX,ETX����)
+
+		m_dequeRecv.pop_front();
+
+	}
+
+
+
+	// CRCüũ
+
+	bool bCRCSuccess = false;
+
+
+
+	if (m_dequeRecv.size() >= 2)
+
+	{
+
+		sCRC[0] = m_dequeRecv.front();		m_dequeRecv.pop_front();
+
+		sCRC[1] = m_dequeRecv.front();		m_dequeRecv.pop_front();
+
+
+
+		usCRC = gpParam->getCRC16(0, (unsigned char*)strOrgProtocol.c_str(), (int)strOrgProtocol.size());
+
+
+
+		if (((usCRC & 0xFF00) >> 8) == sCRC[1] && (usCRC & 0x00FF) == sCRC[0])
+
+			bCRCSuccess = true;
+
+	}
+
+
+
+	if (bCRCSuccess == false)
+
+	{
+
+		sprintf(sProtocol, "%cb%cerror%c%d%c", ASCII_STX, ASCII_GS, ASCII_US, 99, ASCII_ETX);
+
+		pWorker->send(sProtocol, strlen(sProtocol));
+
+
+
+		return;
+
+	}
+
+
+
+
+
+
+
+	if (bExistSTX && bExistETX && strOneProtocol[0] == 'b' && strOneProtocol[1] == ASCII_GS)
+
+	{
+
+		std::vector<string> vTokens;
+
+		std::stringstream ss(strOneProtocol);
+
+		std::string token, strKey, strValue;
+
+
+
+		char cDelim = '.';
+
+
+
+		while (std::getline(ss, token, cDelim))
+
+			vTokens.push_back(token);
+
+
+
+		if (vTokens.size() >= 3 || (vTokens[2] == "485" && vTokens.size() >= 4))
+
+		{
+
+			strJobType = vTokens[2];
+
+
+
+			if (strJobType == "485all" || strJobType == "485" || strJobType == "232" || strJobType == "soc")
+
+			{
+
+				if (vTokens.size() < 4)
+
+				{
+
+					sprintf(sProtocol, "%cb%cerror%c%d%c", ASCII_STX, ASCII_GS, ASCII_US, 1, ASCII_ETX);
+
+					pWorker->send(sProtocol, strlen(sProtocol));
+
+					return;
+
+				}
+
+
+
+
+
+				nPort = (int)atoi(vTokens[3].c_str());
+
+			}
+
+
+
+			if (strJobType == "485")
+
+			{
+
+				if (vTokens.size() < 5)
+
+				{
+
+					sprintf(sProtocol, "%cb%cerror%c%d%c", ASCII_STX, ASCII_GS, ASCII_US, 1, ASCII_ETX);
+
+					pWorker->send(sProtocol, strlen(sProtocol));
+
+					return;
+
+				}
+
+
+
+				nSlave = (int)atoi(vTokens[4].c_str());
+
+			}
+
+
+
+
+
+			////////////////////////////////
+
+			// Header (���� ���߿� ����)
+
+			//sprintf(sProtocol, "%cms.res.%s%c", ASCII_STX, strJobType.c_str(), ASCII_GS);
+
+			//strSend.append(sProtocol);
+
+
+
+
+
+
+
+			////////////////////////////////
+
+			// 485 �ۼ�
+
+			if (strJobType == "all" || (int)strJobType.find("485", 0) >= 0)
+
+			{
+
+				n485PortCnt = 4;//gpParam->getIntOpt("SERIAL_COUNT") == 8 ? 4 : 2;	 // �ϴ� ������ 4��. ���ο��� ��뿩�η� �������� ������ ���� ����
+
+
+
+
+
+				if (strJobType == "485all" || strJobType == "485")
+
+				{	// Ư�� ��Ʈ 1��					
+
+					n485PortCnt = nPort + 1;
+
+				}
+
+				else
+
+					nPort = 0;
+
+
+
+
+
+				for (/*nPort = 0*/; nPort < n485PortCnt; nPort++)
+
+				{
+
+					sprintf(szKey, "SERIAL_USE_%d", nPort);
+
+					if (gpParam->getIntOpt(szKey) == 0) continue;		// ��뿩�� üũ
+
+
+
+					nIndex = 0;
+
+
+
+
+
+					sprintf(szKey, "SERIAL_DEVCNT_%d", nPort);
+
+					nSlaveCnt = gpParam->getIntOpt(szKey);
+
+
+
+
+
+					if (strJobType == "485")
+
+					{	// Ư�� Slave 1��
+
+						nSlaveCnt = nSlave + 1;
+
+					}
+
+					else
+
+						nSlave = 0;
+
+
+
+
+
+					for (/*nSlave = 0*/; nSlave < nSlaveCnt; nSlave++)
+
+					{
+
+						nIndex++;		// �ؿ� ��뿩�ε��� continue�� ���̹Ƿ� �ϴ� ������ ����(����  -1 �ؼ� ����Ұ�-Zero Base)
+
+
+
+						sprintf(szKey, "SERIAL_DEV_USE_%d_%d", nPort, nSlave);
+
+						if (gpParam->getIntOpt(szKey) == 0) continue;		// �ش� Slave ��뿩�� üũ
+
+
+
+						
+
+						memset(&structBinary, 0, sizeof(StructBinarySend));
+
+
+
+						structBinary.cType = 0;							// Type : 485
+
+						structBinary.cMSIndex = (char)(nIndex - 1);		// MS Index
+
+						structBinary.cIndex1 = (char)nPort;				// Port
+
+						structBinary.cIndex2 = (char)nSlave;			// nSlave
+
+
+
+						sprintf(szKey, "SERIAL_NAME_%d_%d", nPort, nSlave);
+
+						memset(szEucKr, 0, sizeof(szEucKr));
+
+						CEVUtils::evUtf8ToEucKr((char*)gpParam->getStrOpt(szKey), szEucKr, sizeof(szEucKr));		// �ѱ� ĳ���ͼ� ��ȯ
+
+						strcpy(structBinary.szDevName, szEucKr);
+
+
+
+						structBinary.fValue = m_Status.afSerialDevValue[nPort][nSlave];	// Value (Float)
+
+
+
+						sprintf(szKey, "SERIAL_UNIT_%d_%d", nPort, nSlave);
+
+						structBinary.cUnit = (char)gpParam->getIntOpt(szKey);	// Unit
+
+
+
+						sprintf(szKey, "SERIAL_MINVALUE_%d_%d", nPort, nSlave);
+
+						structBinary.fMinValue = (float)gpParam->getDblOpt(szKey);	// Min Value
+
+
+
+						sprintf(szKey, "SERIAL_MAXVALUE_%d_%d", nPort, nSlave);
+
+						structBinary.fMaxValue = (float)gpParam->getDblOpt(szKey);	// Min Value
+
+
+
+						structBinary.cRS = ASCII_RS;
+
+
+
+						vSend.push_back(structBinary);
+
+
+
+					}
+
+
+
+				}
+
+
+
+			} // if (strJobType == "all" || strJobType == "485")
+
+
+
+
+
+			////////////////////////////////
+
+			// 232 �ۼ�
+
+			if (strJobType == "all" || (int)strJobType.find("232") >= 0)
+
+			{
+
+				int n232PortCnt = 4;
+
+
+
+				if (strJobType == "232all")
+
+				{
+
+					nPort = 0;
+
+					n232PortCnt = 4;
+
+				}
+
+				else if (strJobType == "232")
+
+				{
+
+					n232PortCnt = nPort + 1;
+
+				}
+
+				else
+
+					nPort = 0;
+
+
+
+				for (/*nPort = 0*/; nPort < n232PortCnt; nPort++)
+
+				{
+
+					sprintf(szKey, "SERIAL_USE_%d", nPort + 4);			// RS232�� 4~7������
+
+					if (gpParam->getIntOpt(szKey) == 0) continue;		// ��뿩�� üũ
+
+
+
+
+
+					memset(&structBinary, 0, sizeof(StructBinarySend));
+
+
+
+					structBinary.cType = 1;							// Type : 232
+
+					structBinary.cMSIndex = (char)0;				// MS Index
+
+					structBinary.cIndex1 = (char)nPort;				// Port
+
+					structBinary.cIndex2 = (char)0;					// nSlave
+
+
+
+					sprintf(szKey, "SERIAL_NAME_%d_%d", nPort + 4, 0);
+
+					memset(szEucKr, 0, sizeof(szEucKr));
+
+					CEVUtils::evUtf8ToEucKr((char*)gpParam->getStrOpt(szKey), szEucKr, sizeof(szEucKr));		// �ѱ� ĳ���ͼ� ��ȯ
+
+					strcpy(structBinary.szDevName, szEucKr);
+
+
+
+					structBinary.fValue = m_Status.afSerialDevValue[nPort + 4][0];	// Value (Float)
+
+
+
+					sprintf(szKey, "SERIAL_UNIT_%d_%d", nPort + 4, 0);
+
+					structBinary.cUnit = (char)gpParam->getIntOpt(szKey);	// Unit
+
+
+
+					sprintf(szKey, "SERIAL_MINVALUE_%d_%d", nPort + 4, 0);
+
+					structBinary.fMinValue = (float)gpParam->getDblOpt(szKey);	// Min Value
+
+
+
+					sprintf(szKey, "SERIAL_MAXVALUE_%d_%d", nPort + 4, 0);
+
+					structBinary.fMaxValue = (float)gpParam->getDblOpt(szKey);	// Min Value
+
+
+
+					structBinary.cRS = ASCII_RS;
+
+
+
+					vSend.push_back(structBinary);
+
+				}
+
+
+
+			} // if (strJobType == "all" || (int)strJobType.find("232") >= 0)
+
+
+
+
+
+			/////////////////////////////
+
+			// Socket�ۼ�
+
+			if (strJobType == "all" || (int)strJobType.find("soc") >= 0)
+
+			{
+
+				int nSocPortCnt = SOCKET_DEV_COUNT;
+
+
+
+				if (strJobType == "socall")
+
+				{
+
+					nPort = 0;
+
+					nSocPortCnt = SOCKET_DEV_COUNT;
+
+				}
+
+				else if (strJobType == "soc")
+
+				{
+
+					nSocPortCnt = nPort + 1;
+
+				}
+
+				else
+
+					nPort = 0;
+
+
+
+				for (/*nPort = 0*/; nPort < nSocPortCnt; nPort++)
+
+				{
+
+					sprintf(szKey, "SOCKET_USE_%d", nPort);
+
+					if (gpParam->getIntOpt(szKey) == 0) continue;		// ��뿩�� üũ
+
+
+
+
+
+					memset(&structBinary, 0, sizeof(StructBinarySend));
+
+
+
+					structBinary.cType = 2;							// Type : Socket
+
+					structBinary.cMSIndex = (char)0;				// MS Index
+
+					structBinary.cIndex1 = (char)nPort;				// Port
+
+					structBinary.cIndex2 = (char)0;					// nSlave
+
+
+
+					sprintf(szKey, "SOCKET_NAME_%d", nPort);
+
+					memset(szEucKr, 0, sizeof(szEucKr));
+
+					CEVUtils::evUtf8ToEucKr((char*)gpParam->getStrOpt(szKey), szEucKr, sizeof(szEucKr));		// �ѱ� ĳ���ͼ� ��ȯ
+
+					strcpy(structBinary.szDevName, szEucKr);
+
+
+
+					structBinary.nValue = m_Status.anSocketDevValue[nPort];	// Value (Int)
+
+
+
+					structBinary.cUnit = (char)99;							// Unit
+
+										
+
+					structBinary.fMinValue = 0.f;							// Min Value
+
+					structBinary.fMaxValue = 0.f;							// Min Value
+
+
+
+					structBinary.cRS = ASCII_RS;
+
+
+
+					vSend.push_back(structBinary);
+
+
+
+				}
+
+			}
+
+
+
+
+
+			/////////////////////////////
+
+			// DIO
+
+			if (strJobType == "all" || strJobType == "dio")
+
+			{
+
+				// DIO (Input)
+
+				for (i = 0; i < GPIO_IN_COUNT; i++)
+
+				{
+
+
+
+					memset(&structBinary, 0, sizeof(StructBinarySend));
+
+
+
+					structBinary.cType = 3;							// Type : DIO
+
+					structBinary.cMSIndex = (char)0;				// MS Index
+
+					structBinary.cIndex1 = (char)0;					// Input = 0, Output = 1
+
+					structBinary.cIndex2 = (char)i;					// Channel
+
+
+
+					sprintf(szKey, "DIO_IN_NAME_%d", i);
+
+					memset(szEucKr, 0, sizeof(szEucKr));
+
+					CEVUtils::evUtf8ToEucKr((char*)gpParam->getStrOpt(szKey), szEucKr, sizeof(szEucKr));		// �ѱ� ĳ���ͼ� ��ȯ
+
+					strcpy(structBinary.szDevName, szEucKr);
+
+
+
+					sprintf(szKey, "DIO_IN_ISCOUNT_%d", i);
+
+					if (gpParam->getIntOpt(szKey) == 0)
+
+						structBinary.nValue = m_Status.abIOInputStatus[i];		// Input�뵵�� ���
+
+					else
+
+						structBinary.nValue = m_Status.anIOInputCount[i];		// Counter�뵵�� ���
+
+									
+
+
+
+					structBinary.cUnit = (char)99;							// Unit
+
+
+
+					structBinary.fMinValue = 0.f;							// Min Value
+
+					structBinary.fMaxValue = 0.f;							// Min Value
+
+
+
+					structBinary.cRS = ASCII_RS;
+
+
+
+					vSend.push_back(structBinary);
+
+
+
+				}
+
+
+
+				// DIO (Output)
+
+				for (i = 0; i < 8; i++)
+
+				{
+
+					memset(&structBinary, 0, sizeof(StructBinarySend));
+
+
+
+					structBinary.cType = 3;							// Type : DIO
+
+					structBinary.cMSIndex = (char)0;				// MS Index
+
+					structBinary.cIndex1 = (char)1;					// Input = 0, Output = 1
+
+					structBinary.cIndex2 = (char)i;					// Channel
+
+
+
+					sprintf(szKey, "DIO_OUT_NAME_%d", i);
+
+					memset(szEucKr, 0, sizeof(szEucKr));
+
+					CEVUtils::evUtf8ToEucKr((char*)gpParam->getStrOpt(szKey), szEucKr, sizeof(szEucKr));		// �ѱ� ĳ���ͼ� ��ȯ
+
+					strcpy(structBinary.szDevName, szEucKr);
+
+
+
+					structBinary.nValue = m_Status.abIOOutputStatus[i];	// Value (Int)
+
+
+
+					structBinary.cUnit = (char)99;							// Unit
+
+
+
+					structBinary.fMinValue = 0.f;							// Min Value
+
+					structBinary.fMaxValue = 0.f;							// Min Value
+
+
+
+					structBinary.cRS = ASCII_RS;
+
+
+
+					vSend.push_back(structBinary);
+
+				}
+
+
+
+
+
+			}
+
+
+
+			
+
+			char* pSendProtocol = nullptr;
+
+			int nHeadTailSize = 0, nCurPos = 0;
+
+			char* pCurPt = nullptr;
+
+			
+
+			pSendProtocol = new char[(sizeof(StructBinarySend) * vSend.size()) + 32];
+
+			memset(pSendProtocol, 0, sizeof(StructBinarySend));
+
+
+
+
+
+			////////////////////////////////
+
+			// Header
+
+			sprintf(pSendProtocol, "%cms.res.%s%c", ASCII_STX, strJobType.c_str(), ASCII_GS);
+
+			pCurPt = pSendProtocol + strlen(pSendProtocol);
+
+
+
+			nHeadTailSize = (int)strlen(pSendProtocol) + 1;		// Header ���� + ������ ETX
+
+
+
+			// ���� ����(������ �ۼ��� ��)
+
+			for (i = 0; i < (int)vSend.size(); i++)
+
+			{
+
+				memcpy(pCurPt, &vSend[i], sizeof(StructBinarySend));
+
+				pCurPt += sizeof(StructBinarySend);
+
+			}
+
+
+
+
+
+
+
+			/////////////////////////////
+
+			// Tail
+
+			//sprintf(pCurPt, "%c", ASCII_ETX);			// ETX
+
+			*pCurPt = (char)ASCII_ETX;
+
+			pCurPt++;
+
+
+
+
+
+			/////////////////////////////
+
+			// CRC
+
+			nCurPos = nHeadTailSize + (int)(sizeof(StructBinarySend) * vSend.size());
+
+			usCRC = gpParam->getCRC16(0, (unsigned char*)pSendProtocol, nCurPos);
+
+
+
+			pSendProtocol[nCurPos] = (unsigned char)(usCRC & 0x00FF);						// CRC(LO)
+
+			pSendProtocol[nCurPos + 1] = (unsigned char)((usCRC & 0xFF00) >> 8);				// CRC(HI)
+
+				
+
+
+
+			pWorker->send(pSendProtocol, nCurPos + 2);		// CRC 2Byte�߰��ؼ� ����
+
+
+
+
+
+			delete[] pSendProtocol;
+
+
+
+			nRtn = 1;
+
+		}
+
+		else
+
+			nRtn = 0;
+
+	}
+
+
+
+	if (nRtn == 0)
+
+	{
+
+		sprintf(sProtocol, "%cb%cerror%c%d%c", ASCII_STX, ASCII_GS, ASCII_US, 1, ASCII_ETX);	// Invalid Protocol
+
+		pWorker->send(sProtocol, strlen(sProtocol));
+
+	}
+
+}
+
+
+
+
+
+
+
+
+
+// �ٸ� ���α׷����� ��û�Ǵ� ������ ��û��ȣ ����(Json ����� ����� ó��)
+
+void CStatusHandler::processSocketJson(CEVServerSocketWorker* pWorker, ssize_t nLen, const char* szJobType)
+
+{
+
+	Json::CharReaderBuilder builder;	
+
+	Json::Value main;
+
+	JSONCPP_STRING jsonErr;
+
+	std::istringstream streamRecv;
+
+	std::string strRecv, strSend, strJobType, strBuf;
+
+	char szKey[64] = { 0, }; // , buf[SOCKET_BUFFER_SIZE] = { 0, };
+
+	//int nRecv = 0;
+
+	//bool bSuc = true;
+
+	int i, nPort = 0, nIndex = 0, nSlave = 0;
+
+
+
+	Json::StreamWriterBuilder writerBuilder;
+
+	unique_ptr<Json::StreamWriter> writer(writerBuilder.newStreamWriter());
+
+
+
+	builder["collectComments"] = false;
+
+
+
+	writerBuilder["commentStyle"] = "All";	// "None";
+
+	writerBuilder["indentation"] = "\t";		// Tab
+
+	writerBuilder["useSpecialFloats"] = false;
+
+	writerBuilder["precision"] = 5;				// �Ҽ���
+
+
+
+
+
+
+
+
+
+	/////////////////////////////////////////////////////////////////
+
+	// ���� ������ ����
+
+	/* checkRequestProtocol()���� ������
+
+	while (pWorker->getRecvData(buf, sizeof(buf), nRecv))
+
+	{
+
+		strRecv.append(buf);
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+	}
+
+	
+
+	streamRecv.str(strRecv);	// ���� �����͸� Stream�� �ִ´�.
+
+
+
+
+
+
+
+	//////////////////////////////////////////////////////////////////
+
+	// Parsing�� ��ȿ�� üũ
+
+	if(!Json::parseFromStream(builder, streamRecv, &main, &jsonErr))			// Parsing
+
+	{ 
+
+		// ERRORó��
+
+		main.clear();
+
+
+
+		main["protocol"] = "microsynapse";
+
+		main["direction"] = "response";
+
+		main["errno"] = 1;
+
+		main["errtxt"] = "Invalid Data. Json data can't to parse.";
+
+
+
+		strSend = Json::writeString(writerBuilder, main);
+
+		pWorker->send(strSend.c_str(), strSend.size());
+
+
+
+		return;
+
+	}
+
+
+
+
+
+	// ���ŵ� �������� üũ
+
+	bSuc = true;
+
+	if (main["protocol"] != "microsynapse") bSuc = false;
+
+	if (main["direction"] != "request") bSuc = false;
+
+	if (main["job"].isNull()) bSuc = false;
+
+
+
+	if (!bSuc)
+
+	{
+
+		// ERRORó��
+
+		main.clear();
+
+
+
+		main["protocol"] = "microsynapse";
+
+		main["direction"] = "response";
+
+		main["errno"] = 2;
+
+		main["errtxt"] = "Invalid protocol received.";
+
+
+
+		strSend = Json::writeString(writerBuilder, main);
+
+		pWorker->send(strSend.c_str(), strSend.size());
+
+
+
+		return;
+
+	}
+
+	*/
+
+
+
+
+
+
+
+	//////////////////////////////////////////////////////////////////////
+
+	// ���� ������ �ۼ�
+
+
+
+	//strJobType = main["job"].asCString();
+
+	strJobType.append(szJobType);
+
+
+
+	// �������� �ۼ�
+
+	main.clear();
+
+
+
+	main["protocol"] = "ms";		// ����
+
+	//main["protocol"].setComment("// Micro Synapse Protocol", Json::commentAfterOnSameLine);
+
+	main["direction"] = "response";		// request/response
+
+	//main["direction"].setComment("// Protocol Direction(request/response)", Json::commentAfterOnSameLine);
+
+	main["job"] = strJobType;				// all, 485, 232, socket, dio, system
+
+	//main["job"].setComment("// all:all datas, 485:485 datas only, 232:232 datas only, socket:Socket device datas only, dio:DIO datas only, system:System datas only", Json::commentAfterOnSameLine);
+
+	main["errno"] = 0;
+
+	main["errtxt"] = "";
+
+
+
+
+
+	// 485 �ۼ�	
+
+	if (strJobType == "all" || (int)strJobType.find("485", 0) >= 0)
+
+	{
+
+		Json::Value rs485;
+
+		int n485PortCnt = 4;//gpParam->getIntOpt("SERIAL_COUNT") == 8 ? 4 : 2;	 // �ϴ� ������ 4��. ���ο��� ��뿩�η� �������� ������ ���� ����
+
+
+
+
+
+		if ((int)strJobType.find("485all.") >= 0 || (int)strJobType.find("485.") >= 0)
+
+		{	// Ư�� ��Ʈ 1��
+
+			nPort = (int)atoi(strJobType.substr(strJobType.find(".") + 1, 1).c_str());
+
+			n485PortCnt = nPort + 1;
+
+		}
+
+		else 
+
+			nPort = 0;
+
+			
+
+
+
+		for (/*nPort = 0*/; nPort < n485PortCnt; nPort++)
+
+		{
+
+			sprintf(szKey, "SERIAL_USE_%d", nPort);
+
+			if (gpParam->getIntOpt(szKey) == 0) continue;		// ��뿩�� üũ
+
+
+
+			rs485.clear();
+
+			nIndex = 0;
+
+
+
+
+
+			sprintf(szKey, "SERIAL_DEVCNT_%d", nPort);
+
+			int nSlaveCnt = gpParam->getIntOpt(szKey);
+
+
+
+			//int nTemp = strJobType.find("485.");
+
+
+
+			if ((int)strJobType.find("485.") >= 0)
+
+			{	// Ư�� Slave 1��
+
+				int nRFind = (int)strJobType.rfind(".");
+
+				nSlave = (int)atoi(strJobType.substr(nRFind + 1, strJobType.size() - nRFind).c_str());
+
+				nSlaveCnt = nSlave + 1;
+
+			}
+
+			else
+
+				nSlave = 0;
+
+
+
+
+
+			for (/*nSlave = 0*/; nSlave < nSlaveCnt; nSlave++)
+
+			{
+
+				nIndex++;		// �ؿ� ��뿩�ε��� continue�� ���̹Ƿ� �ϴ� ������ ����(����  -1 �ؼ� ����Ұ�-Zero Base)
+
+
+
+				sprintf(szKey, "SERIAL_DEV_USE_%d_%d", nPort, nSlave);
+
+				if (gpParam->getIntOpt(szKey) == 0) continue;		// �ش� Slave ��뿩�� üũ
+
+
+
+				Json::Value rs485Item;
+
+				strBuf.clear();
+
+
+
+				rs485Item.clear();
+
+
+
+				rs485Item["index"] = nIndex - 1;
+
+				rs485Item["portno"] = nPort;// +1;
+
+
+
+				sprintf(szKey, "SERIAL_SLAVENO_%d_%d", nPort, nSlave);
+
+				rs485Item["slaveno"] = gpParam->getIntOpt(szKey);
+
+				//rs485Item["slaveno"] = nSlave + 1;
+
+
+
+				sprintf(szKey, "SERIAL_NAME_%d_%d", nPort, nSlave);
+
+				rs485Item["name"] = gpParam->getStrOpt(szKey);
+
+				
+
+				rs485Item["value"] = m_Status.afSerialDevValue[nPort][nSlave];
+
+
+
+				sprintf(szKey, "SERIAL_UNIT_%d_%d", nPort, nSlave);
+
+				rs485Item["unit"] = gpParam->getIntOpt(szKey);
+
+
+
+				sprintf(szKey, "SERIAL_MINVALUE_%d_%d", nPort, nSlave);
+
+				rs485Item["min"] = gpParam->getDblOpt(szKey);
+
+
+
+				sprintf(szKey, "SERIAL_MAXVALUE_%d_%d", nPort, nSlave);
+
+				rs485Item["max"] = gpParam->getDblOpt(szKey);
+
+
+
+
+
+				//sprintf(buf, "// Slave %d", nSlave + 1);
+
+				//rs485Item.setComment(buf, Json::commentBefore);								
+
+				rs485.append(rs485Item);
+
+
+
+
+
+				//sprintf(szComment, "// RS 485 Port #%d", i + 1);
+
+				//rs485.setComment(szComment, Json::commentBefore);
+
+			}
+
+
+
+			main["rs485"].append(rs485);
+
+
+
+		}
+
+
+
+		//main["rs485"].setComment("// RS 485", Json::commentBefore);
+
+
+
+	} // if (strJobType == "all" || strJobType == "485")
+
+
+
+
+
+	// 232 �ۼ�
+
+	if (strJobType == "all" || (int)strJobType.find("232") >= 0)
+
+	{
+
+		int n232PortCnt = 4;
+
+
+
+		if ((int)strJobType.find("232all") >= 0)
+
+		{
+
+			nPort = 0;
+
+			n232PortCnt = 4;
+
+		}
+
+		else if ((int)strJobType.find("232.") >= 0)
+
+		{
+
+			nPort = (int)atoi(strJobType.substr(strJobType.find(".") + 1, 1).c_str());
+
+			n232PortCnt = nPort + 1;
+
+		}
+
+		else
+
+			nPort = 0;
+
+
+
+		for (/*nPort = 0*/; nPort < n232PortCnt; nPort++)
+
+		{
+
+			sprintf(szKey, "SERIAL_USE_%d", nPort + 4);			// RS232�� 4~7������
+
+			if (gpParam->getIntOpt(szKey) == 0) continue;		// ��뿩�� üũ
+
+
+
+
+
+			Json::Value rs232Item;
+
+
+
+			rs232Item.clear();
+
+			rs232Item["portno"] = nPort + 1;					// ���۽ô� 4~7�� ��Ʈ�� 1~4�� ��Ʈ�� ��ȯ�ؼ� ����
+
+			
+
+			sprintf(szKey, "SERIAL_NAME_%d_%d", nPort + 4, 0);
+
+			rs232Item["name"] = gpParam->getStrOpt(szKey);
+
+
+
+			rs232Item["value"] = m_Status.afSerialDevValue[nPort + 4][0];
+
+
+
+			sprintf(szKey, "SERIAL_UNIT_%d_%d", nPort + 4, 0);
+
+			rs232Item["unit"] = gpParam->getIntOpt(szKey);
+
+
+
+			sprintf(szKey, "SERIAL_MINVALUE_%d_%d", nPort + 4, 0);
+
+			rs232Item["min"] = gpParam->getDblOpt(szKey);
+
+
+
+			sprintf(szKey, "SERIAL_MAXVALUE_%d_%d", nPort + 4, 0);
+
+			rs232Item["max"] = gpParam->getDblOpt(szKey);
+
+
+
+			main["rs232"].append(rs232Item);
+
+
+
+			//sprintf(szComment, "// RS 232c Port #%d", i + 1);
+
+			//rs232Item.setComment(szComment, Json::commentBefore);
+
+		}
+
+
+
+		//main["rs232"].setComment("// RS 232c", Json::commentBefore);
+
+	}
+
+
+
+	// Socket�ۼ�
+
+	if (strJobType == "all" || (int)strJobType.find("soc") >= 0)
+
+	{
+
+		int nSocPortCnt = SOCKET_DEV_COUNT;
+
+
+
+		if ((int)strJobType.find("socall") >= 0)
+
+		{
+
+			nPort = 0;
+
+			nSocPortCnt = SOCKET_DEV_COUNT;
+
+		}
+
+		else if ((int)strJobType.find("soc.") >= 0)
+
+		{
+
+			nPort = (int)atoi(strJobType.substr(strJobType.find(".") + 1, 1).c_str());
+
+			nSocPortCnt = nPort + 1;
+
+		}
+
+		else
+
+			nPort = 0;
+
+
+
+		for (/*nPort = 0*/; nPort < nSocPortCnt; nPort++)
+
+		{
+
+			sprintf(szKey, "SOCKET_USE_%d", nPort);
+
+			if (gpParam->getIntOpt(szKey) == 0) continue;		// ��뿩�� üũ
+
+
+
+			Json::Value socItem;
+
+
+
+			socItem.clear();
+
+			socItem["index"] = nPort;
+
+
+
+			sprintf(szKey, "SOCKET_NAME_%d", nPort);
+
+			socItem["name"] = gpParam->getStrOpt(szKey);
+
+
+
+			socItem["value"] = m_Status.anSocketDevValue[nPort];
+
+
+
+			main["socketdev"].append(socItem);
+
+
+
+			//sprintf(szComment, "// Socket Index #%d", i + 1);
+
+			//socItem.setComment(szComment, Json::commentBefore);
+
+		}
+
+	}
+
+
+
+	// DIO
+
+	if (strJobType == "all" || strJobType == "dio")
+
+	{
+
+		// DIO (Input)
+
+		for (i = 0; i < GPIO_IN_COUNT; i++)
+
+		{
+
+			Json::Value in;
+
+			in.clear();
+
+
+
+			sprintf(szKey, "DIO_IN_NAME_%d", i);
+
+			in["name"] = gpParam->getStrOpt(szKey);
+
+
+
+			sprintf(szKey, "DIO_IN_ISCOUNT_%d", i);
+
+			if (gpParam->getIntOpt(szKey) == 0)
+
+				in["value"] = (int)m_Status.abIOInputStatus[i];		// Input�뵵�� ���
+
+			else
+
+				in["value"] = (int)m_Status.anIOInputCount[i];		// Counter�뵵�� ���
+
+
+
+			main["dio"]["input"].append(in);
+
+		}
+
+
+
+		// DIO (Output)
+
+		for (i = 0; i < 8; i++)
+
+		{
+
+			Json::Value out;
+
+			out.clear();
+
+
+
+			sprintf(szKey, "DIO_OUT_NAME_%d", i);
+
+			out["name"] = gpParam->getStrOpt(szKey);
+
+			out["value"] = (int)m_Status.abIOOutputStatus[i];
+
+
+
+			main["dio"]["output"].append(out);
+
+		}
+
+
+
+
+
+		//main["dio"].setComment("// DIO", Json::commentBefore);
+
+	}
+
+
+
+	// System
+
+	if (strJobType == "all" || strJobType == "system")
+
+	{
+
+		main["system"]["winclient"] = m_Status.windowClientCount;
+
+		main["system"]["mesclient"] = m_Status.MESCount;
+
+
+
+		//main["system"].setComment("// System Info", Json::commentBefore);
+
+	}
+
+
+
+
+
+
+
+	// Comment// ����/�� Comment
+
+	main.setComment("// ms_start", Json::commentBefore);
+
+	main.setComment("// ms_end", Json::commentAfter);
+
+
+
+	//////////////////////////////////////////////////////////////////
+
+	// ����
+
+	strSend = Json::writeString(writerBuilder, main);
+
+	pWorker->send(strSend.c_str(), strSend.size());
+
+}
+
+
+
+void CStatusHandler::pushCurrentValueToMESList()
+
+{
+
+	StructMESSend item;
+
+	int nDelCount = (gpParam->getIntOpt("MES_FAIL_SAVE_MIN") * 60) / (gpParam->getIntOpt("MES_CONN_SEND_FREQ") / 1000);
+
+	// ���е����� ������ ���� = (����ð�(�д���) * 60) / (�����ֱ� / 1000);         // ����ð��� �д����̹Ƿ� *60, �����ֱ�� ms�����̹Ƿ� /1000
+
+
+
+	//writeSystemDebug("[CStatusHandler] Fail Data Save count : %d(current count:%d)", nDelCount, m_queMESSendList.size());
+
+
+
+	m_mutexMESList.lock();
+
+
+
+	item.tmRecv = m_vvSerialResultList[m_nLastDataSerialPort][m_nLastDataSerialSlave].tmRecv;
+
+	memcpy(&(item.data), &m_Status, sizeof(StructSharedMemory));
+
+
+
+	// ���۽��� ����ð� �ʰ��� �����ʹ� ����
+
+	while ((int)m_queMESSendList.size() >= nDelCount)
+
+		m_queMESSendList.pop();
+
+
+
+	m_queMESSendList.push(item);
+
+	
+
+
+
+	m_mutexMESList.unlock();
+
+}
+
+
+
+StructMESSend CStatusHandler::getCurrentValueToMESList()
+
+{
+
+	StructMESSend rtn;
+
+
+
+	m_mutexMESList.lock();
+
+
+
+	rtn = m_queMESSendList.front();
+
+	//m_queMESSendList.pop();
+
+
+
+	m_mutexMESList.unlock();
+
+
+
+	return rtn;
+
+}
+
+
+
+void CStatusHandler::popCurrentValueToMESList()
+
+{
+
+	m_mutexMESList.lock();
+
+	m_queMESSendList.pop();
+
+	m_mutexMESList.unlock();
+
+}
+
+
+
+size_t CStatusHandler::getMESListCount()
+
+{
+
+	size_t nRtn = 0;
+
+
+
+	m_mutexMESList.lock();
+
+	nRtn = m_queMESSendList.size();
+
+	m_mutexMESList.unlock();
+
+
+
+	return nRtn;
+
+}
+
+
+
+
+
+/*
+
+MES�� ��� �����ϴ� ������
+
+*/
+
+void CStatusHandler::runMESThread(void* arg)
+
+{
+
+	const int nTerm = 100;
+
+	//int nCount = 0, nExecCount, nFailCount = 0;
+
+	int nSleepMs = gpParam->getIntOpt("MES_CONN_SEND_FREQ");
+
+	bool bExecute = gpParam->getIntOpt("MES_CONN_SEND_URL_USE");
+
+	std::string strURL, strResult, strData;
+
+	int nSendType = 1;		// 0:GET, 1:POST (����� POST����. ���� �Ķ���� �������� ����)
+
+	bool bExecSend = false, bCheckDate = false;
+
+
+
+
+
+	struct timespec timeLast, timeCur;
+
+	long lElapsedTime = 0;
+
+	
+
+
+
+	clock_gettime(CLOCK_MONOTONIC, &timeLast);
+
+	
+
+
+
+	while (m_bMESThreadRun)
+
+	{
+
+		nSleepMs = gpParam->getIntOpt("MES_CONN_SEND_FREQ");		// MSManager�� ���� �߰��� ����� �� �����Ƿ� ��� üũ�Ѵ�.
+
+		bExecute = gpParam->getIntOpt("MES_CONN_SEND_URL_USE");
+
+
+
+		//bCheckDate = m_vvSerialResultList[m_nLastDataSerialPort][m_nLastDataSerialSlave].tmRecv.tm_year + 1900 > 2000;	// ���ŵ� �������ΰ�?
+
+		bCheckDate = true;
+
+
+
+		if (!bExecute)
+
+		{
+
+			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+			continue;
+
+		}
+
+
+
+
+
+		clock_gettime(CLOCK_MONOTONIC, &timeCur);
+
+
+
+		lElapsedTime = 1000000000 * (timeCur.tv_sec - timeLast.tv_sec) + (timeCur.tv_nsec - timeLast.tv_nsec);
+
+
+
+		if (lElapsedTime / 1000000 >= nSleepMs)
+
+		{
+
+			timeLast = timeCur;
+
+
+
+			bExecSend = true;
+
+		}
+
+		else
+
+			bExecSend = false;
+
+
+
+
+
+		// �ϴ� �������� �ֱ� ��꿡 ���� �ֱⰡ �Ǿ����� ���� ������ ����
+
+		if (bExecSend)
+
+			this->pushCurrentValueToMESList();			// ���� �������� Queue�� �ִ´�.
+
+
+
+
+
+		if(m_queMESSendList.size() > (size_t)0)
+
+		{
+
+			// �ʿ��ϸ� ���⿡ GET/POST��� ���� �б��Ұ�
+
+			if (nSendType == 0)
+
+			{
+
+				//strURL = this->getResultForMESReportUseHttpGET();		// ���� ���ڼ��� UTF8�״��.. (��ȯ����)
+
+				strURL = this->getResultForMESReportUseHttp(true);
+
+
+
+				if (strURL.compare("") == 0)
+
+				{
+
+					writeSystemInfo("[CStatusHandler] Failed to create string for MES Report.");
+
+					std::this_thread::sleep_for(std::chrono::milliseconds(nSleepMs));
+
+					continue;
+
+				}
+
+
+
+				strResult = sendHttpGET(strURL);		// ����
+
+			}
+
+			else
+
+			{
+
+				strURL = gpParam->getStrOpt("MES_CONN_URL");
+
+				//strData = this->getResultForMESReportUseHttpPOST();		// ���� ���ڼ��� UTF8�״��.. (��ȯ����)
+
+				strData = getResultForMESReportUseHttp(false);
+
+
+
+				if (strURL.compare("") == 0 || strData.compare("") == 0)
+
+				{
+
+					writeSystemInfo("[CStatusHandler] Failed to create string for MES Report.");
+
+					std::this_thread::sleep_for(std::chrono::milliseconds(nSleepMs));
+
+					continue;
+
+				}
+
+
+
+				strResult = sendHttpPOST(strURL, strData);		// ����
+
+
+
+			}
+
+
+
+
+
+			// ���� ������ ������� RESULT:1�� ���ԵǾ� ������ ����. RESULT:0�̰ų� �ٸ� ���̸� ����
+
+			if (strResult.find("RESULT:1") == std::string::npos)
+
+			{
+
+				writeSystemInfo("[CStatusHandler] MES Report : Server is not responding.(Remain :%d)", m_queMESSendList.size());
+
+			}
+
+			else
+
+			{
+
+				writeSystemInfo("[CStatusHandler] MES Report : %s (Remain : %d)", strResult.c_str(), m_queMESSendList.size());
+
+
+
+				m_mutexIOCount.lock();
+
+				for (int i = 0; i < GPIO_IN_COUNT; i++)
+
+					m_anDInUnitCount[i] = 0;
+
+				m_mutexIOCount.unlock();
+
+
+
+				// ���۸���Ʈ���� �����Ѵ�.
+
+				this->popCurrentValueToMESList();
+
+			}
+
+
+
+
+
+		}
+
+
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(nTerm));
+
+	}
+
+}
+
+/*
+
+void CStatusHandler::runMESThread(void* arg)
+
+{
+
+	const int nTerm = 100;
+
+	int nCount = 0, nExecCount, nFailCount = 0;
+
+	int nSleepMs = gpParam->getIntOpt("MES_CONN_SEND_FREQ");
+
+	bool bExecute = gpParam->getIntOpt("MES_CONN_SEND_URL_USE");
+
+	std::string strURL, strResult, strData;
+
+	int nSendType = 1;		// 0:GET, 1:POST (����� POST����. ���� �Ķ���� �������� ����)
+
+	bool bExecSend = false, bCheckDate = false, bExecFail = false;
+
+	
+
+	while (m_bMESThreadRun)
+
+	{
+
+		nSleepMs = gpParam->getIntOpt("MES_CONN_SEND_FREQ");		// MSManager�� ���� �߰��� ����� �� �����Ƿ� ��� üũ�Ѵ�.
+
+		bExecute = gpParam->getIntOpt("MES_CONN_SEND_URL_USE");
+
+
+
+		nExecCount = nSleepMs / nTerm;			// ������ �ð��� �� ��� ������ Delay�� �߻��� �� �����Ƿ� 100ms������ �ɰ���.
+
+
+
+
+
+		//bCheckDate = m_vvSerialResultList[m_nLastDataSerialPort][m_nLastDataSerialSlave].tmRecv.tm_year + 1900 > 2000;	// ���ŵ� �������ΰ�?
+
+		bCheckDate = true;
+
+
+
+
+
+
+
+		if (bExecute && nCount >= nExecCount && bCheckDate)
+
+			bExecSend = true;
+
+		else
+
+			bExecSend = false;
+
+
+
+
+
+		// �ϴ� �������� �ֱ� ��꿡 ���� �ֱⰡ �Ǿ����� ���� ������ ����
+
+		if (bExecSend)
+
+			this->pushCurrentValueToMESList();			// ���� �������� Queue�� �ִ´�.
+
+
+
+
+
+		// ���۽��� �׸��� ���� ��� �����ֱ⸦ ª���Ѵ�.
+
+		if (m_queMESSendList.size() > (size_t)0)
+
+		{
+
+			if (nFailCount++ > 5)
+
+			{
+
+				bExecFail = true;
+
+				nFailCount = 0;
+
+				bExecSend = true;
+
+			}
+
+			else
+
+				bExecFail = false;
+
+		}
+
+
+
+
+
+		if (bExecSend)
+
+		{
+
+			// �ʿ��ϸ� ���⿡ GET/POST��� ���� �б��Ұ�
+
+			if (nSendType == 0)
+
+			{
+
+				//strURL = this->getResultForMESReportUseHttpGET();		// ���� ���ڼ��� UTF8�״��.. (��ȯ����)
+
+				strURL = this->getResultForMESReportUseHttp(true);
+
+
+
+				if (strURL.compare("") == 0)
+
+				{
+
+					writeSystemInfo("[CStatusHandler] Failed to create string for MES Report.");
+
+					std::this_thread::sleep_for(std::chrono::milliseconds(nSleepMs));
+
+					continue;
+
+				}
+
+
+
+				strResult = sendHttpGET(strURL);		// ����
+
+			}
+
+			else
+
+			{
+
+				strURL = gpParam->getStrOpt("MES_CONN_URL");
+
+				//strData = this->getResultForMESReportUseHttpPOST();		// ���� ���ڼ��� UTF8�״��.. (��ȯ����)
+
+				strData = getResultForMESReportUseHttp(false);
+
+
+
+				if (strURL.compare("") == 0 || strData.compare("") == 0)
+
+				{
+
+					writeSystemInfo("[CStatusHandler] Failed to create string for MES Report.");
+
+					std::this_thread::sleep_for(std::chrono::milliseconds(nSleepMs));
+
+					continue;
+
+				}
+
+
+
+				strResult = sendHttpPOST(strURL, strData);		// ����
+
+
+
+			}
+
+
+
+			
+
+			// ���� ������ ������� RESULT:1�� ���ԵǾ� ������ ����. RESULT:0�̰ų� �ٸ� ���̸� ����
+
+			if (strResult.find("RESULT:1") == std::string::npos)
+
+			{
+
+				writeSystemInfo("[CStatusHandler] MES Report : Server is not responding.");
+
+			}
+
+			else
+
+			{				
+
+				writeSystemInfo("[CStatusHandler] MES Report : %s", strResult.c_str());
+
+
+
+				m_mutexIOCount.lock();
+
+				for (int i = 0; i < GPIO_IN_COUNT; i++)
+
+					m_anDInUnitCount[i] = 0;
+
+				m_mutexIOCount.unlock();
+
+
+
+				// ���۸���Ʈ���� �����Ѵ�.
+
+				this->popCurrentValueToMESList();
+
+			}
+
+
+
+			if(!bExecFail)
+
+				nCount = 0;
+
+
+
+		}
+
+		
+
+		nCount++;
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(nTerm));
+
+	}
+
+}
+
+*/
+
+
+
+/*
+
+HTTP GET������� ���� ����
+
+*/
+
+std::string CStatusHandler::sendHttpGET(std::string strURL)
+
+{
+
+	std::string strCmd, strResult;
+
+	FILE* stream;
+
+	char buf[65535] = { 0, };
+
+	int nCnt = 0;
+
+
+
+	strCmd.append("curl --connect-timeout 5 -X GET -s '");
+
+	strCmd.append(strURL);
+
+	strCmd.append("' 2>&1");
+
+	
+
+#ifdef DEBUG
+
+	writeSystemInfo(strCmd.c_str());
+
+#endif 
+
+
+
+	stream = popen(strCmd.c_str(), "r");
+
+
+
+	if (stream)
+
+	{
+
+		while (fgets(buf, sizeof(buf), stream) != NULL)
+
+		{
+
+			if (strstr(buf, "RESULT:") == nullptr)
+
+				continue;
+
+
+
+			strResult.append(buf);
+
+
+
+			if (nCnt++ > 5 || strResult.length() > 200)
+
+				break;		/////////********************************************��� ������ �ʴ´�.(�뷮�� �������� runMESThread���� �ڲ� segmentation fault�� �߻��Ѵ�.**********
+
+		}
+
+		pclose(stream);
+
+	}
+
+	
+
+	return strResult.substr(0, 100);
+
+
+
+}
+
+
+
+
+
+/*
+
+HTTP POST������� ���� ����
+
+*/
+
+std::string CStatusHandler::sendHttpPOST(std::string strURL, std::string strData)
+
+{
+
+	std::string strCmd, strResult;
+
+	FILE* stream;
+
+	char buf[65535] = { 0, };
+
+	int nCnt = 0;
+
+
+
+	strCmd.reserve(32768);
+
+
+
+	strCmd.append("curl --connect-timeout 5 -X POST -d '");
+
+	strCmd.append(strData);
+
+	strCmd.append("' ");
+
+	strCmd.append(strURL);
+
+	strCmd.append(" 2>&1");
+
+
+
+#ifdef DEBUG
+
+	//writeSystemInfo(strCmd.c_str());
+
+#endif 
+
+
+
+	stream = popen(strCmd.c_str(), "r");
+
+
+
+	if (stream)
+
+	{
+
+		
+
+
+
+		while (fgets(buf, sizeof(buf), stream) != NULL)
+
+		{
+
+			if (strstr(buf, "RESULT:") == nullptr)
+
+				continue;
+
+
+
+			strResult.append(buf);
+
+
+
+			if (nCnt++ > 5 || strResult.length() > 200)
+
+				break;		/////////********************************************��� ������ �ʴ´�.(�뷮�� �������� runMESThread���� �ڲ� segmentation fault�� �߻��Ѵ�.**********
+
+		}
+
+		pclose(stream);
+
+	}
+
+
+
+	return strResult.substr(0, 100);
+
+
+
+}
+
+
+
+
+
+/*
+
+MES ������ ���ڿ��� �����Ѵ�.
+
+
+
+Parameters
+
+	isGetType		true�̸� GET���, false�̸� POST���
+
+*/
+
+std::string CStatusHandler::getResultForMESReportUseHttp(bool isGetType)
+
+{
+
+	std::string strURL = gpParam->getStrOpt("MES_CONN_URL");
+
+	std::string strData = gpParam->getStrOpt("MES_CONN_DATA1");
+
+	std::string strConv;
+
+	int i, nSlave;
+
+	char szFind[256] = { 0, }, szReplace[256] = { 0, }, szKey[64] = { 0, };
+
+	StructSharedMemory dataSend;
+
+	tm tmLast;
+
+	StructMESSend sendMESItem;
+
+	
+
+	if (m_queMESSendList.size() <= 0)
+
+		return "";
+
+	
+
+	sendMESItem = this->getCurrentValueToMESList();		// ù��° �����͸� �����´�.(pop���� �ʴ´�. pop�� runMESThread()���� ���۰���� ���� ó��)
+
+	tmLast = sendMESItem.tmRecv;
+
+	memcpy(&dataSend, &(sendMESItem.data), sizeof(StructSharedMemory));
+
+
+
+
+
+
+
+
+
+	strData.append(gpParam->getStrOpt("MES_CONN_DATA2"));
+
+
+
+	if (isGetType)
+
+	{
+
+		if (strURL.compare("") == 0)
+
+			return "";
+
+		if (strData.compare("") == 0)
+
+			return "";
+
+	}
+
+
+
+	if (strData.compare("") == 0)
+
+		return "";
+
+
+
+
+
+
+
+
+
+	// �������� ����
+
+	sprintf(szFind, "<MEADT>");
+
+	if ((int)strData.find(szFind) >= 0)
+
+	{
+
+		//tm tmLast = m_vvSerialResultList[m_nLastDataSerialPort][m_nLastDataSerialSlave].tmRecv;
+
+		sprintf(szReplace, "%04d%02d%02d%02d%02d%02d", tmLast.tm_year + 1900, tmLast.tm_mon + 1, tmLast.tm_mday, tmLast.tm_hour, tmLast.tm_min, tmLast.tm_sec);
+
+
+
+		strData.replace(strData.find(szFind), strlen(szFind), szReplace);
+
+	}
+
+
+
+	sprintf(szFind, "<DEVNM>");
+
+	if ((int)strData.find(szFind) >= 0)
+
+	{
+
+		sprintf(szReplace, "%s", gpParam->getStrOpt("DEV_NAME"));
+
+		strData.replace(strData.find(szFind), strlen(szFind), szReplace);
+
+	}
+
+
+
+
+
+
+
+
+
+	// 485
+
+	for (i = 0; i < 4; i++)
+
+	{
+
+		for (nSlave = 0; nSlave < 16; nSlave++)
+
+		{
+
+			sprintf(szFind, "<N485%d%02d>", i + 1, nSlave + 1);
+
+			if ((int)strData.find(szFind) >= 0)
+
+			{
+
+				sprintf(szKey, "SERIAL_NAME_%d_%d", i, nSlave);
+
+				strcpy(szReplace, gpParam->getStrOpt(szKey));
+
+				strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <N485ns> 485 n��Ʈ s�����̺� ��ġ�̸�
+
+			}
+
+
+
+			sprintf(szFind, "<V485%d%02d>", i + 1, nSlave + 1);
+
+			if ((int)strData.find(szFind) >= 0)
+
+			{
+
+				sprintf(szReplace, "%.1f", dataSend.afSerialDevValue[i][nSlave]);
+
+				strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <V485ns> 485 n��Ʈ s�����̺� ������
+
+			}
+
+		}
+
+	}
+
+
+
+
+
+	// 232
+
+	for (i = 4; i < 8; i++)
+
+	{
+
+		sprintf(szFind, "<N232%d>", i - 3);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szKey, "SERIAL_NAME_%d_0", i);
+
+			strcpy(szReplace, gpParam->getStrOpt(szKey));
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <N232n> 232 n��Ʈ ��ġ�̸�
+
+		}
+
+
+
+		sprintf(szFind, "<V232%d>", i - 3);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szReplace, "%.1f", dataSend.afSerialDevValue[i][0]);
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <V232n> 232 n��Ʈ ������
+
+		}
+
+	}
+
+
+
+	// Socket���
+
+	for (i = 0; i < 4; i++)
+
+	{
+
+		sprintf(szFind, "<NSOC%d>", i + 1);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szKey, "SOCKET_NAME_%d", i);
+
+			strcpy(szReplace, gpParam->getStrOpt(szKey));
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <NSOCn> Socket n����ġ ��ġ�̸�
+
+		}
+
+
+
+		sprintf(szFind, "<VSOC%d>", i + 1);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szReplace, "%d", dataSend.anSocketDevValue[i]);
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <VSOCn> Socket n����ġ ������
+
+		}
+
+	}
+
+
+
+
+
+	// DIO Input
+
+	for (i = 0; i < 10; i++)
+
+	{
+
+		sprintf(szFind, "<NDIN%02d>", i + 1);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szKey, "DIO_IN_NAME_%d", i);
+
+			strcpy(szReplace, gpParam->getStrOpt(szKey));
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <NDINn> DIO Input n��ä�� �̸�
+
+		}
+
+
+
+		sprintf(szFind, "<VDIN%02d>", i + 1);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szKey, "DIO_IN_ISCOUNT_%d", i);
+
+			if (gpParam->getIntOpt(szKey) == 0)
+
+				sprintf(szReplace, "%d", (int)dataSend.abIOInputStatus[i]);			// IO�뵵�� ���
+
+			else
+
+				sprintf(szReplace, "%d", (int)dataSend.anIOInputCount[i]);			// Counter�뵵�� ���
+
+
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <VDINn> DIO Input n��ä�� ������
+
+		}
+
+
+
+		sprintf(szFind, "<UDIN%d>", i + 1);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szReplace, "%d", m_anDInUnitCount[i]);
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <UDINn> DIO Counter��(MES������ ���µǴ� Counter��. �� �����ֱ⺰ ī����)
+
+		}
+
+	}
+
+
+
+	// DIO Output
+
+	for (i = 0; i < 8; i++)
+
+	{
+
+		sprintf(szFind, "<NDOUT%02d>", i + 1);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szKey, "DIO_OUT_NAME_%d", i);
+
+			strcpy(szReplace, gpParam->getStrOpt(szKey));
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <NDOUTn> DIO Output n��ä�� �̸�
+
+		}
+
+
+
+		sprintf(szFind, "<VDOUT%02d>", i + 1);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szReplace, "%d", (int)dataSend.abIOOutputStatus[i]);
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <VDOUTn> DIO Output n��ä�� ������
+
+		}
+
+	}
+
+
+
+
+
+	// �ʿ��ϸ� ���⼭ ���ڼ� ��ȯ�Ұ�(����� UTF8�״��)
+
+	/*
+
+	strURL.append(strData);
+
+
+
+	char* pCh = new char[strURL.length() + strData.length() + 1];
+
+
+
+	CEVUtils::evUtf8ToEucKr((char*)strURL.c_str(), pCh, strURL.length() + strData.length());
+
+	strURL.clear();
+
+	strURL.append(pCh);
+
+	delete[] pCh;
+
+
+
+
+
+
+
+	return strURL;
+
+	*/
+
+
+
+	if (isGetType)
+
+		return strURL + strData;
+
+	else
+
+		return strData;
+
+}
+
+
+
+
+
+
+
+/*
+
+Line Message ����
+
+
+
+nTokenIndex
+
+	0 : MES_LINE_TOKEN		(RS485)
+
+	1 : MES_LINE_TOKEN2		(RS232)
+
+	2 : MES_LINE_TOKEN3		(����. ����� ������)
+
+*/
+
+void CStatusHandler::sendLineMessage(int nPortNo, int nSlave, int nTokenIndex)
+
+{
+
+	time_t tmStart, tmEnd;
+
+	double dDiff = 0.;
+
+	char szTokenKey[32] = { 0, };
+
+
+
+	int nMesResendFreq = gpParam->getIntOpt("MES_LINE_RESEND_FREQ");		// �д��� �Է°�
+
+	
+
+
+
+	if (nTokenIndex == 0)
+
+		strcpy(szTokenKey, "MES_LINE_TOKEN");
+
+	else if(nTokenIndex == 1)
+
+		strcpy(szTokenKey, "MES_LINE_TOKEN2");
+
+	else if (nTokenIndex == 2)
+
+		strcpy(szTokenKey, "MES_LINE_TOKEN3");
+
+
+
+
+
+	tmStart = m_tmSendLine[nPortNo][nSlave];
+
+	time(&tmEnd);
+
+
+
+	dDiff = difftime(tmEnd, tmStart);
+
+
+
+	// �ð����� Line������ �ð�(�д����� �Էµ�) �����̸� ���۾���
+
+	if (dDiff <= (double)(60.0 * nMesResendFreq))
+
+		return;
+
+
+
+	// Token�� �ԷµǾ� ���� ������ ���۾���
+
+	if (strcmp(gpParam->getStrOpt(szTokenKey), "") == 0)
+
+		return;
+
+
+
+
+
+	std::string strCmd, strResult;
+
+	FILE* stream;
+
+	char buf[16384] = { 0, }, szMsg[512] = { 0, }, szUTF8[512] = { 0, }, szDevNmKey[64] = { 0, }, szMinKey[64] = { 0, }, szMaxKey[64] = { 0, };
+
+	int nCnt = 0;
+
+
+
+	sprintf(szDevNmKey, "SERIAL_NAME_%d_%d", nPortNo, nSlave);
+
+	sprintf(szMinKey, "SERIAL_MINVALUE_%d_%d", nPortNo, nSlave);
+
+	sprintf(szMaxKey, "SERIAL_MAXVALUE_%d_%d", nPortNo, nSlave);
+
+
+
+	CEVUtils::evEuckrToUtf8("��ġ�� ���� ���ġ�� ������ϴ�. ���簪", szUTF8, sizeof(szUTF8));
+
+
+
+	sprintf(szMsg, "[Micro Synapse-%s] %s %s:%.1f (Min:%.1f, Max:%.1f)",
+
+		gpParam->getStrOpt("DEV_NAME"),
+
+		gpParam->getStrOpt(szDevNmKey),
+
+		szUTF8,
+
+		m_Status.afSerialDevValue[nPortNo][nSlave],
+
+		gpParam->getDblOpt(szMinKey),
+
+		gpParam->getDblOpt(szMaxKey)
+
+		);
+
+
+
+	//CEVUtils::evEuckrToUtf8(szMsg, szUTF8, sizeof(szUTF8));
+
+
+
+
+
+	strCmd.reserve(512);
+
+
+
+	/*
+
+	curl -X POST https://notify-api.line.me/api/notify \
+
+	-H 'Authorization:Bearer 5WlUwnB7hsu2OZbkgRVKMX5e6ylZyuM2nmFf3q9u4vT' \
+
+	-F 'message=TEST Message �ѱ�'
+
+	*/
+
+	strCmd.append("curl --connect-timeout 5 -X POST https://notify-api.line.me/api/notify ");
+
+	strCmd.append("-H 'Authorization:Bearer ")
+
+		.append(gpParam->getStrOpt(szTokenKey))
+
+		.append("' ");
+
+	strCmd.append("-F 'message=")
+
+		.append(szMsg)
+
+		.append("'");
+
+
+
+
+
+	writeSystemInfo("%s", strCmd.c_str());
+
+	
+
+#ifdef DEBUG
+
+	//writeSystemInfo(strCmd.c_str());
+
+#endif 
+
+
+
+	stream = popen(strCmd.c_str(), "r");
+
+
+
+	
+
+	if (stream)
+
+	{
+
+		while (fgets(buf, sizeof(buf), stream) != NULL)
+
+		{
+
+			if (strstr(buf, ":\"ok") == nullptr)
+
+				continue;
+
+
+
+			strResult.append(buf);
+
+
+
+			if (nCnt++ > 5 || strResult.length() > 200)
+
+				break;
+
+		}
+
+		pclose(stream);
+
+	}
+
+	
+
+	writeSystemInfo("%s", strResult.c_str());
+
+
+
+
+
+
+
+	// ���������Ͻ� ����
+
+	m_tmSendLine[nPortNo][nSlave] = tmEnd;
+
+
+
+
+
+
+
+}
+
+
+
+
+
+StructResultVariable CStatusHandler::getResultVariable(int nIndex)
+
+{
+
+	StructResultVariable vars;
+
+
+
+	if (nIndex >= RESULT_VARIABLE_CNT)
+
+	{
+
+
+
+		vars.nValue = 0;
+
+		vars.fValue = 0;
+
+		memset(vars.szData, 0, sizeof(vars.szData));
+
+		memset(vars.szUnit, 0, sizeof(vars.szUnit));
+
+
+
+		return vars;
+
+	}
+
+
+
+	m_mutexResultVar.lock();
+
+	vars.fValue = m_vResultVariable[nIndex].fValue;
+
+	vars.nValue = m_vResultVariable[nIndex].nValue;
+
+	strcpy(vars.szData, m_vResultVariable[nIndex].szData);
+
+	strcpy(vars.szUnit, m_vResultVariable[nIndex].szUnit);
+
+	m_mutexResultVar.unlock();
+
+
+
+	return vars;
+
+
+
+}
+
+
+
+void CStatusHandler::setResultVariable(int nIndex, StructResultVariable vars)
+
+{
+
+	if (nIndex >= RESULT_VARIABLE_CNT)
+
+		return;
+
+
+
+
+
+	m_mutexResultVar.lock();
+
+
+
+	m_vResultVariable[nIndex].fValue = vars.fValue;
+
+	m_vResultVariable[nIndex].nValue = vars.nValue;
+
+	strcpy(m_vResultVariable[nIndex].szData, vars.szData);
+
+	strcpy(m_vResultVariable[nIndex].szUnit, vars.szUnit);
+
+
+
+	m_mutexResultVar.unlock();
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+//MES ������ GET��� URL ���ڿ��� �����. 
+
+std::string CStatusHandler::getResultForMESReportUseHttpGET()
+
+{
+
+	std::string strURL = gpParam->getStrOpt("MES_CONN_URL");
+
+	std::string strData = gpParam->getStrOpt("MES_CONN_DATA1");
+
+	std::string strConv;
+
+	int i, nSlave;
+
+	char szFind[256] = { 0, }, szReplace[256] = { 0, }, szKey[64] = { 0, };
+
+
+
+
+
+	strData.append(gpParam->getStrOpt("MES_CONN_DATA2"));
+
+
+
+	if (strURL.compare("") == 0)
+
+		return "";
+
+	if (strData.compare("") == 0)
+
+		return "";
+
+
+
+
+
+	// �������� ����
+
+	sprintf(szFind, "<MEADT>");
+
+	if ((int)strData.find(szFind) >= 0)
+
+	{
+
+		tm tmLast = m_vvSerialResultList[m_nLastDataSerialPort][m_nLastDataSerialSlave].tmRecv;
+
+		
+
+		sprintf(szReplace, "%04d%02d%02d%02d%02d%02d", tmLast.tm_year + 1900, tmLast.tm_mon + 1, tmLast.tm_mday, tmLast.tm_hour, tmLast.tm_min, tmLast.tm_sec);
+
+
+
+		strData.replace(strData.find(szFind), strlen(szFind), szReplace);
+
+	}
+
+
+
+	sprintf(szFind, "<DEVNM>");
+
+	if ((int)strData.find(szFind) >= 0)
+
+	{
+
+		sprintf(szReplace, "%s", gpParam->getStrOpt("DEV_NAME"));
+
+		strData.replace(strData.find(szFind), strlen(szFind), szReplace);
+
+	}
+
+
+
+
+
+
+
+	
+
+	// 485
+
+	for (i = 0; i < 4; i++)
+
+	{
+
+		for (nSlave = 0; nSlave < 16; nSlave++)
+
+		{
+
+			sprintf(szFind, "<N485%d%02d>", i + 1, nSlave + 1);			
+
+			if ((int)strData.find(szFind) >= 0)
+
+			{
+
+				sprintf(szKey, "SERIAL_NAME_%d_%d", i, nSlave);
+
+				strcpy(szReplace, gpParam->getStrOpt(szKey));
+
+				strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <N485ns> 485 n��Ʈ s�����̺� ��ġ�̸�
+
+			}
+
+			
+
+			sprintf(szFind, "<V485%d%02d>", i + 1, nSlave + 1);
+
+			if ((int)strData.find(szFind) >= 0)
+
+			{
+
+				sprintf(szReplace, "%.1f", m_Status.afSerialDevValue[i][nSlave]);
+
+				strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <V485ns> 485 n��Ʈ s�����̺� ������
+
+			}			
+
+		}
+
+	}
+
+
+
+
+
+	// 232
+
+	for (i = 4; i < 8; i++)
+
+	{
+
+		sprintf(szFind, "<N232%d>", i - 3);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szKey, "SERIAL_NAME_%d_0", i);
+
+			strcpy(szReplace, gpParam->getStrOpt(szKey));
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <N232n> 232 n��Ʈ ��ġ�̸�
+
+		}
+
+
+
+		sprintf(szFind, "<V232%d>", i - 3);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szReplace, "%.1f", m_Status.afSerialDevValue[i][0]);
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <V232n> 232 n��Ʈ ������
+
+		}
+
+	}
+
+
+
+	// Socket���
+
+	for (i = 0; i < 4; i++)
+
+	{
+
+		sprintf(szFind, "<NSOC%d>", i + 1);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szKey, "SOCKET_NAME_%d", i);
+
+			strcpy(szReplace, gpParam->getStrOpt(szKey));
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <NSOCn> Socket n����ġ ��ġ�̸�
+
+		}
+
+
+
+		sprintf(szFind, "<VSOC%d>", i + 1);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szReplace, "%d", m_Status.anSocketDevValue[i]);
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <VSOCn> Socket n����ġ ������
+
+		}
+
+
+
+	}
+
+
+
+
+
+	// DIO Input
+
+	for (i = 0; i < GPIO_IN_COUNT; i++)
+
+	{
+
+		sprintf(szFind, "<NDIN%d>", i + 1);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szKey, "DIO_IN_NAME_%d", i);
+
+			strcpy(szReplace, gpParam->getStrOpt(szKey));
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <NDINn> DIO Input n��ä�� �̸�
+
+		}
+
+
+
+		sprintf(szFind, "<VDIN%d>", i + 1);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szKey, "DIO_IN_ISCOUNT_%d", i);
+
+			if (gpParam->getIntOpt(szKey) == 0)
+
+				sprintf(szReplace, "%d", (int)m_Status.abIOInputStatus[i]);			// IO�뵵�� ���
+
+			else
+
+				sprintf(szReplace, "%d", (int)m_Status.anIOInputCount[i]);			// Counter�뵵�� ���
+
+
+
+
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <VDINn> DIO Input n��ä�� ������
+
+		}
+
+
+
+		sprintf(szFind, "<UDIN%d>", i + 1);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szReplace, "%d", m_anDInUnitCount[i]);
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <UDINn> DIO Counter��(MES������ ���µǴ� Counter��. �� �����ֱ⺰ ī����)
+
+		}
+
+	}
+
+
+
+	// DIO Output
+
+	for (i = 0; i < GPIO_OUT_COUNT; i++)
+
+	{
+
+		sprintf(szFind, "<NDOUT%d>", i + 1);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szKey, "DIO_OUT_NAME_%d", i);
+
+			strcpy(szReplace, gpParam->getStrOpt(szKey));
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <NDOUTn> DIO Output n��ä�� �̸�
+
+		}
+
+
+
+		sprintf(szFind, "<VDOUT%d>", i + 1);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szReplace, "%d", (int)m_Status.abIOOutputStatus[i]);
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <VDOUTn> DIO Output n��ä�� ������
+
+		}
+
+
+
+	}
+
+
+
+
+
+	// �ʿ��ϸ� ���⼭ ���ڼ� ��ȯ�Ұ�(����� UTF8�״��)
+
+#ifdef XXXXXXXXXXXXXX
+
+	strURL.append(strData);
+
+
+
+	char* pCh = new char[strURL.length() + strData.length() + 1];
+
+
+
+	CEVUtils::evUtf8ToEucKr((char*)strURL.c_str(), pCh, strURL.length() + strData.length());
+
+	strURL.clear();
+
+	strURL.append(pCh);
+
+	delete[] pCh;
+
+	
+
+
+
+	return strURL;
+
+#endif
+
+
+
+	return strURL + strData;
+
+}
+
+
+
+
+
+
+
+
+
+// MES ������ POST��� URL ���ڿ��� �����.
+
+std::string CStatusHandler::getResultForMESReportUseHttpPOST()
+
+{	
+
+	std::string strData = gpParam->getStrOpt("MES_CONN_DATA1");
+
+	std::string strConv;
+
+	int i, nSlave;
+
+	char szFind[256] = { 0, }, szReplace[256] = { 0, }, szKey[64] = { 0, };
+
+
+
+
+
+	strData.append(gpParam->getStrOpt("MES_CONN_DATA2"));
+
+
+
+	if (strData.compare("") == 0)
+
+		return "";
+
+
+
+
+
+	// �������� ����
+
+	sprintf(szFind, "<MEADT>");
+
+	if ((int)strData.find(szFind) >= 0)
+
+	{
+
+
+
+		tm tmLast = m_vvSerialResultList[m_nLastDataSerialPort][m_nLastDataSerialSlave].tmRecv;
+
+
+
+		sprintf(szReplace, "%04d%02d%02d%02d%02d%02d", tmLast.tm_year + 1900, tmLast.tm_mon + 1, tmLast.tm_mday, tmLast.tm_hour, tmLast.tm_min, tmLast.tm_sec);
+
+
+
+		strData.replace(strData.find(szFind), strlen(szFind), szReplace);
+
+	}
+
+
+
+	sprintf(szFind, "<DEVNM>");
+
+	if ((int)strData.find(szFind) >= 0)
+
+	{
+
+		sprintf(szReplace, "%s", gpParam->getStrOpt("DEV_NAME"));
+
+		strData.replace(strData.find(szFind), strlen(szFind), szReplace);
+
+	}
+
+
+
+
+
+
+
+
+
+	// 485
+
+	for (i = 0; i < 4; i++)
+
+	{
+
+		for (nSlave = 0; nSlave < 16; nSlave++)
+
+		{
+
+			sprintf(szFind, "<N485%d%02d>", i + 1, nSlave + 1);
+
+			if ((int)strData.find(szFind) >= 0)
+
+			{
+
+				sprintf(szKey, "SERIAL_NAME_%d_%d", i, nSlave);
+
+				strcpy(szReplace, gpParam->getStrOpt(szKey));
+
+				strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <N485ns> 485 n��Ʈ s�����̺� ��ġ�̸�
+
+			}
+
+
+
+			sprintf(szFind, "<V485%d%02d>", i + 1, nSlave + 1);
+
+			if ((int)strData.find(szFind) >= 0)
+
+			{
+
+				sprintf(szReplace, "%.1f", m_Status.afSerialDevValue[i][nSlave]);
+
+				strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <V485ns> 485 n��Ʈ s�����̺� ������
+
+			}
+
+		}
+
+	}
+
+
+
+
+
+	// 232
+
+	for (i = 4; i < 8; i++)
+
+	{
+
+		sprintf(szFind, "<N232%d>", i - 3);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szKey, "SERIAL_NAME_%d_0", i);
+
+			strcpy(szReplace, gpParam->getStrOpt(szKey));
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <N232n> 232 n��Ʈ ��ġ�̸�
+
+		}
+
+
+
+		sprintf(szFind, "<V232%d>", i - 3);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szReplace, "%.1f", m_Status.afSerialDevValue[i][0]);
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <V232n> 232 n��Ʈ ������
+
+		}
+
+	}
+
+
+
+	// Socket���
+
+	for (i = 0; i < 4; i++)
+
+	{
+
+		sprintf(szFind, "<NSOC%d>", i + 1);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szKey, "SOCKET_NAME_%d", i);
+
+			strcpy(szReplace, gpParam->getStrOpt(szKey));
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <NSOCn> Socket n����ġ ��ġ�̸�
+
+		}
+
+
+
+		sprintf(szFind, "<VSOC%d>", i + 1);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szReplace, "%d", m_Status.anSocketDevValue[i]);
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <VSOCn> Socket n����ġ ������
+
+		}
+
+	}
+
+
+
+
+
+	// DIO Input
+
+	for (i = 0; i < 10; i++)
+
+	{
+
+		sprintf(szFind, "<NDIN%02d>", i + 1);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szKey, "DIO_IN_NAME_%d", i);
+
+			strcpy(szReplace, gpParam->getStrOpt(szKey));
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <NDINn> DIO Input n��ä�� �̸�
+
+		}
+
+
+
+		sprintf(szFind, "<VDIN%02d>", i + 1);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szKey, "DIO_IN_ISCOUNT_%d", i);
+
+			if (gpParam->getIntOpt(szKey) == 0)
+
+				sprintf(szReplace, "%d", (int)m_Status.abIOInputStatus[i]);			// IO�뵵�� ���
+
+			else
+
+				sprintf(szReplace, "%d", (int)m_Status.anIOInputCount[i]);			// Counter�뵵�� ���
+
+
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <VDINn> DIO Input n��ä�� ������
+
+		}
+
+
+
+		sprintf(szFind, "<UDIN%d>", i + 1);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szReplace, "%d", m_anDInUnitCount[i]);
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <UDINn> DIO Counter��(MES������ ���µǴ� Counter��. �� �����ֱ⺰ ī����)
+
+		}
+
+	}
+
+
+
+	// DIO Output
+
+	for (i = 0; i < 8; i++)
+
+	{
+
+		sprintf(szFind, "<NDOUT%02d>", i + 1);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szKey, "DIO_OUT_NAME_%d", i);
+
+			strcpy(szReplace, gpParam->getStrOpt(szKey));
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <NDOUTn> DIO Output n��ä�� �̸�
+
+		}
+
+
+
+		sprintf(szFind, "<VDOUT%02d>", i + 1);
+
+		if ((int)strData.find(szFind) >= 0)
+
+		{
+
+			sprintf(szReplace, "%d", (int)m_Status.abIOOutputStatus[i]);
+
+			strData.replace(strData.find(szFind), strlen(szFind), szReplace);		// <VDOUTn> DIO Output n��ä�� ������
+
+		}
+
+	}
+
+
+
+
+
+	// �ʿ��ϸ� ���⼭ ���ڼ� ��ȯ�Ұ�(����� UTF8�״��)
+
+#ifdef XXXXXXXXXXX
+
+	strURL.append(strData);
+
+
+
+	char* pCh = new char[strURL.length() + strData.length() + 1];
+
+
+
+	CEVUtils::evUtf8ToEucKr((char*)strURL.c_str(), pCh, strURL.length() + strData.length());
+
+	strURL.clear();
+
+	strURL.append(pCh);
+
+	delete[] pCh;
+
+
+
+	return strURL;
+
+#endif
+
+
+
+	return strData;
+
+}
+
+*/
+
+
+
+============================================================
+FILE: /home/pi/projects/observer/Handler/StatusHandler.h
+============================================================
+#pragma once
+
+
+
+#include "../EVModules/EVCommon.h"
+
+#include "../EVModules/Core/EVSharedMemory.h"
+
+#include "DIOHandler.h"
+
+#include "MessageQueueDIO.h"
+
+#include <iostream>
+
+#include <vector>
+
+#include <mutex>
+
+#include <deque>
+
+#include <queue>
+
+#include <thread>
+
+
+
+#define PERSISTANCE_FILE		"persistance"
+
+
+
+#define SHARED_MEMORY_ID		1551
+
+
+
+#define SERIAL_PORT_COUNT		8
+
+#define SERIAL_SLAVE_COUNT		16
+
+#define DEV_NAME_SIZE			33
+
+//#define GPIO_INPUT_COUNT		10
+
+//#define GPIO_OUTPUT_COUNT		8
+
+
+
+#define RESULT_VARIABLE_CNT		10
+
+
+
+// �� ���� systeminfo�� SOCKET_COUNT���� �����ȴ�. SOCKET_COUNT���� �� ���ǵ� ���� �ʰ��� �� ����.
+
+#define SOCKET_DEV_COUNT		4
+
+
+
+#define PERSISTANCE_SAVE_COUNT	5
+
+
+
+typedef struct _tagDevResultStruct
+
+{
+
+	tm tmRecv;
+
+
+
+	int nValue;
+
+	float fValue;
+
+	int nErrorNo;				// 0:��������, 9999:������ �̼���
+
+	int nExtra1;
+
+} DevResultStruct;
+
+
+
+
+
+typedef struct _tagStructSharedMemory
+
+{
+
+	unsigned char windowClientCount;
+
+	unsigned char MESCount;
+
+	char aszSerialDevName[SERIAL_PORT_COUNT][SERIAL_SLAVE_COUNT][DEV_NAME_SIZE];
+
+	float afSerialDevValue[SERIAL_PORT_COUNT][SERIAL_SLAVE_COUNT];
+
+	char aszSocketDevName[SOCKET_DEV_COUNT][DEV_NAME_SIZE];
+
+	int anSocketDevValue[SOCKET_DEV_COUNT];
+
+	bool abIOInputStatus[GPIO_IN_COUNT];
+
+	char aszIOInputDevName[GPIO_IN_COUNT][DEV_NAME_SIZE];
+
+	bool abIOOutputStatus[GPIO_OUT_COUNT];
+
+	char aszIOOutputDevName[GPIO_OUT_COUNT][DEV_NAME_SIZE];
+
+	unsigned int anIOInputCount[GPIO_IN_COUNT];
+
+} StructSharedMemory;
+
+
+
+typedef struct _tagStructMESSend
+
+{
+
+	tm tmRecv;
+
+	StructSharedMemory data;
+
+} StructMESSend;
+
+
+
+
+
+
+
+
+
+typedef struct _tagStructBinarySend
+
+{
+
+	char cType;
+
+	char cMSIndex;
+
+	char cIndex1;
+
+	char cIndex2;
+
+	char szDevName[32];
+
+	union
+
+	{
+
+		float fValue;
+
+		int nValue;
+
+	};
+
+	char cUnit;
+
+	float fMinValue;
+
+	float fMaxValue;
+
+	char cRS;
+
+} StructBinarySend;
+
+
+
+
+
+typedef struct _tagStructResultVariable
+
+{
+
+	int nValue;
+
+	float fValue;
+
+	char szUnit[10];
+
+	char szData[32];
+
+} StructResultVariable;
+
+
+
+
+
+
+
+class CStatusHandler
+
+{
+
+public:
+
+	CStatusHandler();
+
+	~CStatusHandler();
+
+
+
+	bool start();
+
+	void stop();
+
+
+
+	bool setSerialResult(int nPortNo, int nSlaveID, const DevResultStruct data);
+
+	DevResultStruct getSerialResult(int nPortNo, int nSlaveID);
+
+
+
+	bool setSocketResult(int nSeqNo, const DevResultStruct data);
+
+	DevResultStruct getSocketResult(int nSeqNo);
+
+
+
+	void setDigitalInput(int pinIndex, int value);
+
+	void setDigitalOutput(int pinIndex, int value);
+
+	void applyToSharedMemForDIO();
+
+
+
+	void increaseDIOCount(int pinIndex, bool bRising, int nRemainCount = 1);
+
+	void resetDIOCount(int pinIndex);
+
+
+
+	void setWindowClientCount(int nCount);
+
+	void setMESClientCount();
+
+
+
+
+
+	void initSerialResultList();
+
+
+
+	size_t getMESListCount();
+
+
+
+	StructResultVariable getResultVariable(int nIndex);
+
+	void setResultVariable(int nIndex, StructResultVariable vars);
+
+
+
+protected:
+
+	void recvHandler(CEVServerSocketWorker* pWorker, ssize_t nLen);
+
+
+
+	bool readPersistanceFile();
+
+	bool savePersistanceFile();
+
+private:
+
+
+
+	void setStatusStruct();
+
+	void writeStatusToSharedMem();
+
+
+
+
+
+	int checkRequestProtocol(CEVServerSocketWorker* pWorker, char* szJobType);
+
+
+
+	void processSocketASCII(CEVServerSocketWorker* pWorker, ssize_t nLen);
+
+	void processSocketBinary(CEVServerSocketWorker* pWorker, ssize_t nLen);
+
+	void processSocketJson(CEVServerSocketWorker* pWorker, ssize_t nLen, const char* szJobType);
+
+
+
+
+
+	//std::string getResultForMESReportUseHttpGET();
+
+	//std::string getResultForMESReportUseHttpPOST();
+
+	std::string getResultForMESReportUseHttp(bool isGetType);
+
+
+
+	std::string sendHttpGET(std::string strURL);
+
+	std::string sendHttpPOST(std::string strURL, std::string strData);
+
+	void runMESThread(void* arg);
+
+
+
+
+
+	void pushCurrentValueToMESList();
+
+	StructMESSend getCurrentValueToMESList();
+
+	void popCurrentValueToMESList();
+
+
+
+
+
+	void sendLineMessage(int nPortNo, int nSlave, int nTokenIndex);
+
+
+
+private:
+
+	std::vector<std::vector<DevResultStruct>> m_vvSerialResultList;
+
+	std::vector<DevResultStruct> m_vvSocketResultList;
+
+	std::queue<StructMESSend> m_queMESSendList;			// MES���� ����Ʈ
+
+	unsigned int m_anDInUnitCount[GPIO_IN_COUNT];	
+
+	int m_nLastDataSerialPort;
+
+	int m_nLastDataSerialSlave;
+
+
+
+	CEVServerSocket* m_pServerSoc;
+
+
+
+	CEVSharedMemory m_sharedMem;
+
+	StructSharedMemory m_Status;
+
+
+
+	std::deque<unsigned char> m_dequeRecv;
+
+
+
+	std::mutex m_mutexSerialResultList;
+
+	std::mutex m_mutexSocketResultList;
+
+
+
+	std::mutex m_mutexSharedMem;
+
+	std::mutex m_mutexRecvBuf;
+
+	std::mutex m_mutexIOCount;
+
+	std::mutex m_mutexMESList;
+
+	std::mutex m_mutexResultVar;
+
+
+
+	std::string m_strRecvBuf;
+
+
+
+	bool m_bIsStarted;
+
+
+
+
+
+
+
+	std::thread* m_pThreadMES;
+
+	bool m_bMESThreadRun;
+
+	int m_nPersistanceSaveCnt;
+
+	
+
+
+
+	std::vector<StructResultVariable> m_vResultVariable;
+
+
+
+	//////////////////////////////
+
+	// Line Messaging ����
+
+	time_t m_tmSendLine[SERIAL_PORT_COUNT][SERIAL_SLAVE_COUNT];
+
+};
+
+============================================================
+FILE: /home/pi/projects/observer/Handler/NetworkHandler.cpp
+============================================================
+#include "NetworkHandler.h"
+
+#include <string.h>
+
+#include <iostream>
+
+#include <string>
+
+#include <vector>
+
+#include <sstream>
+
+
+
+extern bool gbRun;
+
+extern char gszHomeDir[256];
+
+
+
+/*
+
+/etc/dhcpcd.conf, /etc/resolv.conf ���� ������ ���� Wrapping�Լ�
+
+*/
+
+
+
+bool CNetworkHandler::changeNetworkInfo(std::string strIP, std::string strRouter, std::string strNetMask, std::string strDNS1, std::string strDNS2)
+
+{
+
+
+
+	this->modifyResolvConf(strDNS1, strDNS2);
+
+	this->modifyDhcpcdConf(strIP, strRouter, strNetMask, strDNS1, strDNS2);
+
+	
+
+
+
+	return true;
+
+}
+
+
+
+
+
+/*
+
+system������ ������ �� ��� ���ڿ��� �����Ѵ�.
+
+*/
+
+std::string CNetworkHandler::executeCommand(std::string strCmd)
+
+{
+
+	std::string strResult;
+
+	FILE* stream;
+
+	char buf[65535] = { 0, };
+
+
+
+	stream = popen(strCmd.c_str(), "r");
+
+
+
+	if (stream)
+
+	{
+
+		while (fgets(buf, sizeof(buf), stream) != NULL)
+
+			strResult.append(buf);
+
+
+
+		pclose(stream);
+
+	}
+
+
+
+	return strResult;
+
+}
+
+
+
+
+
+/*
+
+sudo /etc/init.d/networking restart
+
+������ �����Ѵ�.
+
+*/
+
+void CNetworkHandler::restartNetwork()
+
+{
+
+	std::string strResult;
+
+	
+
+	executeCommand("sudo /etc/init.d/networking restart");
+
+	
+
+	//this->restartWIFI();		// WIFI�� �����
+
+
+
+	
+
+	writeSystemInfo("[CNetworkHandler] Restart Network");
+
+}
+
+
+
+bool CNetworkHandler::restartWIFI()
+
+{
+
+	std::string strCmd, strResult;
+
+
+
+	strCmd = "wpa_cli -i wlan0 reconfigure";
+
+	strResult = this->executeCommand(strCmd);			// ���࿡ �ð��� �ɸ���.
+
+
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+
+
+	writeSystemInfo("[CNetworkHandler] Restart WIFI.");
+
+
+
+	if (strResult.find("OK", 0) != std::string::npos)
+
+		return true;
+
+	else
+
+		return false;
+
+}
+
+
+
+void CNetworkHandler::rebootSystem()
+
+{
+
+	system("sudo reboot");
+
+	gbRun = false;
+
+}
+
+
+
+void CNetworkHandler::shutdownSystem()
+
+{
+
+	system("sudo halt -p");
+
+	gbRun = false;
+
+}
+
+
+
+/*
+
+/etc/resolv.conf������ �����Ѵ�.
+
+
+
+resolv.conf������ pi�������� ������ �� ����.
+
+�׷��� �ϴ� ���� ���丮�� ������ ������ �� sudo cp �������� �����Ѵ�.(cp������ sudo������ ������.)
+
+*/
+
+bool CNetworkHandler::modifyResolvConf(std::string strDNS1, std::string strDNS2)
+
+{
+
+	std::string strCmd, strResult;
+
+	bool bSuc = false;
+
+
+
+	// �ڽ��� ���丮�� resolv.conf����� (���� ������ /etc/resolv.conf�� �ٷ� ����� ����. sudo�ٿ��� ��������)
+
+	strCmd.append("echo \"");
+
+	strCmd.append("#Generated by observer\n");
+
+
+
+	if (!strDNS1.empty())
+
+	{
+
+		strCmd.append("nameserver ");
+
+		strCmd.append(strDNS1);
+
+		strCmd.append("\n");
+
+	}
+
+
+
+	if (!strDNS2.empty())
+
+	{
+
+		strCmd.append("nameserver ");
+
+		strCmd.append(strDNS2);
+
+		strCmd.append("\n");
+
+	}
+
+
+
+	strCmd.append("\" >> ")
+
+		.append(gszHomeDir)
+
+		.append("/resolv.conf");
+
+
+
+	strResult = this->executeCommand(strCmd);
+
+
+
+	if (!strResult.empty())
+
+		return false;
+
+
+
+
+
+	// /etc�� �����(cp������ sudo �� ����)
+
+	strCmd.clear();
+
+	//strCmd.append("sudo cp ./resolv.conf /etc");
+
+	strCmd.append("sudo cp ")
+
+		.append(gszHomeDir).append("/resolv.conf /etc");
+
+		
+
+
+
+
+
+	strResult = this->executeCommand(strCmd);
+
+
+
+	if (!strResult.empty())
+
+		bSuc = false;
+
+	else
+
+		bSuc = true;
+
+
+
+
+
+	// �ڽ��� ���丮�� ���� ������ ����
+
+	strCmd.clear();
+
+	//strCmd.append("rm ./resolv.conf");
+
+	strCmd.append("rm ").append(gszHomeDir).append("/resolv.conf");
+
+	strResult = this->executeCommand(strCmd);
+
+
+
+	return bSuc;
+
+
+
+}
+
+
+
+/*
+
+/etc/dhcpcd.conf ������ �����Ѵ�.
+
+�� ������ pi:pi �����̹Ƿ� �ٷ� ���������ϴ�.
+
+*/
+
+bool CNetworkHandler::modifyDhcpcdConf(std::string strIP, std::string strRouter, std::string strNetMask, std::string strDNS1, std::string strDNS2)
+
+{
+
+	std::string strFile;
+
+	FILE* fp;
+
+	char buf[1024] = { 0, }, szFindStr[32] = { 0, }, szFile[256] = { 0, }, szNetMaskOnCnt[32] = { 0, };
+
+	
+
+	sprintf(szFile, "%s/staticip.conf", gszHomeDir);
+
+
+
+
+
+	// ���ϵ��丮���� staticip.conf������ �д´�.
+
+	fp = fopen(szFile, "r");
+
+
+
+	if (fp == nullptr)
+
+	{
+
+		writeSystemError("[CNetworkHandler] staticip.conf file open failed.");
+
+		return false;
+
+	}
+
+
+
+	while (!feof(fp))
+
+	{
+
+		fgets(buf, sizeof(buf), fp);
+
+		strFile.append(buf);
+
+	}
+
+
+
+	fclose(fp);
+
+
+
+	
+
+	// �� ���泻�뿡 ���� ��ġ�� ã�� ���ڿ��� �ٲ۴�
+
+	strcpy(szFindStr, "<NEW_IP_ADDRESS>");
+
+	strFile.replace(strFile.find(szFindStr), strlen(szFindStr), strIP);
+
+
+
+	strcpy(szFindStr, "<NEW_ROUTER>");
+
+	strFile.replace(strFile.find(szFindStr), strlen(szFindStr), strRouter);
+
+
+
+	sprintf(szNetMaskOnCnt, "%d", this->getNetMaskBitCount(strNetMask));
+
+	strcpy(szFindStr, "<NEW_NETMASK>");
+
+	strFile.replace(strFile.find(szFindStr), strlen(szFindStr), szNetMaskOnCnt);
+
+
+
+	strcpy(szFindStr, "<NEW_DNS1>");
+
+	strFile.replace(strFile.find(szFindStr), strlen(szFindStr), strDNS1);
+
+
+
+	strcpy(szFindStr, "<NEW_DNS2>");
+
+	strFile.replace(strFile.find(szFindStr), strlen(szFindStr), strDNS2);
+
+
+
+
+
+	// ����� ������ ���Ϸ� �����Ѵ�.
+
+	fp = fopen("/etc/dhcpcd.conf", "w");
+
+
+
+	if (fp == nullptr)
+
+	{
+
+		writeSystemError("[CNetworkHandler] dhcpcd.conf file open failed.");
+
+		return false;
+
+	}
+
+
+
+
+
+	fwrite(strFile.c_str(), 1, strFile.size(), fp);
+
+
+
+	fflush(fp);
+
+	fclose(fp);
+
+
+
+	return true;
+
+}
+
+
+
+
+
+/*
+
+* Subnet Mask�� 255.255.255.0�� 24�� 1������ �����ؼ� ����
+
+*/
+
+unsigned int CNetworkHandler::getNetMaskBitCount(std::string strNetMask)
+
+{
+
+	std::string strTok;
+
+	std::stringstream sstream(strNetMask);
+
+		
+
+	unsigned int uiMask = 0, uiItem = 0;
+
+	int nShifter[4] = { 24, 16, 8, 0 }, nCur = 0;
+
+	int nOnCount = 0;
+
+
+
+	while (getline(sstream, strTok, '.'))
+
+	{
+
+		uiItem = (unsigned int)atoi(strTok.c_str());
+
+		uiMask |= (uiItem << nShifter[nCur]);
+
+
+
+		nCur++;
+
+	}
+
+
+
+
+
+	for (int i = 0; i < 32; i++)
+
+	{
+
+		if (uiMask & 0x01)
+
+			nOnCount++;
+
+
+
+		uiMask = uiMask >> 1;
+
+	}
+
+
+
+	return nOnCount;
+
+}
+
+
+
+
+
+/*
+
+AP List�� �����Ѵ�.
+
+*/
+
+std::vector<APList> CNetworkHandler::getAPList()
+
+{
+
+	std::string strCmd, strResult, strTok, strFind;
+
+	std::vector<string> vTokens;	
+
+	std::vector<string>::iterator iter;
+
+	char szCell[16] = { 0, }, szFreq[32] = { 0, };
+
+	int nCnt = 1, nFreqVal, nFreqMax;
+
+	std::string::size_type nFind = 0;
+
+	//char* pTok = nullptr;
+
+
+
+	std::vector<APList> vReturn;
+
+
+
+	strCmd.append("iwlist wlan0 scan");
+
+	strResult = this->executeCommand(strCmd);
+
+
+
+
+
+	std::stringstream sstream(strResult);
+
+	
+
+	while (getline(sstream, strTok, '\n'))
+
+	{
+
+		vTokens.push_back(strTok);
+
+	}
+
+
+
+
+
+
+
+	for (iter = vTokens.begin(); iter != vTokens.end(); iter++)
+
+	{
+
+		sprintf(szCell, "Cell %02d", nCnt);		// "Cell 01" ���� �� AP ���� ���ڿ��� ã�´�.
+
+		nFind = (*iter).find(szCell);
+
+
+
+		if (nFind != std::string::npos)
+
+		{
+
+			APList item;
+
+			
+
+			// Frequency
+
+			iter += 2;
+
+			strFind = "Frequency:";
+
+			nFind = (*iter).find(strFind);
+
+			if (nFind != std::string::npos)
+
+			{
+
+				nFind += strFind.size();
+
+
+
+				if ((*iter)[nFind] == '2')
+
+					item.fFreq = 2.4f;
+
+				else if ((*iter)[nFind] == '5')
+
+					item.fFreq = 5.0f;
+
+				else
+
+					item.fFreq = 0.f;
+
+			}
+
+			else
+
+				return vReturn;
+
+
+
+
+
+			// Quality
+
+			iter++;
+
+			strFind = "Quality=";
+
+			nFind = (*iter).find(strFind);			
+
+			if (nFind != std::string::npos)
+
+			{
+
+				nFind += strFind.size();
+
+
+
+				szFreq[0] = (*iter)[nFind];
+
+				szFreq[1] = (*iter)[nFind + 1];
+
+				szFreq[2] = 0;
+
+
+
+				nFreqVal = atoi(szFreq);
+
+
+
+				szFreq[0] = (*iter)[nFind + 3];
+
+				szFreq[1] = (*iter)[nFind + 4];
+
+				szFreq[2] = 0;
+
+
+
+				nFreqMax = atoi(szFreq);
+
+
+
+				item.sQuality = (short)(((float)nFreqVal / (float)nFreqMax) * 100.f);
+
+
+
+			}
+
+			else
+
+				return vReturn;
+
+
+
+
+
+			// AP Name
+
+			iter += 2;
+
+			strFind = "ESSID:";
+
+			nFind = (*iter).find(strFind);
+
+			if (nFind != std::string::npos)
+
+			{
+
+				nFind += strFind.size();
+
+								
+
+
+
+				strTok = (*iter).substr(nFind + 1, (*iter).find("\"", nFind + 1) - nFind - 1);
+
+				strcpy(item.szName, strTok.c_str());
+
+			}
+
+			else
+
+				return vReturn;
+
+
+
+
+
+			if(strcmp(item.szName, "") != 0 && findSameAPName(vReturn, item.szName) == false)
+
+				vReturn.push_back(item);
+
+
+
+
+
+			nCnt++;
+
+		}
+
+
+
+
+
+	}
+
+
+
+
+
+	return vReturn;
+
+	
+
+}
+
+
+
+/*
+
+ã�� AP����Ʈ���� ���� �̸��� �����ϴ��� Ȯ���Ѵ�.(Extender� ���� �ߺ����� ������ ��찡 ����)
+
+*/
+
+bool CNetworkHandler::findSameAPName(std::vector<APList> vList, char* szAPName)
+
+{
+
+	for (int i = 0; i < (int)vList.size(); i++)
+
+	{
+
+		if (strcmp(vList[i].szName, szAPName) == 0)
+
+			return true;
+
+	}
+
+
+
+	return false;
+
+}
+
+
+
+
+
+
+
+bool CNetworkHandler::getGateway(char* szGateway)
+
+{
+
+	FILE* fp;
+
+	char buf[4096] = { 0, };
+
+	std::string strLine, strValue;
+
+	std::string::size_type stFind = 0;
+
+	size_t stLen = 0, i;
+
+
+
+	fp = fopen("/etc/dhcpcd.conf", "r");
+
+
+
+	if (fp == nullptr)
+
+	{
+
+		writeSystemError("[CNetworkHandler] /etc/dhcpcd.conf file can't open.");
+
+		return false;
+
+	}
+
+
+
+	while (!feof(fp))
+
+	{
+
+		memset(buf, 0, sizeof(buf));
+
+		fgets(buf, sizeof(buf), fp);
+
+
+
+		if (buf == nullptr)
+
+			break;
+
+
+
+		if (buf[0] == '#' || buf[0] == 0x0A)
+
+			continue;
+
+
+
+		stLen = strlen(buf);
+
+		for (i = 0; i < stLen; i++)
+
+		{
+
+			if (buf[i] == 0x0A || buf[i] == 0x0D)
+
+				buf[i] = 0x0;
+
+		}
+
+
+
+		strLine = buf;
+
+
+
+		if (strLine.find("static routers", 0) != std::string::npos)
+
+		{
+
+			stFind = strLine.find("=", 0);
+
+
+
+			if (stFind != std::string::npos)
+
+			{				
+
+				sprintf(szGateway, "%s", strLine.substr(stFind + 1).c_str());
+
+				break;
+
+			}
+
+		}
+
+	}
+
+
+
+
+
+	fclose(fp);
+
+
+
+	return true;
+
+}
+
+
+
+
+
+bool CNetworkHandler::getDNS(char* szDNS1, char* szDNS2)
+
+{
+
+	FILE* fp;
+
+	char buf[4096] = { 0, };
+
+	std::string strLine, strValue;
+
+	std::string::size_type stFind = 0;
+
+	int nFoundCnt = 0;
+
+	size_t stLen = 0, i;
+
+
+
+	fp = fopen("/etc/resolv.conf", "r");
+
+
+
+	if (fp == nullptr)
+
+	{
+
+		writeSystemError("[CNetworkHandler] /etc/resolv.conf file can't open.");
+
+		return false;
+
+	}
+
+
+
+	while (!feof(fp))
+
+	{
+
+		memset(buf, 0, sizeof(buf));
+
+		fgets(buf, sizeof(buf), fp);
+
+
+
+		if (buf == nullptr)
+
+			break;
+
+
+
+		if (buf[0] == '#' || buf[0] == 0x0A)
+
+			continue;
+
+
+
+
+
+		stLen = strlen(buf);
+
+		for (i = 0; i < stLen; i++)
+
+		{
+
+			if (buf[i] == 0x0A || buf[i] == 0x0D)
+
+				buf[i] = 0x0;
+
+		}
+
+			
+
+
+
+
+
+		strLine = buf;
+
+		
+
+
+
+		if (strLine.find("nameserver", 0) != std::string::npos)
+
+		{
+
+			stFind = strLine.find(" ", 0);
+
+
+
+			if (stFind != std::string::npos)
+
+			{
+
+				if(nFoundCnt == 0)
+
+					sprintf(szDNS1, "%s", strLine.substr(stFind + 1).c_str());
+
+				else
+
+					sprintf(szDNS2, "%s", strLine.substr(stFind + 1).c_str());
+
+
+
+				nFoundCnt++;				
+
+			}
+
+		}
+
+	}
+
+
+
+	fclose(fp);
+
+
+
+	return true;
+
+}
+
+
+
+
+
+/*
+
+��� ��Ʈ��ũ ������ �ѹ��� �����Ѵ�.
+
+*/
+
+bool CNetworkHandler::getNetworkAllInfo(const char* szInterface, char* szIP, char* szGateway, char* szNetmask, char* szDNS1, char* szDNS2)
+
+{
+
+	std::string strCmd, strResult, strTok;
+
+	std::vector<string> vTokens;
+
+
+
+	// IP�ּ�, Subnet Mask ��������(Return�� : IP�ּ�@SubnetMask)
+
+	strCmd.append("ifconfig ").append(szInterface);
+
+	strCmd.append(" |awk '$1==\"inet\" && $3==\"netmask\" {print $2\"@\"$4}'");
+
+	strResult = this->executeCommand(strCmd);
+
+
+
+	if (strResult.find("error fetching interface") != std::string::npos)
+
+	{
+
+		return false;
+
+	}
+
+
+
+	std::stringstream sstream(strResult);
+
+
+
+	while (getline(sstream, strTok, '@'))
+
+	{
+
+		vTokens.push_back(strTok);
+
+	}
+
+
+
+	if (vTokens.size() < 2)
+
+	{
+
+		return false;
+
+	}
+
+	else
+
+	{
+
+		strcpy(szIP, vTokens[0].c_str());
+
+		strcpy(szNetmask, vTokens[1].c_str());
+
+	}
+
+
+
+	// Gateway ��������
+
+	strCmd.clear();
+
+	strCmd.append("route |awk '$1==\"default\" {print $2}'");
+
+	strResult = this->executeCommand(strCmd);
+
+
+
+	strcpy(szGateway, strResult.c_str());
+
+
+
+	// DNS ��������
+
+	strCmd.clear();
+
+	strCmd.append("cat /etc/resolv.conf |awk '$1==\"nameserver\" {print $2}'");
+
+	strResult = this->executeCommand(strCmd);
+
+		
+
+	std::stringstream sstream2(strResult);
+
+	vTokens.clear();
+
+
+
+	while (getline(sstream2, strTok, '\n'))
+
+	{
+
+		vTokens.push_back(strTok);
+
+	}
+
+
+
+	if (vTokens.size() > 0)
+
+		strcpy(szDNS1, vTokens[0].c_str());
+
+
+
+	if (vTokens.size() > 1)
+
+		strcpy(szDNS2, vTokens[1].c_str());
+
+	else
+
+		szDNS2 = NULL;
+
+
+
+	return true;
+
+}
+
+
+
+
+
+
+
+/*
+
+WIFI ����
+
+*/
+
+bool CNetworkHandler::setWifiConnectInfo(std::string strAPName, std::string strPwd)
+
+{
+
+	FILE* fp;
+
+	char szFile[256] = { 0, };
+
+	std::string strCmd, strResult;	
+
+	std::string strTok;
+
+	std::vector<string> vTokens;
+
+	std::vector<string>::iterator iter;
+
+
+
+	strCmd.append("wpa_passphrase ");
+
+	strCmd.append(strAPName);
+
+	strCmd.append(" \"").append(strPwd).append("\"");
+
+	//strCmd.append(">0 1>&0");
+
+
+
+	strResult = this->executeCommand(strCmd);
+
+
+
+	std::stringstream sstream(strResult);
+
+
+
+	// ����߿� �Էµ� ��ȣ�� �ּ�ó���� ���� �����µ� �̰� �����ϱ� ���� �ٹٲ޴����� ��ū�� �и��Ѵ�.
+
+	while (getline(sstream, strTok, '\n'))
+
+	{
+
+		vTokens.push_back(strTok);
+
+	}
+
+
+
+
+
+	//////////////////////////////////////////////////////////
+
+	// wifitemp.conf�� WIFI���� ������ ���� ���
+
+	sprintf(szFile, "%s/wifitemp.conf", gszHomeDir);
+
+
+
+	fp = fopen(szFile, "w");
+
+
+
+	if (fp == nullptr)
+
+	{
+
+		writeSystemError("[CNetworkHandler] wifitemp.conf file open failed for writing.");
+
+		return false;
+
+	}
+
+
+
+
+
+	fprintf(fp, "ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev\n");
+
+	fprintf(fp, "update_config=1\n\n");
+
+
+
+	for (iter = vTokens.begin(); iter != vTokens.end(); iter++)
+
+	{
+
+		if ((*iter).find("#psk", 0) != std::string::npos)
+
+			continue;		// #psk="��ȣ" �� ��µǴ� �κ��� �����Ѵ�.
+
+
+
+		fprintf(fp, "%s\n", (*iter).c_str());
+
+		//fwrite((*iter).c_str(), 1, (*iter).size(), fp);
+
+	}
+
+
+
+	fflush(fp);
+
+	fclose(fp);
+
+
+
+
+
+	//////////////////////////////////////////////////////////
+
+	// ������ wifitemp.conf������ /etc/wpa_supplicant/wpa_supplicant.conf�� �����.
+
+	//strCmd = "sudo mv ./wifitemp.conf /etc/wpa_supplicant/wpa_supplicant.conf";
+
+	strCmd.clear();
+
+	strCmd.append("sudo mv ")
+
+		.append(szFile)
+
+		.append(" /etc/wpa_supplicant/wpa_supplicant.conf");
+
+	this->executeCommand(strCmd);
+
+
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+
+
+
+
+	//////////////////////////////////////////////////////////
+
+	// WIFI�� ����� �Ѵ�.	-->�ܺο��� ���� ȣ���Ұ�(restartWIFI())
+
+	/*
+
+	strCmd = "wpa_cli -i wlan0 reconfigure";
+
+	strResult = this->executeCommand(strCmd);			// ���࿡ �ð��� �ɸ���.
+
+
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+
+
+	if (strResult.find("OK", 0) != std::string::npos)
+
+		return true;
+
+	else
+
+		return false;
+
+	*/
+
+
+
+	return true;
+
+}
+
+============================================================
+FILE: /home/pi/projects/observer/Handler/NetworkHandler.h
+============================================================
+#pragma once
+
+
+
+/*
+
+Network���� ���� Ŭ����
+
+(IP����, Wifi������)
+
+*/
+
+
+
+#include "../EVModules/EVCommon.h"
+
+
+
+typedef struct _tagAPList
+
+{
+
+	char szName[32];
+
+	float fFreq;
+
+	short sQuality;
+
+} APList;
+
+
+
+
+
+class CNetworkHandler
+
+{
+
+public:
+
+	//CNetworkHandler();
+
+	//~CNetworkHandler();
+
+	bool getGateway(char* szGateway);
+
+	bool getDNS(char* szDNS1, char* szDNS2);
+
+
+
+	bool getNetworkAllInfo(const char* szInterface, char* szIP, char* szGateway, char* szNetmask, char* szDNS1, char* szDNS2);
+
+	
+
+
+
+	bool changeNetworkInfo(std::string strIP, std::string strRouter, std::string strNetMask, std::string strDNS1, std::string strDNS2);
+
+	std::vector<APList> getAPList();
+
+
+
+	bool setWifiConnectInfo(std::string strAPName, std::string strPwd);
+
+
+
+	void restartNetwork();
+
+	bool restartWIFI();
+
+	void rebootSystem();
+
+	void shutdownSystem();
+
+
+
+private:
+
+	std::string executeCommand(std::string strCmd);
+
+
+
+	bool modifyResolvConf(std::string strDNS1, std::string strDNS2);
+
+	bool modifyDhcpcdConf(std::string strIP, std::string strRouter, std::string strNetMask, std::string strDNS1, std::string strDNS2);
+
+
+
+	bool findSameAPName(std::vector<APList> vList, char* szAPName);
+
+	unsigned int getNetMaskBitCount(std::string strNetMask);
+
+};
+
+============================================================
+FILE: /home/pi/projects/observer/EVModules/Socket/EVServerSocket.cpp
+============================================================
+#include "EVServerSocket.h"
+
+#include <syslog.h>
+
+#include <fcntl.h>
+
+#include <string.h>
+
+
+
+CEVServerSocket::CEVServerSocket(uint16_t nPort)
+
+{
+
+	memset(&m_ServerAddr, 0, sizeof(m_ServerAddr));
+
+
+
+	m_ServerAddr.sin_family = AF_INET;
+
+	m_ServerAddr.sin_addr.s_addr = htonl(INADDR_ANY);//inet_addr(strAddress.c_str());
+
+	m_ServerAddr.sin_port = htons(nPort);
+
+
+
+	m_bRunning = false;
+
+	m_pThreadListener = NULL;
+
+	callbackReceiveData = NULL;
+
+	m_nMaxClient = DEFAULT_MAX_CLIENT;
+
+}
+
+
+
+CEVServerSocket::~CEVServerSocket()
+
+{
+
+	if (m_pThreadListener != NULL)
+
+		this->stop();
+
+}
+
+
+
+void CEVServerSocket::bindRecvCallback(std::function<void(CEVServerSocketWorker*, ssize_t)> callbackFunc)
+
+{
+
+	callbackReceiveData = callbackFunc;
+
+}
+
+
+
+void CEVServerSocket::setMaxClient(int nMaxCnt)
+
+{
+
+	if (nMaxCnt > DEFAULT_MAX_CLIENT)
+
+		m_nMaxClient = DEFAULT_MAX_CLIENT;
+
+	else
+
+		m_nMaxClient = nMaxCnt;
+
+}
+
+
+
+
+
+void CEVServerSocket::start()
+
+{
+
+	writeSystemInfo("[CEVServerSocket] Server Socket starting...");
+
+
+
+	m_bRunning = true;
+
+
+
+
+
+	//int rtn = pthread_create(&m_hThreadListener, NULL, &CEVServerSocket::startListen, (void*)NULL);
+
+	m_pThreadListener = new std::thread(&CEVServerSocket::startListen, this, (void*)NULL);
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+
+
+	if (m_pThreadListener == NULL)
+
+	{
+
+		writeSystemError("[CEVServerSocket] Listener can't be started.");
+
+	}
+
+	else
+
+	{
+
+		writeSystemInfo("[CEVServerSocket] Server Socket started");
+
+	}
+
+
+
+
+
+}
+
+
+
+void CEVServerSocket::stop()
+
+{
+
+
+
+	writeSystemInfo("[CEVServerSocket] Server Socket stopping...");
+
+
+
+	m_bRunning = false;
+
+		
+
+	if (m_vecWorker.size() > 0)
+
+	{
+
+		writeSystemDebug("[CEVServerSocket] Server Socket Worker thread exist. Worker stopping...");
+
+
+
+		for (int i = 0; i < (int)m_vecWorker.size(); i++)
+
+		{
+
+			writeSystemDebug("	[CEVServerSocket] Worker(Thread ID : %d) stopping. ", m_vecWorker[i]->getThreadID());
+
+
+
+			m_vecWorker[i]->stop();
+
+			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+			delete m_vecWorker[i];
+
+		}
+
+
+
+		writeSystemDebug("[CEVServerSocket] All Worker stopped.");
+
+	}
+
+
+
+
+
+	if (m_pThreadListener != NULL)
+
+	{
+
+		
+
+
+
+		writeSystemDebug("[CEVServerSocket] Server Socket  closing...");
+
+		close(m_nServerSocketFd);
+
+
+
+		writeSystemDebug("[CEVServerSocket] Server Socket Listner thread waiting...");
+
+		m_pThreadListener->join();
+
+
+
+		writeSystemDebug("[CEVServerSocket] Server Socket Listner thread deleting...");
+
+		delete m_pThreadListener;
+
+		m_pThreadListener = NULL;
+
+	}
+
+
+
+	writeSystemInfo("[CEVServerSocket] Server Socket stopped.");
+
+}
+
+
+
+
+
+// �̰� ������� ����Ǿ�� �Ѵ�.
+
+void CEVServerSocket::startListen(void* arg)
+
+{
+
+	
+
+	// ���� ����
+
+	m_nServerSocketFd = socket(AF_INET, SOCK_STREAM, 0);
+
+
+
+	if (m_nServerSocketFd == -1)
+
+	{
+
+		writeSystemError("[CEVServerSocket] socket() error.");
+
+		return;
+
+	}
+
+
+
+	// Bind
+
+	if (bind(m_nServerSocketFd, (struct sockaddr*)&m_ServerAddr, sizeof(m_ServerAddr)) == -1)
+
+	{
+
+		writeSystemError("[CEVServerSocket] bind() error.");
+
+		return;
+
+	}
+
+
+
+
+
+	// Listen
+
+	if (listen(m_nServerSocketFd, BACKLOG_COUNT) == -1)
+
+	{	
+
+		writeSystemError("[CEVServerSocket] listen() error.");
+
+		return;
+
+	}
+
+
+
+
+
+	writeSystemInfo("[CEVServerSocket] Server Socket start listening.(Port:%d)", ntohs(m_ServerAddr.sin_port));
+
+
+
+	// NonBlocking���� accept�� �����Ѵ�.(Blocking���� ���� ��� stop()���� ������ ������ �� accept���� �������ü��� ����)
+
+	int nFlags = fcntl(m_nServerSocketFd, F_GETFL, 0);
+
+	fcntl(m_nServerSocketFd, F_SETFL, O_NONBLOCK | nFlags);
+
+
+
+	while (m_bRunning)
+
+	{	
+
+
+
+		// Accept
+
+		struct sockaddr_in clientAddr;
+
+		socklen_t clientLen = sizeof(clientAddr);
+
+		int nClientFd = -1;
+
+				
+
+		nClientFd = accept(m_nServerSocketFd, (struct sockaddr*)&clientAddr, &clientLen);
+
+
+
+		// �ִ� Ŭ���̾�Ʈ ������ �ʰ��ߴٸ� ������ �ٷ� ���������.
+
+		if (m_vecWorker.size() >= (size_t)m_nMaxClient)
+
+		{
+
+			close(nClientFd);
+
+			nClientFd = -1;
+
+		}
+
+
+
+
+
+		//////////////////////////////////////////
+
+		// Ŭ���̾�Ʈ ������ ������ ����
+
+		if (nClientFd != -1)
+
+		{
+
+			CEVServerSocketWorker* workerThread = new CEVServerSocketWorker(nClientFd, clientAddr, this);
+
+
+
+			if (workerThread != NULL)
+
+			{
+
+				m_mutexList.lock();
+
+
+
+				workerThread->start();
+
+				std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+				m_vecWorker.push_back(workerThread);
+
+
+
+				writeSystemInfo("[CEVServerSocket] Current connected client(s) : %d", m_vecWorker.size());
+
+
+
+				m_mutexList.unlock();
+
+			}
+
+		}
+
+	
+
+
+
+
+
+		// Ŭ���̾�Ʈ ��������� Worker�� ������û�� �� CEVServerSocketWorker�� ������ �� �׸��� ����ó���Ѵ�.
+
+		this->removeWorkerFromList();
+
+
+
+
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+	}
+
+
+
+
+
+
+
+	writeSystemInfo("[CEVServerSocket] Server Socket listening stopped.");
+
+
+
+	//close(m_nServerSocketFd);
+
+
+
+}
+
+
+
+
+
+
+
+void CEVServerSocket::requestRemoveWorkerFromList(CEVServerSocketWorker* pWorker)
+
+{
+
+	m_mutexList.lock();
+
+
+
+	m_vecReqRemoveList.push_back(pWorker);
+
+
+
+	m_mutexList.unlock();
+
+}
+
+
+
+/*
+
+CEVServerSocketWorker�� ������ �Լ� startComm()�� ��������� Worker List Vector���� ���ŵǱ� ���� Worker�ڽ��� ȣ���Ѵ�.
+
+*/
+
+void CEVServerSocket::removeWorkerFromList()
+
+{
+
+	if (m_vecReqRemoveList.size() > 0)
+
+	{	// Ŭ���̾�Ʈ ����� ���� �ڽ��� ������ �޶�� ��û�� �� CEVServerSocketWorker�� �ִٸ� �ش� Worker�� ����ó���Ѵ�.
+
+		m_mutexList.lock();
+
+
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(20));
+
+
+
+		for (vector<CEVServerSocketWorker*>::iterator itReq = m_vecReqRemoveList.begin(); itReq != m_vecReqRemoveList.end(); ++itReq)
+
+		{
+
+			for (vector<CEVServerSocketWorker*>::iterator it = m_vecWorker.begin(); it != m_vecWorker.end(); ++it)
+
+			{
+
+				if (*it == *itReq)
+
+				{
+
+					if ((*it)->isRunning())
+
+						(*it)->stop();
+
+
+
+					m_vecWorker.erase(it);
+
+
+
+					delete *itReq;
+
+
+
+					break;
+
+				}
+
+			}
+
+
+
+		}
+
+
+
+		m_vecReqRemoveList.clear();
+
+
+
+		m_mutexList.unlock();
+
+
+
+
+
+		writeSystemInfo("[CEVServerSocket] Current Worker(Connected client) Count : %d", m_vecWorker.size());
+
+
+
+	}
+
+
+
+}
+
+
+
+
+
+
+
+void CEVServerSocket::sendAll(const char* pData, size_t nLen)
+
+{
+
+	for (vector<CEVServerSocketWorker*>::iterator it = m_vecWorker.begin(); it != m_vecWorker.end(); ++it)
+
+	{
+
+		if (!(*it)->isRunning())
+
+			continue;
+
+		
+
+		ssize_t nRtn = write((*it)->getCliendFd(), pData, nLen);
+
+		
+
+		if (nRtn < 0)
+
+		{
+
+			writeSystemError("[CEVServerSocket] Writing failed.(Client FD:%d)", (*it)->getCliendFd());
+
+		}
+
+	}
+
+}
+
+
+
+/*
+
+CEVServerSocketWorker���� ���� �����Ͱ� ������ ȣ�����ش�.
+
+*/
+
+void CEVServerSocket::receivedData(CEVServerSocketWorker* pWorker, ssize_t nLen)
+
+{
+
+	if (callbackReceiveData != NULL)
+
+	{	
+
+		callbackReceiveData(pWorker, nLen);
+
+	}
+
+}
+
+
+
+
+
+int CEVServerSocket::getConnectedClientCount()
+
+{
+
+	return (int)m_vecWorker.size();
+
+}
+
+============================================================
+FILE: /home/pi/projects/observer/EVModules/Socket/EVServerSocket.h
+============================================================
+#pragma once
+
+
+
+/*
+
+CEVServerSocket server(9999);				// Port 9999������ ���������� ����.
+
+//server.bindRecvCallback(recvHandler);		// Client�κ��� ������ ������ ���� ��� ������� �ݹ� �Լ� ����(������ �Ʒ� ����)
+
+// C++���·� ����
+
+server.bindRecvCallback(std::bind(&CParameterHandler::recvHandler, this, std::placeholders::_1, std::placeholders::_2));
+
+						//bind�� ù��° ���ڷ� �ش� Ŭ������ �ڵ鷯 �Լ�, �ش� Ŭ������ �ν��Ͻ�, Callback�Լ��� �Ķ���� ����
+
+
+
+server.start();
+
+
+
+...
+
+
+
+server.stop();
+
+
+
+---------------------------------------------------
+
+���� �ݹ� �Լ� ����
+
+
+
+void recvHandler(CEVServerSocketWorker* pWorker, ssize_t nLen);
+
+
+
+pWorker�� �۽��� Ŭ���̾�Ʈ ��� Worker Instance, nLen�� ���� ������ ����Ʈ��.
+
+
+
+pWorker->getRecvData(buf, sizeof(buf), nRecvLen);
+
+�� ���� �ش� Worker�κ��� ���ŵ� �����͸� �д´�.
+
+
+
+*/
+
+
+
+#include "../EVCommon.h"
+
+
+
+#include <sys/types.h>
+
+#include <sys/socket.h>
+
+#include <stdio.h>
+
+#include <netinet/in.h>
+
+#include <arpa/inet.h>
+
+#include <unistd.h>
+
+#include <vector>
+
+//#include <pthread.h>
+
+#include <thread>
+
+#include <mutex>
+
+#include <functional>
+
+
+
+
+
+//#include "EVServerSocketWorker.h"
+
+
+
+#define BACKLOG_COUNT			5
+
+
+
+#define DEFAULT_MAX_CLIENT		5
+
+
+
+class CEVServerSocketWorker;
+
+
+
+
+
+
+
+
+
+class CEVServerSocket
+
+{
+
+public:
+
+	CEVServerSocket(uint16_t nPort);
+
+	~CEVServerSocket();
+
+
+
+	void bindRecvCallback(std::function<void(CEVServerSocketWorker*, ssize_t)> callbackFunc);
+
+	void setMaxClient(int nMaxCnt);
+
+
+
+	void start();
+
+	void stop();
+
+
+
+	void sendAll(const char* pData, size_t nLen);
+
+	int getConnectedClientCount();
+
+	
+
+protected:
+
+	void startListen(void *arg);
+
+
+
+	void requestRemoveWorkerFromList(CEVServerSocketWorker* pWorker);
+
+	void removeWorkerFromList();
+
+	
+
+	void receivedData(CEVServerSocketWorker* pWorker, ssize_t nLen);
+
+
+
+protected:
+
+	std::thread* m_pThreadListener;
+
+
+
+	std::vector<CEVServerSocketWorker*> m_vecWorker;
+
+
+
+	std::function<void(CEVServerSocketWorker*, ssize_t)> callbackReceiveData;
+
+	
+
+	friend class CEVServerSocketWorker;
+
+
+
+private:
+
+	int m_nServerSocketFd;
+
+	struct sockaddr_in m_ServerAddr;
+
+	//struct sockaddr_in m_ClientAddr;
+
+
+
+	//pthread_t m_hThreadListener;
+
+
+
+	bool m_bRunning;
+
+	int m_nMaxClient;
+
+
+
+	std::vector<CEVServerSocketWorker*> m_vecReqRemoveList;
+
+	
+
+	std::mutex m_mutexList;
+
+};
+
+
+
+============================================================
+FILE: /home/pi/projects/observer/EVModules/EVCommon.h
+============================================================
+#pragma once
+
+
+
+#include <string>
+
+#include <algorithm> 
+
+#include <limits.h>
+
+#include <syslog.h>
+
+#include <stdarg.h>
+
+
+
+#include "./Socket/EVServerSocket.h"
+
+#include "./Socket/EVServerSocketWorker.h"
+
+ 
+
+using namespace std;
+
+
+
+
+
+// 20231207���� ����
+
+#define PROGRAM_VERSION	"1.0.0.3"
+
+
+
+#define EVLOG_BUF_SIZE		512
+
+
+
+#define MAX_PATH			PATH_MAX
+
+
+
+#define SOCKET_BUFFER_SIZE		2048
+
+
+
+#define ASCII_STX		0x02
+
+#define ASCII_ETX		0x03
+
+#define ASCII_ACK		0x06
+
+#define ASCII_NAK		0x15
+
+
+
+#define ASCII_LF		0x0A
+
+#define ASCII_CR		0x0D
+
+
+
+// Separator (File, Group, Record, Unit)
+
+#define ASCII_FS		0x1C
+
+#define ASCII_GS		0x1D
+
+#define ASCII_RS		0x1E
+
+#define ASCII_US		0x1F
+
+
+
+#define ASCII_SPACE		0x20
+
+
+
+
+
+//#define DEFAULT_DIR		"/home/pi/projects/observer/bin/ARM64/Debug"
+
+
+
+#define DEBUG
+
+
+
+
+
+
+
+// trim from start (in place)
+
+static inline void ltrim(std::string& s)
+
+{
+
+	s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+
+		return !std::isspace(ch);
+
+		}));
+
+}
+
+
+
+// trim from end (in place)
+
+static inline void rtrim(std::string& s)
+
+{
+
+	s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+
+		return !std::isspace(ch);
+
+		}).base(), s.end());
+
+}
+
+
+
+// trim from both ends (in place)
+
+static inline void trim(std::string& s)
+
+{
+
+	rtrim(s);
+
+	ltrim(s);
+
+}
+
+
+
+/*
+
+static inline void writeSystemError(const string strFormat, ...)
+
+{
+
+	va_list list;
+
+	char szBuf[EVLOG_BUF_SIZE];
+
+
+
+	va_start(list, strFormat.c_str());
+
+	vsprintf(szBuf, strFormat.c_str(), list);
+
+	va_end(list);
+
+
+
+	perror(szBuf);
+
+	syslog(LOG_ERR, szBuf);
+
+
+
+}
+
+*/
+
+static inline void writeSystemError(const char* szFormat, ...)
+
+{
+
+	va_list list;
+
+	char szBuf[EVLOG_BUF_SIZE];
+
+
+
+	va_start(list, szFormat);
+
+	vsprintf(szBuf, szFormat, list);
+
+	va_end(list);
+
+
+
+	
+
+	//perror(szBuf);
+
+
+
+	syslog(LOG_ERR, szBuf);
+
+
+
+}
+
+
+
+static inline void writeSystemWarning(const char* szFormat, ...)
+
+{
+
+	va_list list;
+
+	char szBuf[EVLOG_BUF_SIZE];
+
+
+
+	va_start(list, szFormat);
+
+	vsprintf(szBuf, szFormat, list);
+
+	va_end(list);
+
+
+
+	syslog(LOG_WARNING, szBuf);
+
+}
+
+
+
+
+
+static inline void writeSystemInfo(const char* szFormat, ...)
+
+{
+
+	va_list list;
+
+	char szBuf[EVLOG_BUF_SIZE];
+
+
+
+	va_start(list, szFormat);
+
+	vsprintf(szBuf, szFormat, list);
+
+	va_end(list);
+
+
+
+	syslog(LOG_INFO, szBuf);
+
+}
+
+
+
+
+
+static inline void writeSystemDebug(const char* szFormat, ...)
+
+{
+
+	va_list list;
+
+	char szBuf[EVLOG_BUF_SIZE];
+
+
+
+	va_start(list, szFormat);
+
+	vsprintf(szBuf, szFormat, list);
+
+	va_end(list);
+
+
+
+	syslog(LOG_DEBUG, szBuf);
+
+}
+
+
+
+
