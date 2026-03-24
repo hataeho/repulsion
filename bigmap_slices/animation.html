@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BigMap.ai — Slice Reassembly Animation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a0f;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+  }
+
+  h1 {
+    color: #e0e0e8;
+    font-size: 1.4rem;
+    font-weight: 300;
+    letter-spacing: 0.15em;
+    margin-bottom: 32px;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: titleFade 1s ease forwards 0.3s;
+  }
+
+  h1 span {
+    font-weight: 700;
+    background: linear-gradient(135deg, #6ee7b7, #3b82f6, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .canvas-wrap {
+    position: relative;
+    width: 640px;
+    height: 640px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow:
+      0 0 60px rgba(59, 130, 246, 0.15),
+      0 0 120px rgba(110, 231, 183, 0.08);
+  }
+
+  .canvas {
+    position: relative;
+    width: 640px;
+    height: 640px;
+  }
+
+  .slice {
+    position: absolute;
+    width: 10px;
+    height: 640px;
+    top: 0;
+    will-change: transform, opacity;
+    image-rendering: auto;
+  }
+
+  .slice img {
+    display: block;
+    width: 10px;
+    height: 640px;
+  }
+
+  /* Group 1: indices where (i % 3 == 1) → 1,4,7,10,... → from TOP */
+  .slice.from-top {
+    opacity: 0;
+    transform: translateY(-120%);
+    animation: slideFromTop 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* Group 2: indices where (i % 3 == 2) → 2,5,8,11,... → pre-placed CENTER */
+  .slice.from-center {
+    opacity: 0;
+    transform: translateY(0);
+    animation: fadeInCenter 0.6s ease forwards;
+  }
+
+  /* Group 3: indices where (i % 3 == 0) → 3,6,9,12,... → from BOTTOM */
+  .slice.from-bottom {
+    opacity: 0;
+    transform: translateY(120%);
+    animation: slideFromBottom 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes slideFromTop {
+    0% { opacity: 0; transform: translateY(-120%); }
+    30% { opacity: 1; }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeInCenter {
+    0% { opacity: 0; transform: scale(1, 0.3); }
+    50% { opacity: 0.7; transform: scale(1, 0.85); }
+    100% { opacity: 1; transform: scale(1, 1); }
+  }
+
+  @keyframes slideFromBottom {
+    0% { opacity: 0; transform: translateY(120%); }
+    30% { opacity: 1; }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes titleFade {
+    to { opacity: 1; }
+  }
+
+  /* Controls */
+  .controls {
+    margin-top: 32px;
+    display: flex;
+    gap: 16px;
+    opacity: 0;
+    animation: titleFade 0.8s ease forwards 2.5s;
+  }
+
+  .btn {
+    padding: 10px 28px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.05);
+    color: #c0c0cc;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-transform: uppercase;
+  }
+
+  .btn:hover {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    border-color: rgba(110, 231, 183, 0.4);
+    box-shadow: 0 0 20px rgba(110, 231, 183, 0.1);
+  }
+
+  /* Glow overlay */
+  .canvas-wrap::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+    pointer-events: none;
+  }
+
+  /* Subtle ambient particles */
+  .particle {
+    position: fixed;
+    width: 2px;
+    height: 2px;
+    background: rgba(110, 231, 183, 0.4);
+    border-radius: 50%;
+    animation: float linear infinite;
+    pointer-events: none;
+  }
+
+  @keyframes float {
+    0% { transform: translateY(100vh) scale(0); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<h1><span>BigMap.ai</span> — Slice Reassembly</h1>
+
+<div class="canvas-wrap">
+  <div class="canvas" id="canvas"></div>
+</div>
+
+<div class="controls">
+  <button class="btn" id="replayBtn">다시 재생</button>
+  <button class="btn" id="speedBtn" data-speed="1">속도: 1×</button>
+</div>
+
+<!-- Ambient Particles -->
+<script>
+  for (let i = 0; i < 20; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.animationDuration = (4 + Math.random() * 8) + 's';
+    p.style.animationDelay = (Math.random() * 6) + 's';
+    p.style.width = (1 + Math.random() * 2) + 'px';
+    p.style.height = p.style.width;
+    document.body.appendChild(p);
+  }
+</script>
+
+<script>
+const TOTAL = 64;
+const canvas = document.getElementById('canvas');
+let currentSpeed = 1;
+
+function getGroup(i) {
+  // i is 1-indexed (1..64)
+  if (i % 3 === 0) return 'from-bottom';   // 3의 배수: 아래에서 위로
+  if (i % 3 === 2) return 'from-center';    // 2번째 그룹: 가운데 미리 배치
+  return 'from-top';                        // 1번째 그룹: 위에서 아래로
+}
+
+function getDelay(i, group) {
+  // Center group appears first (early), then top and bottom cascade in
+  const baseDelay = 0.4; // seconds
+  if (group === 'from-center') {
+    // Appear first, slight stagger
+    return baseDelay + (i / TOTAL) * 0.3;
+  }
+  if (group === 'from-top') {
+    // Cascade from left to right with a wave
+    return baseDelay + 0.5 + (i / TOTAL) * 0.8;
+  }
+  // from-bottom: slight offset from top group
+  return baseDelay + 0.6 + (i / TOTAL) * 0.8;
+}
+
+function buildSlices() {
+  canvas.innerHTML = '';
+
+  for (let i = 1; i <= TOTAL; i++) {
+    const group = getGroup(i);
+    const delay = getDelay(i, group) / currentSpeed;
+
+    const div = document.createElement('div');
+    div.className = `slice ${group}`;
+    div.style.left = ((i - 1) * 10) + 'px';
+    div.style.animationDelay = delay.toFixed(3) + 's';
+
+    // Adjust animation duration based on speed
+    if (group === 'from-center') {
+      div.style.animationDuration = (0.6 / currentSpeed).toFixed(3) + 's';
+    } else {
+      div.style.animationDuration = (1.2 / currentSpeed).toFixed(3) + 's';
+    }
+
+    const img = document.createElement('img');
+    img.src = `slice_${String(i).padStart(2, '0')}.png`;
+    img.alt = `slice ${i}`;
+
+    div.appendChild(img);
+    canvas.appendChild(div);
+  }
+}
+
+// Replay button
+document.getElementById('replayBtn').addEventListener('click', () => {
+  buildSlices();
+});
+
+// Speed toggle
+const speedBtn = document.getElementById('speedBtn');
+const speeds = [1, 0.5, 2, 3];
+let speedIdx = 0;
+
+speedBtn.addEventListener('click', () => {
+  speedIdx = (speedIdx + 1) % speeds.length;
+  currentSpeed = speeds[speedIdx];
+  speedBtn.textContent = `속도: ${currentSpeed}×`;
+  buildSlices();
+});
+
+// Initial build
+buildSlices();
+</script>
+
+</body>
+</html>

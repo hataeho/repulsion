@@ -1,0 +1,12 @@
+{
+    "test_local": {
+        "status": "online",
+        "last_checked": "2026-03-16T12:27:40.749837",
+        "failed_attempts": 0
+    },
+    "aws_server": {
+        "status": "online",
+        "last_checked": "2026-03-16T12:27:43.757830",
+        "failed_attempts": 1
+    }
+}

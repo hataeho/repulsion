@@ -1,0 +1,23 @@
+{
+    "smtp": {
+        "host": "mail.privateemail.com",
+        "port": 465,
+        "user": "bigmap@bigmap.ai",
+        "password": "Bm20127202!",
+        "to_email": "sarangnet@gmail.com"
+    },
+    "devices": [
+        {
+            "id": "test_local",
+            "name": "Localhost (Test)",
+            "ip": "127.0.0.1",
+            "type": "ping"
+        },
+        {
+            "id": "aws_server",
+            "name": "AWS Lightsail",
+            "ip": "43.201.223.4",
+            "type": "ping"
+        }
+    ]
+}

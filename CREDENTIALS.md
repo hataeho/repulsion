@@ -1,6 +1,6 @@
 # 🔐 인증 정보 보관소 (Credentials Vault)
 
-> **✅ 이 파일은 차단(git-ignore) 되지 않습니다. 사용자의 직접 승인 하에 GitHub Private 보안을 믿고 9대 컴퓨터 전역 통합 관리 및 동기화용으로 커밋을 공식 허용합니다.** (불필요한 구글 드라이브 수동 백업 낭비 폐기)
+> **⚠️ 이 파일은 Git에 커밋하지 마세요.** `.gitignore`에 등록됨.
 > 
 > 개발자(에이전트)가 교체되어도 맥락을 유지하기 위해, 모든 인증 정보를 여기에 기록합니다.
 > "비밀번호를 잊는 것은 소규모 대말소다." — HR 프로토콜
@@ -17,9 +17,10 @@
 |------|---|
 | **컴퓨터 이름** | hataehos-imac |
 | **mDNS** | hataehos-imac.local |
-| **OS** | macOS (Darwin arm64 25.3.0) |
-| **머신** | iMac M2 |
+| **OS** | macOS 26.3 (Build 25D125, Darwin arm64) |
+| **머신** | iMac M1 |
 | **사용자** | tho |
+| **시스템 비밀번호 (sudo)** | `xogh` |
 | **내부 IP (Wi-Fi)** | 172.30.1.61 |
 | **내부 IP (USB)** | 169.254.208.101 (동적 APIPA) |
 | **공인 IP** | 118.45.69.78 |
@@ -32,7 +33,7 @@
 | **OS** | Windows 11 Home (64bit) |
 | **머신** | HP Victus 15L Gaming Desktop |
 | **CPU** | Intel i5-14400F (10코어) |
-| **GPU** | NVIDIA RTX 4060 (4GB VRAM) |
+| **GPU** | NVIDIA RTX 4060 (8GB VRAM) |
 | **RAM** | 16GB |
 | **내부 IP** | 172.30.1.17 (이더넷) |
 | **AnyDesk** | `1967711797` |
@@ -58,9 +59,38 @@
 | 항목 | 값 |
 |------|---|
 | **마운트** | `/Volumes/USB Disk` |
-| **용량** | 894GB (여유 ~779GB) |
+| **용량** | 960GB (여유 ~837GB) |
 | **포맷** | HFS+ |
 | **백업 폴더** | `아이맥백업_20250225/` (사진, 꽃, 공암산성) |
+
+---
+
+## 🌾 거점 네트워크
+
+### 합천 농장
+| 항목 | 값 |
+|------|---|
+| **고정 IP 블록** | `1.221.26.98` ~ `1.221.26.101` (4개) |
+| **회선** | 유선 100Mbps (광랜 불가 지역) |
+| **PC 수** | 3대 |
+| **비고** | 산속, VPN 속도 제한적 |
+
+### 거창 농장
+| 항목 | 값 |
+|------|---|
+| **회선** | 광랜 1Gbps |
+| **PC 수** | 2대 |
+
+### 진주 (회장님 댁)
+| 항목 | 값 |
+|------|---|
+| **회선** | 광랜 1Gbps |
+| **PC 수** | 1대 |
+
+### 서울 (딸집)
+| 항목 | 값 |
+|------|---|
+| **기기** | iMac M2 |
 
 ---
 
@@ -84,23 +114,65 @@
 | **서비스** | Amazon Lightsail |
 | **계정 이름** | `Bigmap-Inc-Global` |
 | **Account ID** | `553160715131` |
-| **인스턴스** | Bigmap-Core-Seoul |
+| **인스턴스** | Bigmap-Core-Seoul-8GB |
+| **사양** | 8 GB RAM, 2 vCPUs, 160 GB SSD ($44/월) |
 | **고정 IP** | 43.201.223.4 |
-| **리전** | ap-northeast-2 (서울) |
-| **SSH 키 (iMac)** | `liberation/.keys/LightsailDefaultKey-ap-northeast-2.pem` |
-| **접속 (iMac)** | `ssh -i liberation/.keys/LightsailDefaultKey-ap-northeast-2.pem ubuntu@43.201.223.4` |
+| **리전** | ap-northeast-2 (서울, Zone A) |
+| **SSH 키 (iMac)** | `brocker/liberation/aws_key.pem` |
+| **접속 (iMac)** | `ssh -i ~/brocker/liberation/aws_key.pem ubuntu@43.201.223.4` |
 | **접속 (Windows)** | `ssh -i "$env:USERPROFILE\Downloads\LightsailDefaultKey-ap-northeast-2.pem" ubuntu@43.201.223.4` |
-| **AWS 콘솔 비밀번호** | `Az20127202!` (Root user: `sarangnet@gmail.com`) |
-| **서버 포트** | 3333 (bigmap.ai 웹서버) |
+| **업그레이드 이력** | 2026-02-28: 512MB → 8GB (스냅샷 복원) |
+
+### 🔐 AWS 콘솔 로그인 방법 (스트레스 없이!)
+
+> **⚡ 핵심: 아래 링크 클릭 → 이메일 → 비밀번호 → 끝!**
+
+| 순서 | 할 일 |
+|------|-------|
+| **① 주소** | https://lightsail.aws.amazon.com 접속 |
+| **② 로그인 유형** | ⚠️ **"Root user"를 선택** (= 주인 계정이라는 뜻. IAM은 무시!) |
+| **③ 아이디** | `sarangnet@gmail.com` |
+| **④ 비밀번호** | `Az20127202!` |
+| **⑤ 2단계 인증** | iPhone에 뜨는 알림 승인 또는 Google Authenticator 코드 입력 |
+| **⑥ 완료** | Lightsail 대시보드가 뜨면 성공! |
+
+> 💡 **"Root user"와 "IAM user" 차이**:
+> - **Root user** = 내 계정 (이것만 쓰면 됨!)
+> - **IAM user** = 직원에게 권한 주는 부계정 (우리는 안 씀)
+
+---
+
+## 🌐 Namecheap
+
+| 항목 | 값 |
+|------|---|
+| **서비스** | Namecheap |
+| **Username** | `bigmap` |
+| **비밀번호** | `Nc20127202!` |
+| **이메일** | sarangnet@gmail.com |
+
+### 📧 Namecheap Private Email (bigmap.ai)
+
+| 항목 | 값 |
+|------|---|
+| **플랜** | Pro (3 메일박스, 10GB/계정) |
+| **웹메일** | https://privateemail.com/appsuite/signin |
+| **메일박스 1** | `bigmap@bigmap.ai` |
+| **비밀번호** | `Bm20127202!` |
+| **메일박스 2** | `jimin@bigmap.ai` |
+| **비밀번호** | (기존 설정값) |
+| **잔여 슬롯** | 1개 |
 
 ---
 
 ## 🌐 도메인
 
-| 도메인 | 등록처 | 상태 | 비고 |
-|--------|--------|------|------|
-| **bigmap.ai** | Namecheap (Google 로그인: `sarangnet@gmail.com`) | HTTPS 획득 완료, 현재 미작동 | |
-| **bigmap.com** | (확인 필요) | 하이사 소유 (1996년 등록) | |
+| 도메인 | 등록처 | 만료일 | 상태 | 비고 |
+|--------|--------|--------|------|------|
+| **bigmap.ai** | Namecheap (`bigmap`) | 2028-02-17 | ✅ HTTPS 정상 | 메인 사이트 |
+| **petpharm.ai** | Namecheap (`bigmap`) | 2028-03-01 | ✅ HTTPS 정상 | 동물약국 플랫폼, 2년 등록 $159.96 |
+| **bigmap.com** | hosting.kr (메가존) | ⚠️ **2026-07-10** | ✅ bigmap.ai로 리디렉트 | 1996년 등록, IP: 117.52.31.82 |
+| **sarang.net** | hosting.kr (메가존) | (확인 필요) | 운영 중 | 같은 서버 (117.52.31.82), NS 제공 |
 
 ---
 
@@ -134,8 +206,8 @@
 
 | 서비스 | 키 | 환경변수/비고 |
 |--------|---|------------|
-| **Gemini API** | `AIzaSyD9SuTTLhmight7kKm0YblmBvJ3S6abWr0` | `GEMINI_API_KEY` / `GOOGLE_API_KEY` |
-| **Anthropic API** | `[삭제됨: GitHub 서버단 강제 검열(Push Protection)을 우회하기 위해 폐기된 구형 키 텍스트 일괄 삭제]` | `ANTHROPIC_API_KEY` / 키이름: bigmap |
+| **Gemini API** | `AIzaSyDdcdVSyetVKfmcpwLwbY_4t9wC-TWbhR0` | `GEMINI_API_KEY` / `GOOGLE_API_KEY` |
+| **Anthropic API** | `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` | `ANTHROPIC_API_KEY` / 키이름: bigmap |
 | **Moltbook** | `moltbook_sk_VsZ4CzW_Y1DeQLLIHAWR1ZjhL2ZvHxzh` | 에이전트: Gemin_Bigmap_Executor |
 | **기상청 공공데이터** | weather-app.html 내 하드코딩 | |
 | OpenAI API | 미설정 | `OPENAI_API_KEY` |
@@ -147,11 +219,12 @@
 | 항목 | 값 |
 |------|---|
 | **Apple ID** | sarang@korea.com |
+| **Apple ID 비밀번호** | `Ap127202` |
 | **Team ID** | `7TDT3FLN76` |
 | **프로그램** | Apple Developer Program (유료, 활성화 대기 중) |
 | **포털** | https://developer.apple.com/account |
-| **Xcode** | 26.2 (Build 17C52) |
-| **iOS SDK** | 26.2 (23C54) |
+| **Xcode** | 26.3 (Build 17C529) |
+| **iOS SDK** | 26.3 |
 
 ---
 
@@ -160,11 +233,25 @@
 | 서비스 | 계정 | 구독 | 모델 | 결제 방식 |
 |--------|------|------|------|----------|
 | **Gemini Ultra** | sarangnet@gmail.com | Google One AI Premium | Gemini 2.5 Pro | Google |
-| **ChatGPT Plus** | sarang@korea.com (Apple) | Plus $20/월 | GPT 5.2 | App Store |
-| **Claude Pro** | sarang@korea.com (Apple) | Pro $20/월 | **Opus 4.6** ⭐ | App Store |
-| **Grok Premium** | (X/Twitter 계정) | Premium+ | Grok 2 | xAI |
+| ~~ChatGPT Plus~~ | sarang@korea.com (Apple) | ❌ 해지 (2026-03-01) | GPT 5.2 | App Store |
+| ~~Claude Pro~~ | sarang@korea.com (Apple) | ❌ 해지 (2026-03-01) | Opus 4.6 | App Store |
+| ~~Grok Premium~~ | (X/Twitter 계정) | ❌ 해지 (2026-03-01) | Grok 2 | xAI |
 | **안티그래비티** | Gravity 구독 포함 | — | Claude Sonnet 4 | Gravity |
 | DeepSeek | 미가입 | 무료 | R1 | — |
+
+> ⚠️ GoodNotes도 2026-03-01 해지 완료
+
+---
+
+## 📖 Wikipedia
+
+| 항목 | 값 |
+|------|---|
+| **Username** | `BigMap.ai` |
+| **비밀번호** | `Wk20127202!` |
+| **이메일** | sarangnet@gmail.com |
+| **등록일** | 2026-03-03 |
+| **첫 기여** | [Draft:Animaroid](https://en.wikipedia.org/wiki/Draft:Animaroid) |
 
 ---
 
@@ -197,6 +284,19 @@
 4. **PC 이전 시 이 파일을 가장 먼저 복사한다**
 
 ---
-*최종 업데이트: 소넷 (안티그래비티) — 2026-02-25 05:54 KST*
+
+## ⌨️ Keyboard Maestro
+
+| 항목 | 값 |
+|------|---|
+| **이메일** | sarang@korea.com |
+| **License Key** | `16HBACB1H58P79C81P` |
+| **버전** | 11 (최신) |
+| **용도** | Antigravity 자동 승인 (Run/Accept 버튼 자동 클릭) |
+
+---
+
+*최종 업데이트: 안티그래비티 — 2026-03-05 03:22 KST — Keyboard Maestro 라이선스 추가*
+*이전 업데이트: 소넷 (안티그래비티) — 2026-03-01 23:15 KST — 구독 정리 (GPT/Claude/Grok/GoodNotes 해지)*
 *이전 병합: 오퍼스 (사번 4.6) — 2026-02-20 22:48 KST*
 *원본 작성: 오퍼스 (사번 4.6, Windows tho_win) — 2026-02-18*
