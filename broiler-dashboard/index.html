@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Broiler.kr | AI 사양관리 커맨드 센터</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-grid"></div>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    
+    <nav class="navbar">
+        <div class="logo">
+            <span class="logo-text">BROILER<span class="highlight">.KR</span></span>
+        </div>
+        <div class="nav-status">
+            <div class="status-indicator live"></div>
+            <span>SYSTE<span class="pulse">M L</span>IVE</span>
+        </div>
+    </nav>
+
+    <main class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>AI 사양관리 <span class="gradient-text">커맨드 센터</span></h1>
+            <p class="subtitle">실시간 농장 데이터 및 인공지능 예측 분석 시스템</p>
+        </header>
+
+        <section class="grid-layout">
+            <!-- Environment Widget -->
+            <div class="glass-panel widget">
+                <div class="widget-header">
+                    <h2>환경 제어 (동)</h2>
+                    <span class="badge ok">최적</span>
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric">
+                        <span class="label">내부 온도</span>
+                        <div class="value">32.4<span class="unit">°C</span></div>
+                    </div>
+                    <div class="metric">
+                        <span class="label">상대 습도</span>
+                        <div class="value">64<span class="unit">%</span></div>
+                    </div>
+                    <div class="metric">
+                        <span class="label">CO2 하우스</span>
+                        <div class="value">800<span class="unit">ppm</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Silo Widget -->
+            <div class="glass-panel widget span-2">
+                <div class="widget-header">
+                    <h2>사료빈 모니터링 체계 (Silo A/B)</h2>
+                    <span class="badge warning">예측 보충 필요</span>
+                </div>
+                <div class="silo-container">
+                    <div class="silo">
+                        <div class="silo-graphic">
+                            <div class="silo-level level-a"></div>
+                        </div>
+                        <div class="silo-info">
+                            <span class="silo-name">Silo A (전기)</span>
+                            <span class="silo-amount">7.2 <span class="unit">ton</span> <span class="percentage">(42%)</span></span>
+                        </div>
+                    </div>
+                    <div class="silo">
+                        <div class="silo-graphic">
+                            <div class="silo-level level-b"></div>
+                        </div>
+                        <div class="silo-info">
+                            <span class="silo-name">Silo B (후기)</span>
+                            <span class="silo-amount">18.5 <span class="unit">ton</span> <span class="percentage">(94%)</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Insight Widget -->
+            <div class="glass-panel widget">
+                <div class="widget-header">
+                    <h2>AI 인사이트 프로토콜</h2>
+                    <span class="badge ai">분석 중</span>
+                </div>
+                <ul class="insight-list" id="insight-list">
+                    <li><span class="dot info"></span> 환기 모터 3번 진동 이상 감지 (예방 교체 권장)</li>
+                    <li><span class="dot success"></span> 평균 증체량 전주 대비 +1.2% 초과 달성 예상</li>
+                    <li><span class="dot alert"></span> 내일 새벽 급격한 온도 강하 주의 (히터 예약 발동)</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
