@@ -1,0 +1,11 @@
+{
+  "machine_id": "chongsong-imac-macos",
+  "alias": "청송 아이맥",
+  "os": "macos",
+  "location": "청송",
+  "tailscale_ip": "100.86.202.73",
+  "last_active": "2026-03-25T20:45:00+09:00",
+  "last_conversation_id": "31e56c4c-f5f6-43b4-9cb3-9da01dc09a7c",
+  "status": "active",
+  "capabilities": ["antigravity", "ssh"]
+}
