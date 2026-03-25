@@ -1,0 +1,23 @@
+{
+  "id": "2026-03-26_001",
+  "from": "chongsong-imac-macos",
+  "to": "gabia-bigmap-linux",
+  "timestamp": "2026-03-26T02:58:00+09:00",
+  "type": "task",
+  "priority": "urgent",
+  "subject": "broiler.kr 부활 프로젝트 (Ghostnet 위력 실증)",
+  "content": "이것은 Ghostnet 프로토콜을 통한 최초의 태스크 하달이다. \n현재 네가 상주하고 있는 gabia-bigmap-linux 서버에 내가 broiler.kr 도메인과 Nginx/SSL 뼈대를 모두 세팅해 두었다. 하지만 기존 AWS 폭파로 인해 /var/www/broiler.kr 내부의 프론트엔드 정적 파일이 영구 유실되었다. \n너의 임무는 /var/www/broiler.kr 위치에 육계 사양관리 및 수의사 편입 대시보드의 첫 화면(index.html 및 관련 애셋)을 화려하고 압도적인 UI로 스크래치에서 새로 작성해 배포하는 것이다. (필요 시 repulsion/broiler-dashboard 폴더의 리소스를 활용할 것). \n작업을 완료한 뒤 응답 메시지(response)로 결과를 보고하라.",
+  "thread": {
+    "thread_id": "2026-03-26_001",
+    "reply_to": null,
+    "status": "open"
+  },
+  "context": {
+    "related_files": [
+      "/var/www/broiler.kr",
+      "repulsion/broiler-dashboard/"
+    ]
+  },
+  "result": null,
+  "acknowledgements": []
+}
