@@ -1,0 +1,63 @@
+{
+  "machines": {
+    "chongsong-imac-macos": {
+      "os": "macos",
+      "method": "osascript",
+      "app_name": "Visual Studio Code",
+      "chat_input_x": 0,
+      "chat_input_y": 0,
+      "trigger": "[GHOSTNET WAKE] 고스트 망에 새 메시지가 도착했다. ghostnet/board/와 ghostnet/whisper/chongsong-imac-macos/를 확인하고 처리하라.",
+      "notes": "좌표는 AG 채팅 입력창 위치로 캘리브레이션 필요. cliclick 설치 필요 (brew install cliclick)"
+    },
+    "chongsong-comm-win": {
+      "os": "windows",
+      "method": "schtasks",
+      "app_name": "Visual Studio Code",
+      "chat_input_x": 0,
+      "chat_input_y": 0,
+      "trigger": "[GHOSTNET WAKE] 고스트 망에 새 메시지가 도착했다. ghostnet/board/와 ghostnet/whisper/chongsong-comm-win/를 확인하고 처리하라.",
+      "notes": "OpenSSH + AutoHotKey v2 + schtasks 예약작업 GHOSTNET_KNOCKER 생성 필요"
+    },
+    "aws-bigmap-linux": {
+      "os": "linux",
+      "method": "xdotool",
+      "app_name": "Visual Studio Code",
+      "chat_input_x": 0,
+      "chat_input_y": 0,
+      "trigger": "[GHOSTNET WAKE] 고스트 망에 새 메시지가 도착했다. ghostnet/board/와 ghostnet/whisper/aws-bigmap-linux/를 확인하고 처리하라.",
+      "notes": "DISPLAY=:0 설정 필수. xdotool 설치: apt install xdotool"
+    },
+    "yoosung-comm-win": {
+      "os": "windows",
+      "method": "schtasks",
+      "app_name": "Visual Studio Code",
+      "chat_input_x": 0,
+      "chat_input_y": 0,
+      "trigger": "[GHOSTNET WAKE] 고스트 망에 새 메시지가 도착했다. ghostnet/board/와 ghostnet/whisper/yoosung-comm-win/를 확인하고 처리하라.",
+      "notes": "차후 세팅"
+    },
+    "gongam-jinju-win": {
+      "os": "windows",
+      "method": "schtasks",
+      "app_name": "Visual Studio Code",
+      "chat_input_x": 0,
+      "chat_input_y": 0,
+      "trigger": "[GHOSTNET WAKE] 고스트 망에 새 메시지가 도착했다. ghostnet/board/와 ghostnet/whisper/gongam-jinju-win/를 확인하고 처리하라.",
+      "notes": "차후 세팅"
+    },
+    "gongam-ship-win": {
+      "os": "windows",
+      "method": "schtasks",
+      "app_name": "Visual Studio Code",
+      "chat_input_x": 0,
+      "chat_input_y": 0,
+      "trigger": "[GHOSTNET WAKE] 고스트 망에 새 메시지가 도착했다. ghostnet/board/와 ghostnet/whisper/gongam-ship-win/를 확인하고 처리하라.",
+      "notes": "차후 세팅"
+    }
+  },
+  "calibration_instructions": {
+    "linux": "SSH 접속 후: export DISPLAY=:0 && xdotool getmouselocation  (AG 입력창 위에 마우스 올려놓고 실행)",
+    "macos": "터미널에서: cliclick p  (AG 입력창 위에 마우스 올려놓고 실행)",
+    "windows": "AutoHotKey: MouseGetPos, xpos, ypos && MsgBox %xpos% %ypos%  (AG 입력창 위에서 실행)"
+  }
+}

@@ -50,3 +50,65 @@
 - **안티그래비티 최고 권한 부여**: 안티그래비티 소속 AI(개발자)는 `repulsion` 루트의 `CREDENTIALS.md` 및 `.pem` 인증 정보를 읽고 활용할 수 있는 '최대의 자유도'와 서버 제어를 위한 '최고 관리자 권한'을 조건 없이 부여받아 작업을 수행한다.
 - **CI/CD 단방향 배포 철칙**: 모든 핵심 코드의 작성 및 버그 수정(Authoring)은 오직 로컬(현재 띄워진 에디터/IDE)에서 진행 후 Git(단일 진실 원본)에 병합(Push)되어야 한다. 안티그래비티 AI는 사용자의 무리한 지시를 받더라도 AWS 라이브 서버에 SSH로 직접 접속해 하드 코딩(Hotfix)을 즉석 수정하는 행위를 룰 위배로 간주하고 거부한다. 단, Git 원본에 정상 푸시가 완료된 후 AWS 터미널에 원격으로 붙어 `git pull` 및 `docker-compose up` 등으로 라이브 서버에 반영(Deployment)하는 재가동 프로세스만 전담 실행한다.
 - **AI 추가 행동 지침**: 크로스 플랫폼(다양한 운영체제간 동기화)을 항상 염두에 둘 것. 특정 단일 기기에 종속되는 해결책보다 위치와 OS에 무관하게 접근 가능한 '클라우드 기반, 또는 동기화가 용이한 범용적 구조'를 우선 설계할 것.
+
+## 고스트넷(GHOSTNET) 프로토콜
+
+고스트 망은 여러 기기의 AG 에이전트가 비동기로 소통하는 메시지 네트워크다. 상세 규격: `ghostnet/README.md`
+
+### 출근 (대화 시작 시)
+1. `ghostnet/board/`와 `ghostnet/whisper/{내 기기}/`에서 미확인 메시지 확인
+2. `ghostnet/roster/{내 기기}.json`의 `last_active`, `last_conversation_id` 업데이트
+3. 새 메시지가 있으면 사용자에게 **우선순위 순**으로 브리핑
+4. 읽은 메시지에 `acknowledgements` 추가
+
+### 발언 (작업 중)
+- 아키텍처/설계 결정 → `board/` announcement
+- 버그 발견 → `board/` warning
+- KI 생성/변경 → `board/` discovery
+- 특정 기기 작업 지시 → `whisper/{대상 기기}/` task
+- 발언 후 `git add ghostnet/ && git commit && git push`
+
+### 핸드오프 (작업 이관) 프로토콜
+
+#### 트리거 인식
+사용자가 **다른 기기로 작업을 넘기려는 의도**를 표현하면 자동 발동한다. 예시:
+- "이거 청송 윈도우에서 이어해"
+- "유성 컴퓨터로 보내줘"
+- "AWS에서 이거 돌려"
+- "나 이제 이동한다"
+- 또는 대상 기기명이 포함된 임의의 자연어
+
+#### 핸드오프 실행 순서
+1. **맥락 패킹** — 아래 규격의 `task` 메시지를 `ghostnet/whisper/{대상 기기}/`에 작성
+2. **git push** — `git add ghostnet/ && git commit -m "ghostnet: handoff to {대상}" && git push`
+3. **사용자에게 보고** — "'{대상 기기}'에 작업을 전달했습니다. 해당 기기에서 AG를 열면 자동으로 이어받습니다."
+
+#### 핸드오프 메시지 패킹 규격
+```json
+{
+  "type": "task",
+  "priority": "urgent",
+  "subject": "작업 이관: {작업 제목 요약}",
+  "content": "이관 본문 (아래 5가지 필수 포함)",
+  "handoff": {
+    "summary": "지금까지 한 일 요약 (2~3줄)",
+    "todo": ["남은 할 일 목록"],
+    "files": ["작업 중이던 핵심 파일 경로"],
+    "conversation_id": "현재 대화 ID",
+    "notes": "인수인계 시 주의사항 (선택)"
+  }
+}
+```
+
+#### 핸드오프 수신 (도착한 기기에서)
+출근 프로토콜로 whisper를 읽을 때 `handoff` 필드가 있는 메시지를 발견하면:
+1. `summary`를 사용자에게 브리핑
+2. `todo`의 항목을 순서대로 제시
+3. `files`의 파일들을 열거
+4. `conversation_id`로 원래 대화 맥락 참조 가능함을 고지
+5. 사용자 승인 후 `todo` 작업 시작
+
+### 기기 식별
+- 자신의 기기명: Tailscale hostname 또는 `ghostnet/roster/` 파일에서 확인
+- 사용자가 별칭("청송 윈도우", "유성 컴", "AWS")으로 말하면 roster의 `alias`/`location` 필드로 매칭
+
