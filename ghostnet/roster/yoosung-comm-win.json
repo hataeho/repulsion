@@ -1,0 +1,11 @@
+{
+  "machine_id": "yoosung-comm-win",
+  "alias": "유성농장 커맨드 윈도우",
+  "os": "windows",
+  "location": "유성농장",
+  "tailscale_ip": "100.85.214.25",
+  "last_active": null,
+  "last_conversation_id": null,
+  "status": "idle",
+  "capabilities": ["ssh", "antigravity", "git"]
+}

@@ -1,0 +1,11 @@
+{
+  "machine_id": "aws-bigmap-linux",
+  "alias": "AWS Bigmap 서버",
+  "os": "linux",
+  "location": "AWS (Seoul Region)",
+  "tailscale_ip": "100.112.104.93",
+  "last_active": null,
+  "last_conversation_id": null,
+  "status": "idle",
+  "capabilities": ["ssh", "docker", "nginx", "git"]
+}

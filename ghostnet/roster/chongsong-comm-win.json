@@ -1,0 +1,11 @@
+{
+  "machine_id": "chongsong-comm-win",
+  "alias": "청송 커맨드 윈도우",
+  "os": "windows",
+  "location": "청송",
+  "tailscale_ip": "100.64.3.24",
+  "last_active": "2026-03-25T17:48:00+09:00",
+  "last_conversation_id": "39708393-a4ef-41e4-ae6c-2343c907aeab",
+  "status": "active",
+  "capabilities": ["ssh", "antigravity", "git"]
+}

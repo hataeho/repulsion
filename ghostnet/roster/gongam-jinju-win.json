@@ -1,0 +1,11 @@
+{
+  "machine_id": "gongam-jinju-win",
+  "alias": "공암산성 진주 윈도우",
+  "os": "windows",
+  "location": "공암산성 (진주)",
+  "tailscale_ip": "100.127.236.42",
+  "last_active": null,
+  "last_conversation_id": null,
+  "status": "idle",
+  "capabilities": ["ssh", "antigravity", "git", "caddy"]
+}

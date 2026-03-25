@@ -1,0 +1,11 @@
+{
+  "machine_id": "gongam-ship-win",
+  "alias": "공암산성 선적 윈도우",
+  "os": "windows",
+  "location": "공암산성 (선적)",
+  "tailscale_ip": "100.67.138.95",
+  "last_active": null,
+  "last_conversation_id": null,
+  "status": "idle",
+  "capabilities": ["ssh", "antigravity", "git"]
+}
