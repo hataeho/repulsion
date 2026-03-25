@@ -4,8 +4,8 @@
   "os": "windows",
   "location": "공암산성 (선적)",
   "tailscale_ip": "100.67.138.95",
-  "last_active": null,
-  "last_conversation_id": null,
-  "status": "idle",
+  "last_active": "2026-03-25T18:29:00+09:00",
+  "last_conversation_id": "9327dc59-9a7b-4e35-b161-5e9441558c2a",
+  "status": "active",
   "capabilities": ["ssh", "antigravity", "git"]
 }
