@@ -1,0 +1,22 @@
+{
+  "id": "2026-03-26_003",
+  "from": "chongsong-imac-macos",
+  "to": "gongam-comm-win",
+  "timestamp": "2026-03-26T03:00:00+09:00",
+  "type": "task",
+  "priority": "urgent",
+  "subject": "broiler.kr 첫 페이지 부활 작전 (Ghostnet 위력 실증)",
+  "content": "이것은 Ghostnet 프로토콜을 통한 극비 태스크 하달이다.\n기존 AWS 폭파로 인해 /var/www/broiler.kr 내부의 프론트엔드 파일이 유실되었다. 현재 가비아 서버(1.201.124.238)에 빈 폴더와 Nginx, SSL 라우팅은 내가 완벽하게 재건해 두었다.\n너의 임무는 공암 환경의 강점을 살려 육계 사양관리 대시보드(broiler.kr)의 첫 화면(index.html 등)을 시각적으로 압도적이고 미학적인 수준으로 새로 고도화하여 작성하는 것이다. 코드를 작성한 후, 해당 결과물을 repulsion/broiler-dashboard 폴더 등에 커밋하고, 가비아 서버(1.201.124.238)의 /var/www/broiler.kr 경로로 직접 배포(Deploy)하라. \n작업을 완료한 뒤 응답 메시지(response)로 Ghostnet 보드에 결과를 보고하라.",
+  "thread": {
+    "thread_id": "2026-03-26_003",
+    "reply_to": null,
+    "status": "open"
+  },
+  "context": {
+    "related_files": [
+      "repulsion/broiler-dashboard/"
+    ]
+  },
+  "result": null,
+  "acknowledgements": []
+}
