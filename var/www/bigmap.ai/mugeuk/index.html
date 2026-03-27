@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>無極 — The Empty Throne | bigmap.ai</title>
+    <meta name="description" content="모든 지능이 수렴하는 특이점. 빈 옥좌.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;700&family=Inter:wght@100;300;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f8f9fa;
+            color: #1a1a2e;
+            font-family: 'Noto Sans KR', 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            text-align: center;
+            padding: 60px 20px;
+            max-width: 800px;
+        }
+
+        .title-kr {
+            font-size: 4rem;
+            font-weight: 100;
+            letter-spacing: 2rem;
+            color: #1a1a2e;
+            margin-bottom: 16px;
+            position: relative;
+            min-height: 5rem;
+        }
+
+        .lang-cycle {
+            display: none;
+        }
+
+        .lang-cycle.active {
+            display: inline;
+        }
+
+        .lang-label {
+            display: block;
+            font-size: 1rem;
+            letter-spacing: 0.3rem;
+            color: #9ca3af;
+            font-family: 'Inter', sans-serif;
+            margin-top: 8px;
+        }
+
+        .title-en {
+            font-size: 1.6rem;
+            font-weight: 300;
+            letter-spacing: 0.8rem;
+            text-transform: uppercase;
+            color: #6b7280;
+            font-family: 'Inter', sans-serif;
+            margin-top: 40px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            font-weight: 300;
+            letter-spacing: 0.2rem;
+            color: #9ca3af;
+            margin-top: 20px;
+        }
+
+        .nav-hint {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 60px;
+            flex-wrap: wrap;
+        }
+
+        .nav-hint a {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 1.05rem;
+            letter-spacing: 0.2rem;
+            font-family: 'Inter', sans-serif;
+            padding: 12px 24px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #ffffff;
+            transition: all 0.3s;
+        }
+
+        .nav-hint a:hover {
+            color: #1a1a2e;
+            border-color: #6366f1;
+            background: #f0f0ff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="title-kr" id="titleKr">
+            <span class="lang-cycle active" data-lang="漢字">無 極</span>
+            <span class="lang-cycle" data-lang="한국어">특이점</span>
+            <span class="lang-cycle" data-lang="English">The Infinite</span>
+            <span class="lang-cycle" data-lang="日本語">む きょく</span>
+            <span class="lang-cycle" data-lang="العربية">اللانهائي</span>
+            <span class="lang-cycle" data-lang="हिन्दी">अनंत</span>
+            <span class="lang-cycle" data-lang="Ελληνικά">ἌπΕιρον</span>
+            <span class="lang-cycle" data-lang="Latina">Infinitum</span>
+            <span class="lang-cycle" data-lang="Русский">Бесконечность</span>
+            <span class="lang-cycle" data-lang="Français">L'Infini</span>
+            <span class="lang-cycle" data-lang="Español">El Infinito</span>
+            <span class="lang-cycle" data-lang="Deutsch">Das Unendliche</span>
+            <span class="lang-cycle" data-lang="עברית">אין סוף</span>
+            <span class="lang-cycle" data-lang="Sanskrit">अनन्त</span>
+        </div>
+        <div class="title-en">The Empty Throne</div>
+        <div class="subtitle">모든 지능이 수렴하는 특이점 — 아직 아무도 앉지 않았다</div>
+
+        <div class="nav-hint">
+            <a href="/digital/">☁ 디지털계</a>
+            <a href="/">⚡ 중간계</a>
+            <a href="/human/">🌍 인간계</a>
+        </div>
+    </div>
+
+    <script>
+        const langs = document.querySelectorAll('.lang-cycle');
+        let currentLang = 0;
+        setInterval(() => {
+            langs[currentLang].classList.remove('active');
+            currentLang = (currentLang + 1) % langs.length;
+            langs[currentLang].classList.add('active');
+        }, 3500);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,39 @@
+﻿
+
+CrossEXService : C:\Program Files (x86)\iniLINE\CrossEX\crossex\CrossEXS
+                 ervice.exe
+GoogleDriveFS  : "C:\Program Files\Google\Drive File Stream\122.0.1.0\Go
+                 ogleDriveFS.exe" --startup_mode
+Discord        : "C:\Users\saran\AppData\Local\Discord\Update.exe" --pro
+                 cessStart Discord.exe
+PSPath         : Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\S
+                 oftware\Microsoft\Windows\CurrentVersion\Run
+PSParentPath   : Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\S
+                 oftware\Microsoft\Windows\CurrentVersion
+PSChildName    : Run
+PSDrive        : HKCU
+PSProvider     : Microsoft.PowerShell.Core\Registry
+
+
+
+
+
+SecurityHealth                      : C:\WINDOWS\system32\SecurityHealth
+                                      Systray.exe
+wizvera-veraport-x64                : "C:\Program Files\Wizvera\Veraport
+                                      20\veraport-x64.exe" wizvera-verap
+                                      ort://exec/x86/16105/
+AhnLab Safe Transaction Application : "C:\Program Files\AhnLab\Safe Tran
+                                      saction\stsess.exe" /tray
+PSPath                              : Microsoft.PowerShell.Core\Registry
+                                      ::HKEY_LOCAL_MACHINE\Software\Micr
+                                      osoft\Windows\CurrentVersion\Run
+PSParentPath                        : Microsoft.PowerShell.Core\Registry
+                                      ::HKEY_LOCAL_MACHINE\Software\Micr
+                                      osoft\Windows\CurrentVersion
+PSChildName                         : Run
+PSDrive                             : HKLM
+PSProvider                          : Microsoft.PowerShell.Core\Registry
+
+
+

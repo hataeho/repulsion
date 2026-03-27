@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>육계 포켓 워크북 UI 프로토타입</title>
+    <style>
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        .notebook-container {
+            display: flex;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            position: relative;
+            width: 800px;
+            height: 560px;
+        }
+
+        /* 스프링 제본 (중앙) */
+        .binding {
+            position: absolute;
+            left: 50%;
+            top: 20px;
+            bottom: 20px;
+            width: 30px;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        .ring {
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(to right, #999, #ccc, #999);
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .page {
+            flex: 1;
+            padding: 40px;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .page-left {
+            border-right: 1px solid #eee;
+            background: linear-gradient(to right, #fff 95%, #f9f9f9 100%);
+            border-radius: 8px 0 0 8px;
+        }
+
+        .page-right {
+            background: linear-gradient(to left, #fff 95%, #f9f9f9 100%);
+            border-radius: 0 8px 8px 0;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 3px solid #e74c3c;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .day-badge {
+            background-color: #e74c3c;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .title {
+            font-size: 18px;
+            color: #333;
+            margin-top: 5px;
+        }
+
+        .qr-placeholder {
+            width: 60px;
+            height: 60px;
+            background: #eee;
+            border: 2px dashed #999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 10px;
+            text-align: center;
+            color: #666;
+        }
+
+        .section-title {
+            font-size: 16px;
+            color: #2c3e50;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .target-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .target-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .target-value {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        .alert-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px 15px;
+            font-size: 13px;
+            color: #856404;
+            margin-bottom: 20px;
+        }
+
+        .checklist {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .checklist li {
+            margin-bottom: 12px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #bdc3c7;
+            border-radius: 4px;
+        }
+
+        .log-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .log-box {
+            border: 1px dashed #bdc3c7;
+            padding: 15px;
+            border-radius: 6px;
+        }
+
+        .log-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+        }
+
+        .log-input {
+            border-bottom: 1px solid #333;
+            height: 20px;
+            width: 100%;
+        }
+
+        .memo-area {
+            border: 1px solid #dee2e6;
+            height: 200px;
+            border-radius: 6px;
+            padding: 15px;
+            background: repeating-linear-gradient(
+                to bottom,
+                transparent,
+                transparent 24px,
+                #eee 24px,
+                #eee 25px
+            );
+        }
+
+        .date-input {
+            text-align: right;
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="notebook-container">
+        <!-- 중앙 스프링 -->
+        <div class="binding">
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+        </div>
+
+        <!-- 좌측 페이지 (지침 및 가이드) -->
+        <div class="page page-left">
+            <div class="header">
+                <div>
+                    <div class="day-badge">Day 14</div>
+                    <div class="title">2주령: 급성장기 환경 전환</div>
+                </div>
+                <div class="qr-placeholder">
+                    SCAN<br>(환기 영상)
+                </div>
+            </div>
+
+            <div class="section-title">🎯 오늘의 목표 설정치</div>
+            <div class="target-box">
+                <div class="target-item">
+                    <span>권장 실내 온도</span>
+                    <span class="target-value">29℃ ➔ 28℃ (오후 강하)</span>
+                </div>
+                <div class="target-item">
+                    <span>권장 상대 습도</span>
+                    <span class="target-value">60% 내외</span>
+                </div>
+                <div class="target-item">
+                    <span>환기 모드</span>
+                    <span class="target-value">최소 환기량 10% 증가</span>
+                </div>
+            </div>
+
+            <div class="section-title">⚠️ 오늘의 주의사항</div>
+            <div class="alert-box">
+                <strong>콕시듐증 발현 경계:</strong><br>
+                성장이 가장 빠른 시기입니다. 바닥에 붉은색 혈변이 보이지 않는지 주의 깊게 관찰하고 깔짚 건조에 신경 쓰세요.
+            </div>
+
+            <div class="section-title">✅ 필수 체크리스트</div>
+            <ul class="checklist">
+                <li><div class="checkbox"></div> 음수 투여용 백신/영양제 급여 완료</li>
+                <li><div class="checkbox"></div> 전체 계군 닙플(급수관) 높이를 닭의 등 높이로 상향 조절</li>
+                <li><div class="checkbox"></div> 떡진 깔짚(표면 결로) 파내고 새 깔짚 보충</li>
+                <li><div class="checkbox"></div> 정전 경보기 및 팬 밸트 점검</li>
+            </ul>
+        </div>
+
+        <!-- 우측 페이지 (현장 기록 및 메모) -->
+        <div class="page page-right">
+            <div class="date-input">
+                202___년 ___월 ___일 ( ______ 요일 )
+            </div>
+            
+            <div class="section-title">📊 환경 모니터링 기록</div>
+            <div class="log-grid">
+                <div class="log-box">
+                    <div class="log-label">오전 온도 / 습도</div>
+                    <div class="log-input"></div>
+                </div>
+                <div class="log-box">
+                    <div class="log-label">오후 온도 / 습도</div>
+                    <div class="log-input"></div>
+                </div>
+                <div class="log-box">
+                    <div class="log-label">오늘 폐사 두수 (누적)</div>
+                    <div class="log-input"></div>
+                </div>
+                <div class="log-box">
+                    <div class="log-label">일일 사료/물 소모량</div>
+                    <div class="log-input"></div>
+                </div>
+            </div>
+
+            <div class="section-title">📝 관찰 메모 (특이사항)</div>
+            <div class="memo-area">
+                <!-- 노트 줄이 그려진 배경 -->
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

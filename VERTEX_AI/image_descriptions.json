@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "description": "파란 하늘과 흰 구름 아래, 정통 기와 지붕을 얹은 아름다운 한옥이 보이는 풍경입니다. 앞쪽으로는 분홍색 꽃들이 만발한 낮은 돌담이 있으며, 뒤로는 푸른 산이 펼쳐져 있어 평화로운 분위기를 자아냅니다.",
+    "prompt": "An elegant traditional Korean Hanok with a beautifully curved Giwa roof, nestled in nature. A rustic stone wall covered in bright pink blooming flowers sits in the foreground. Lush green mountains and a bright blue sky with fluffy white clouds complete the scenic, peaceful scenery, masterpiece, high quality."
+  },
+  {
+    "id": 2,
+    "description": "돌로 잘 포장된 오르막길이 한옥을 향해 이어지는 풍경입니다. 왼쪽 돌담에는 분홍색과 보라색 꽃들이 가득 피어 있고, 오른쪽에는 전봇대가 서 있어 전통과 현대의 일상이 섞인 시골 풍경을 보여줍니다.",
+    "prompt": "A picturesque stone-paved path gently sloping upwards toward a majestic traditional Korean Hanok. To the left, a traditional low stone wall is brightly decorated with trailing pink and purple flowers. In the background, lush, vivid green mountains stand beneath a clear, sunny sky, creating a serene rural landscape, highly detailed."
+  },
+  {
+    "id": 3,
+    "description": "도로변에서 바라본 한옥과 그 옆의 붉은 지붕 집이 보이는 넓은 뷰입니다. 앞에 전봇대가 크게 서 있으며, 다채로운 들꽃으로 장식된 돌담과 푸른 녹음이 어우러져 있습니다.",
+    "prompt": "A wide countryside view featuring a traditional Korean Hanok next to a simple rural house. A long stone wall lined with colorful wildflowers and lush greenery stretches across the midground, with rolling green hills towering in the background under scattered clouds in a beautiful blue sky, landscape painting style."
+  },
+  {
+    "id": 4,
+    "description": "노란색과 분홍색 꽃들로 화사하게 장식된 돌담과 그 너머로 보이는 한옥의 전경입니다. 거친 돌의 질감과 부드러운 꽃의 대비가 아름다우며, 한옥의 유려한 처마선이 돋보입니다.",
+    "prompt": "A highly detailed view of a rustic stone wall vividly decorated with pink and yellow blooming flowers. Behind the wall lies a beautifully preserved traditional Korean Hanok showcasing intricately designed wooden structures and curved roof tiles. Surrounding it is a vibrant green forest and mountain landscape under a bright daytime sky, stunning lighting."
+  }
+]

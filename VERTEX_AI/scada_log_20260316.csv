@@ -1,0 +1,9 @@
+timestamp,farm_id,age_days,temp_c,humidity,ammonia_ppm,heater,fan
+2026-03-16 10:00:00,Dong-A1,15,26.5,60,15,OFF,Low
+2026-03-16 11:00:00,Dong-A1,15,27.0,58,16,OFF,Low
+2026-03-16 12:00:00,Dong-A1,15,28.5,55,18,OFF,Medium
+2026-03-16 13:00:00,Dong-A1,15,29.0,52,20,OFF,Medium
+2026-03-16 14:00:00,Dong-A1,15,29.5,50,22,OFF,Medium
+2026-03-16 15:00:00,Dong-A1,15,28.0,65,26,OFF,Low
+2026-03-16 16:00:00,Dong-A1,15,25.5,75,29,OFF,Low
+2026-03-16 16:30:00,Dong-A1,15,23.0,80,35,OFF,Low
