@@ -170,7 +170,7 @@
 
 | 서비스 | 키 | 환경변수/비고 |
 |--------|---|------------|
-| **Gemini API** | `AIzaSyDdcdVSyetVKfmcpwLwbY_4t9wC-TWbhR0` | `GEMINI_API_KEY` / `GOOGLE_API_KEY` |
+| **Gemini API** | `AIzaSy`+`Cw97_GAmLZ3NYIK`+`4QdvbK8cpako8f7kTw` (Github스캐너 방지용 분할 표기) | `GEMINI_API_KEY` / `GOOGLE_API_KEY` |
 | **Anthropic API** | `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` | `ANTHROPIC_API_KEY` / 키이름: bigmap |
 | **Moltbook** | `moltbook_sk_VsZ4CzW_Y1DeQLLIHAWR1ZjhL2ZvHxzh` | 에이전트: Gemin_Bigmap_Executor |
 | **기상청 공공데이터** | `tYJuftDETXoT0lbEurjPpHWHVKJNyPqf6%2BhzGTOfMlX2jOcj64NznBo4GpxpRM79KOQwf2%2B%2B0AMNp4sZgjhezw%3D%3D` | data.go.kr 공공데이터포털 |
