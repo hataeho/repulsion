@@ -13,6 +13,7 @@ const DROPS_DIR = path.join(__dirname, 'drops');
 const MANIFEST_FILE = path.join(DROPS_DIR, 'manifest.json');
 const EXPIRY_HOURS = 24;
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+const GHOSTNET_DIR = path.join(__dirname, '../ghostnet/whisper/gabia-vps'); // Ghostnet Bridge 대상 폴더
 
 // Tailscale 기기 목록
 const DEVICES = [
@@ -78,6 +79,17 @@ app.post('/api/drop/message', (req, res) => {
     return res.status(400).json({ error: '수신 기기(to)와 내용(content)은 필수입니다.' });
   }
 
+  // --- Ghostnet Bridge ---
+  if (to === 'gabia-vps') {
+    if (!fs.existsSync(GHOSTNET_DIR)) fs.mkdirSync(GHOSTNET_DIR, { recursive: true });
+    
+    // 워처가 감지할 task_ 파일 생성
+    const taskFilename = `task_${Date.now()}.txt`;
+    fs.writeFileSync(path.join(GHOSTNET_DIR, taskFilename), content, 'utf-8');
+    
+    return res.json({ ok: true, id: taskFilename, message: `👻 가비아 워처(Watcher)에게 실시간 명령이 하달되었습니다!` });
+  }
+
   const drop = {
     id: uuidv4(),
     type: 'message',
@@ -135,18 +147,40 @@ app.get('/api/pickup/:device', (req, res) => {
   const manifest = loadManifest();
   const drops = manifest.filter(d => d.to === device && !d.claimed);
 
+  const mappedDrops = drops.map(d => ({
+    id: d.id,
+    type: d.type,
+    from: d.from,
+    subject: d.subject,
+    timestamp: d.timestamp,
+    ...(d.type === 'message' ? { content: d.content } : {}),
+    ...(d.type === 'file' ? { originalname: d.originalname, size: d.size } : {})
+  }));
+
+  // --- Ghostnet Bridge ---
+  if (device === 'gabia-vps' && fs.existsSync(GHOSTNET_DIR)) {
+    const files = fs.readdirSync(GHOSTNET_DIR);
+    files.forEach(f => {
+      // result_ 결과물 또는 진행 중인 processing_ 파일 읽어오기
+      if (f.startsWith('result_') && f.endsWith('.txt')) {
+        const content = fs.readFileSync(path.join(GHOSTNET_DIR, f), 'utf-8');
+        const stat = fs.statSync(path.join(GHOSTNET_DIR, f));
+        mappedDrops.unshift({
+          id: f,
+          type: 'message',
+          from: 'Ghostnet Watcher',
+          subject: `[AI 워처 보고서] ${f}`,
+          content: content,
+          timestamp: stat.mtime.toISOString(),
+        });
+      }
+    });
+  }
+
   res.json({
     device,
-    count: drops.length,
-    drops: drops.map(d => ({
-      id: d.id,
-      type: d.type,
-      from: d.from,
-      subject: d.subject,
-      timestamp: d.timestamp,
-      ...(d.type === 'message' ? { content: d.content } : {}),
-      ...(d.type === 'file' ? { originalname: d.originalname, size: d.size } : {})
-    }))
+    count: mappedDrops.length,
+    drops: mappedDrops
   });
 });
 
@@ -168,8 +202,19 @@ app.get('/api/download/:id', (req, res) => {
 
 // 수신 확인 (삭제)
 app.delete('/api/claim/:id', (req, res) => {
+  const id = req.params.id;
+
+  // --- Ghostnet Bridge ---
+  if (id.startsWith('result_') && id.endsWith('.txt')) {
+    const filePath = path.join(GHOSTNET_DIR, id);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      return res.json({ ok: true, message: '✅ Ghostnet 워처 보고서를 폐기했습니다.' });
+    }
+  }
+
   const manifest = loadManifest();
-  const idx = manifest.findIndex(d => d.id === req.params.id);
+  const idx = manifest.findIndex(d => d.id === id);
   if (idx === -1) {
     return res.status(404).json({ error: '항목을 찾을 수 없습니다.' });
   }
