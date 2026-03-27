@@ -5,7 +5,7 @@ const path = require('path');
 
 const app = express();
 const PORT = 3457;
-const GEMINI_KEY = 'AIzaSyDdcdVSyetVKfmcpwLwbY_4t9wC-TWbhR0';
+const GEMINI_KEY = process.env.GEMINI_API_KEY; // Git 유출 금지 (가비아 서버 PM2 ENV에서 주입됨)
 const DATA_DIR = path.join(__dirname, 'data');
 
 // Ensure data directory exists
