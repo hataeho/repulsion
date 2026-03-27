@@ -20,3 +20,6 @@ __pycache__/
 !.gemini/AGENTS.md
 gopher/drops/
 gopher/node_modules/
+.DS_Store
+.gemini/
+dotfiles/.gemini/
