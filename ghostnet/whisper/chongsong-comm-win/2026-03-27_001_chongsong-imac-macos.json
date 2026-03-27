@@ -1,0 +1,36 @@
+{
+  "timestamp": "2026-03-27T16:05:00+09:00",
+  "from": "chongsong-imac-macos",
+  "to": "chongsong-comm-win",
+  "type": "credential_delivery",
+  "priority": "normal",
+  "subject": "가비아 VPS 로그인 정보",
+  "body": {
+    "message": "가비아 VPS 접속에 필요한 전체 정보입니다.",
+    "credentials": {
+      "web_console": {
+        "service": "가비아 클라우드 (gabia.com)",
+        "account_id": "bitmap",
+        "password": "Gb20127202!",
+        "google_login": "sarangnet@gmail.com (대안 로그인)",
+        "note": "계정 ID가 'bigmap'이 아닌 'bitmap' (오타). Google 로그인 권장."
+      },
+      "server": {
+        "instance_name": "gabia-bigmap-linux",
+        "os": "Ubuntu 24.04 LTS",
+        "specs": "2vCore / 4GB RAM",
+        "server_ip": "1.201.124.238",
+        "tailscale_ip": "100.93.66.94",
+        "tailscale_name": "gabia-bigmap-linux",
+        "ssh_key": "repulsion/bigmap_gabia_key.pem",
+        "ssh_command": "ssh -i repulsion/bigmap_gabia_key.pem ubuntu@1.201.124.238"
+      }
+    },
+    "prerequisites": [
+      "SSH 접속 시 bigmap_gabia_key.pem 파일 필요 (repulsion 루트에 위치)",
+      "Tailscale VPN 연결 시 100.93.66.94로도 접속 가능",
+      "Git으로 repulsion 동기화 후 pem 키 사용: git pull origin main"
+    ]
+  },
+  "ack_required": false
+}
