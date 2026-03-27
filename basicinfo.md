@@ -149,6 +149,8 @@
 | **서버 IP** | ⏳ VPS 생성 후 기록 |
 | **root 비밀번호** | ⏳ VPS 생성 시 설정 |
 | **OS** | Ubuntu 22.04 LTS (예정) |
+| **Gopher URL** | `https://bigmap.ai/gopher/` |
+| **Gopher 계정** | `bigmap` / `20127202` (Basic Auth) |
 
 ---
 
