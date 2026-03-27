@@ -88,10 +88,7 @@
 | **회선** | 광랜 1Gbps |
 | **PC 수** | 1대 |
 
-### 서울 (딸집)
-| 항목 | 값 |
-|------|---|
-| **기기** | iMac M2 |
+
 
 ---
 
@@ -105,41 +102,6 @@
 | **앱 비밀번호 (Google Drive)** | `agse lbgo ewoq nmrc` |
 | **앱 비밀번호 (공암산성 AI 상황실)** | (2월 5일 생성, 값 미기록) |
 | **보조 계정** | gongamsansung@gmail.com (농장용) |
-
----
-
-## ☁️ AWS Lightsail
-
-| 항목 | 값 |
-|------|---|
-| **서비스** | Amazon Lightsail |
-| **계정 이름** | `Bigmap-Inc-Global` |
-| **Account ID** | `553160715131` |
-| **인스턴스** | Bigmap-Core-Seoul-8GB |
-| **사양** | 8 GB RAM, 2 vCPUs, 160 GB SSD ($44/월) |
-| **고정 IP** | 43.201.223.4 |
-| **리전** | ap-northeast-2 (서울, Zone A) |
-| **SSH 키 (iMac)** | `brocker/liberation/aws_key.pem` |
-| **접속 (iMac)** | `ssh -i ~/brocker/liberation/aws_key.pem ubuntu@43.201.223.4` |
-| **접속 (Windows)** | `ssh -i "$env:USERPROFILE\Downloads\LightsailDefaultKey-ap-northeast-2.pem" ubuntu@43.201.223.4` |
-| **업그레이드 이력** | 2026-02-28: 512MB → 8GB (스냅샷 복원) |
-
-### 🔐 AWS 콘솔 로그인 방법 (스트레스 없이!)
-
-> **⚡ 핵심: 아래 링크 클릭 → 이메일 → 비밀번호 → 끝!**
-
-| 순서 | 할 일 |
-|------|-------|
-| **① 주소** | https://lightsail.aws.amazon.com 접속 |
-| **② 로그인 유형** | ⚠️ **"Root user"를 선택** (= 주인 계정이라는 뜻. IAM은 무시!) |
-| **③ 아이디** | `sarangnet@gmail.com` |
-| **④ 비밀번호** | `Az20127202!` |
-| **⑤ 2단계 인증** | iPhone에 뜨는 알림 승인 또는 Google Authenticator 코드 입력 |
-| **⑥ 완료** | Lightsail 대시보드가 뜨면 성공! |
-
-> 💡 **"Root user"와 "IAM user" 차이**:
-> - **Root user** = 내 계정 (이것만 쓰면 됨!)
-> - **IAM user** = 직원에게 권한 주는 부계정 (우리는 안 씀)
 
 ---
 
@@ -177,8 +139,7 @@
 
 ---
 
-## 🏠 가비아 호스팅 (이전 예정)
-
+## 🏠 가비아 호스팅
 | 항목 | 값 |
 |------|---|
 | **서비스** | 가비아 VPS |
@@ -234,13 +195,11 @@
 | 서비스 | 계정 | 구독 | 모델 | 결제 방식 |
 |--------|------|------|------|----------|
 | **Gemini Ultra** | sarangnet@gmail.com | Google One AI Premium | Gemini 2.5 Pro | Google |
-| ~~ChatGPT Plus~~ | sarang@korea.com (Apple) | ❌ 해지 (2026-03-01) | GPT 5.2 | App Store |
-| ~~Claude Pro~~ | sarang@korea.com (Apple) | ❌ 해지 (2026-03-01) | Opus 4.6 | App Store |
-| ~~Grok Premium~~ | (X/Twitter 계정) | ❌ 해지 (2026-03-01) | Grok 2 | xAI |
+
 | **안티그래비티** | Gravity 구독 포함 | — | Claude Sonnet 4 | Gravity |
 | DeepSeek | 미가입 | 무료 | R1 | — |
 
-> ⚠️ GoodNotes도 2026-03-01 해지 완료
+
 
 ---
 
@@ -266,16 +225,6 @@
 
 ---
 
-## 📁 백업 경로
-
-| 위치 | 경로 |
-|------|------|
-| **Google Drive (iMac)** | `~/Library/CloudStorage/GoogleDrive-sarangnet@gmail.com/내 드라이브/` |
-| **Google Drive 백업** | `내 드라이브/brocker_backup/` |
-| **Google Drive gemin** | `내 드라이브/gemin/` |
-| **Windows 백업** | `다른 컴퓨터/내 컴퓨터/` (Desktop, Documents, Downloads) |
-
----
 
 ## 사용 규칙
 
@@ -286,16 +235,6 @@
 
 ---
 
-## ⌨️ Keyboard Maestro
-
-| 항목 | 값 |
-|------|---|
-| **이메일** | sarang@korea.com |
-| **License Key** | `16HBACB1H58P79C81P` |
-| **버전** | 11 (최신) |
-| **용도** | Antigravity 자동 승인 (Run/Accept 버튼 자동 클릭) |
-
----
 
 *최종 업데이트: 안티그래비티 — 2026-03-05 03:22 KST — Keyboard Maestro 라이선스 추가*
 *이전 업데이트: 소넷 (안티그래비티) — 2026-03-01 23:15 KST — 구독 정리 (GPT/Claude/Grok/GoodNotes 해지)*
