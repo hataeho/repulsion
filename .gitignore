@@ -18,3 +18,5 @@ __pycache__/
 *.mp4
 .gemini/*
 !.gemini/AGENTS.md
+gopher/drops/
+gopher/node_modules/

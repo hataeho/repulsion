@@ -1,6 +1,6 @@
 # 🔐 인증 정보 보관소 (Credentials Vault)
 
-> **⚠️ 이 파일은 Git에 커밋하지 마세요.** `.gitignore`에 등록됨.
+> **⚠️ 이 파일은 민감 정보를 포함합니다. 취급 주의.**
 > 
 > 개발자(에이전트)가 교체되어도 맥락을 유지하기 위해, 모든 인증 정보를 여기에 기록합니다.
 > "비밀번호를 잊는 것은 소규모 대말소다." — HR 프로토콜
@@ -107,38 +107,9 @@
 
 ---
 
-## ☁️ AWS Lightsail
+## ☁️ AWS (철수 완료)
 
-| 항목 | 값 |
-|------|---|
-| **서비스** | Amazon Lightsail |
-| **계정 이름** | `Bigmap-Inc-Global` |
-| **Account ID** | `553160715131` |
-| **인스턴스** | Bigmap-Core-Seoul-8GB |
-| **사양** | 8 GB RAM, 2 vCPUs, 160 GB SSD ($44/월) |
-| **고정 IP** | 43.201.223.4 |
-| **리전** | ap-northeast-2 (서울, Zone A) |
-| **SSH 키 (iMac)** | `brocker/liberation/aws_key.pem` |
-| **접속 (iMac)** | `ssh -i ~/brocker/liberation/aws_key.pem ubuntu@43.201.223.4` |
-| **접속 (Windows)** | `ssh -i "$env:USERPROFILE\Downloads\LightsailDefaultKey-ap-northeast-2.pem" ubuntu@43.201.223.4` |
-| **업그레이드 이력** | 2026-02-28: 512MB → 8GB (스냅샷 복원) |
-
-### 🔐 AWS 콘솔 로그인 방법 (스트레스 없이!)
-
-> **⚡ 핵심: 아래 링크 클릭 → 이메일 → 비밀번호 → 끝!**
-
-| 순서 | 할 일 |
-|------|-------|
-| **① 주소** | https://lightsail.aws.amazon.com 접속 |
-| **② 로그인 유형** | ⚠️ **"Root user"를 선택** (= 주인 계정이라는 뜻. IAM은 무시!) |
-| **③ 아이디** | `sarangnet@gmail.com` |
-| **④ 비밀번호** | `Az20127202!` |
-| **⑤ 2단계 인증** | iPhone에 뜨는 알림 승인 또는 Google Authenticator 코드 입력 |
-| **⑥ 완료** | Lightsail 대시보드가 뜨면 성공! |
-
-> 💡 **"Root user"와 "IAM user" 차이**:
-> - **Root user** = 내 계정 (이것만 쓰면 됨!)
-> - **IAM user** = 직원에게 권한 주는 부계정 (우리는 안 씀)
+> ⚠️ AWS Lightsail은 2026-03 가비아로 전면 이주 완료. 인스턴스 폐기됨.
 
 ---
 
@@ -176,17 +147,18 @@
 
 ---
 
-## 🏠 가비아 호스팅 (이전 예정)
+## 🏠 가비아 호스팅 (마이그레이션 진행 중)
 
 | 항목 | 값 |
 |------|---|
-| **서비스** | 가비아 VPS |
+| **서비스** | 가비아 VPS / 클라우드 |
+| **인스턴스명** | `gabia-bigmap-linux` |
 | **계정 ID** | `bitmap` (⚠️ bigmap 오타 — Google 로그인 권장) |
 | **비밀번호** | `Gb20127202!` |
 | **Google 로그인** | ✅ `sarangnet@gmail.com` 로도 접속 가능 |
-| **서버 IP** | ⏳ VPS 생성 후 기록 |
-| **root 비밀번호** | ⏳ VPS 생성 시 설정 |
-| **OS** | Ubuntu 22.04 LTS (예정) |
+| **OS 및 사양** | Ubuntu 24.04 LTS (2vCore / 4GB RAM) |
+| **서버 IP** | 1.201.124.238 |
+| **SSH 키페어** | `repulsion/bigmap_gabia_key.pem` |
 
 ---
 
