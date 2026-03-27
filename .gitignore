@@ -18,3 +18,7 @@ __pycache__/
 *.mp4
 .gemini/*
 !.gemini/AGENTS.md
+
+# 고스트망 v3.0: Git에 의존하지 않는 작업일지/통신 폴더 전면 배제 (SSH 전용)
+SHARE/*
+!SHARE/.gitkeep
