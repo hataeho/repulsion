@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bluehouse — 대한민국 정부 조직도</title>
+    <meta name="description" content="대한민국 행정부 조직도 대시보드. 대통령실, 국무총리, 18부 5처 및 지방자치단체 구조를 시각화합니다.">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="topbar">
+        <span class="logo">🇰🇷</span>
+        <h1>Bluehouse</h1>
+        <span class="subtitle">대한민국 정부 조직도</span>
+        <div class="right">
+            <span class="badge" id="task-count">0 tasks</span>
+            <span class="time" id="clock"></span>
+        </div>
+    </div>
+
+    <div id="main">
+        <svg id="connection-svg"></svg>
+
+        <!-- LEFT: Org Tree -->
+        <div id="tree-panel">
+            <div class="panel-header">
+                <h2>🇰🇷 대한민국 행정부</h2>
+                <p>정부 조직도 — 2025년 현재</p>
+            </div>
+            <div id="folder-tree"></div>
+        </div>
+
+        <!-- CENTER: Connection Area + Chat -->
+        <div id="center-panel">
+            <div id="center-canvas-wrap"></div>
+            <div id="chat-area">
+                <div id="chat-header2">
+                    <div class="dot"></div>
+                    <span>🛸 Jimin — Antigravity AI</span>
+                </div>
+                <div id="chat-messages">
+                    <div class="chat-msg bot">대한민국 정부 조직도를 표시합니다. 우측 업무에 마우스를 올리면 관련 부처를 연결합니다.</div>
+                </div>
+                <div id="chat-input-area">
+                    <input id="chat-input" placeholder="질문을 입력하세요..." />
+                    <button id="chat-send">↑</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Todo -->
+        <div id="task-panel">
+            <div class="panel-header">
+                <h2>📋 해야 할 일</h2>
+                <p id="task-date"></p>
+            </div>
+            <div id="task-list"></div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>

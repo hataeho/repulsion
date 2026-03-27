@@ -1,0 +1,3219 @@
+{
+  "data": [
+    {
+      "codeTy": "bizCd",
+      "code": "A",
+      "codeNm": "농업, 임업 및 어업 "
+    },
+    {
+      "codeTy": "bizCd",
+      "code": "B",
+      "codeNm": "광업 "
+    },
+    {
+      "codeTy": "bizCd",
+      "code": "C",
+      "codeNm": "제조업 "
+    },
+    {
+      "codeTy": "bizCd",
+      "code": "D",
+      "codeNm": "전기, 가스, 증기 및 수도사업 "
+    },
+    {
+      "codeTy": "bizCd",
+      "code": "E",
+      "codeNm": "하수폐기처리원료재생환경복원"
+    },
+    {
+      "codeTy": "bizCd",
+      "code": "F",
+      "codeNm": "건설업 "
+    },
+    {
+      "codeTy": "bizCd",
+      "code": "G",
+      "codeNm": "도매 및 소매업"
+    },
+    {
+      "codeTy": "bizCd",
+      "code": "H",
+      "codeNm": "운수업"
+    },
+    {
+      "codeTy": "bizCd",
+      "code": "I",
+      "codeNm": "숙박 및 음식점업 "
+    },
+    {
+      "codeTy": "bizCd",
+      "code": "J",
+      "codeNm": "출판영상,방송통신정보서비스업"
+    },
+    {
+      "codeTy": "bizCd",
+      "code": "K",
+      "codeNm": "금융 및 보험업 "
+    },
+    {
+      "codeTy": "bizCd",
+      "code": "L",
+      "codeNm": "부동산업 및 임대업 "
+    },
+    {
+      "codeTy": "bizCd",
+      "code": "M",
+      "codeNm": "전문, 과학 및 기술 서비스업 "
+    },
+    {
+      "codeTy": "bizCd",
+      "code": "N",
+      "codeNm": "사업시설관리,사업지원서비스업"
+    },
+    {
+      "codeTy": "bizCd",
+      "code": "O",
+      "codeNm": "공공행정, 국방 및 사회보장 행정"
+    },
+    {
+      "codeTy": "bizCd",
+      "code": "P",
+      "codeNm": "교육 서비스업"
+    },
+    {
+      "codeTy": "bizCd",
+      "code": "Q",
+      "codeNm": "보건업 및 사회복지 서비스업"
+    },
+    {
+      "codeTy": "bizCd",
+      "code": "R",
+      "codeNm": "예술,스포츠및여가관련서비스업"
+    },
+    {
+      "codeTy": "bizCd",
+      "code": "S",
+      "codeNm": "협회단체,수리기타개인서비스업"
+    },
+    {
+      "codeTy": "bizCd",
+      "code": "T",
+      "codeNm": "가구내고용,미분류자가소비생산"
+    },
+    {
+      "codeTy": "bizCd",
+      "code": "U",
+      "codeNm": "국제 및 외국기관"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "11",
+      "codeNm": "제주시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "11",
+      "codeNm": "동구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "11",
+      "codeNm": "종로구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "11",
+      "codeNm": "중구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "11",
+      "codeNm": "춘천시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "11",
+      "codeNm": "중구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "11",
+      "codeNm": "세종시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "11",
+      "codeNm": "목포시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "11",
+      "codeNm": "천안시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "11",
+      "codeNm": "동구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "11",
+      "codeNm": "중구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "12",
+      "codeNm": "서귀포시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "12",
+      "codeNm": "원주시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "12",
+      "codeNm": "여수시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "12",
+      "codeNm": "충주시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "12",
+      "codeNm": "동구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "12",
+      "codeNm": "서구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "12",
+      "codeNm": "경주시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "12",
+      "codeNm": "중구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "12",
+      "codeNm": "서구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "12",
+      "codeNm": "동구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "12",
+      "codeNm": "군산시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "12",
+      "codeNm": "아산시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "12",
+      "codeNm": "중구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "13",
+      "codeNm": "진주시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "13",
+      "codeNm": "용산구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "13",
+      "codeNm": "동구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "13",
+      "codeNm": "의정부시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "13",
+      "codeNm": "익산시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "13",
+      "codeNm": "서구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "13",
+      "codeNm": "미추홀구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "13",
+      "codeNm": "강릉시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "13",
+      "codeNm": "김천시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "13",
+      "codeNm": "서구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "13",
+      "codeNm": "제천시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "13",
+      "codeNm": "순천시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "13",
+      "codeNm": "북구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "13",
+      "codeNm": "보령시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "14",
+      "codeNm": "동해시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "14",
+      "codeNm": "안동시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "14",
+      "codeNm": "영도구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "14",
+      "codeNm": "나주시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "14",
+      "codeNm": "대덕구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "14",
+      "codeNm": "남구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "14",
+      "codeNm": "정읍시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "14",
+      "codeNm": "광산구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "14",
+      "codeNm": "창원시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "14",
+      "codeNm": "성동구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "14",
+      "codeNm": "공주시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "15",
+      "codeNm": "부천시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "15",
+      "codeNm": "서산시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "15",
+      "codeNm": "유성구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "15",
+      "codeNm": "남구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "15",
+      "codeNm": "창원시 진해구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "15",
+      "codeNm": "서구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "15",
+      "codeNm": "부산진구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "15",
+      "codeNm": "태백시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "15",
+      "codeNm": "북구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "15",
+      "codeNm": "남원시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "15",
+      "codeNm": "구미시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "15",
+      "codeNm": "동대문구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "16",
+      "codeNm": "광양시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "16",
+      "codeNm": "김제시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "16",
+      "codeNm": "동래구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "16",
+      "codeNm": "영주시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "16",
+      "codeNm": "수성구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "16",
+      "codeNm": "성북구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "16",
+      "codeNm": "통영시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "16",
+      "codeNm": "속초시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "16",
+      "codeNm": "남동구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "16",
+      "codeNm": "광명시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "17",
+      "codeNm": "부평구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "17",
+      "codeNm": "달서구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "17",
+      "codeNm": "도봉구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "17",
+      "codeNm": "삼척시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "17",
+      "codeNm": "평택시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "17",
+      "codeNm": "사천시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "17",
+      "codeNm": "남구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "17",
+      "codeNm": "영천시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "18",
+      "codeNm": "은평구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "18",
+      "codeNm": "김해시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "18",
+      "codeNm": "북구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "18",
+      "codeNm": "동두천시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "18",
+      "codeNm": "상주시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "18",
+      "codeNm": "계양구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "19",
+      "codeNm": "밀양시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "19",
+      "codeNm": "문경시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "19",
+      "codeNm": "연수구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "19",
+      "codeNm": "해운대구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "19",
+      "codeNm": "안산시 상록구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "19",
+      "codeNm": "서대문구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "20",
+      "codeNm": "사하구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "20",
+      "codeNm": "경산시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "20",
+      "codeNm": "마포구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "20",
+      "codeNm": "거제시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "21",
+      "codeNm": "강서구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "21",
+      "codeNm": "금정구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "21",
+      "codeNm": "과천시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "21",
+      "codeNm": "천안시 동남구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "22",
+      "codeNm": "천안시 서북구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "22",
+      "codeNm": "구리시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "22",
+      "codeNm": "강서구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "22",
+      "codeNm": "구로구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "23",
+      "codeNm": "영등포구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "23",
+      "codeNm": "연제구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "23",
+      "codeNm": "오산시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "24",
+      "codeNm": "동작구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "24",
+      "codeNm": "수영구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "24",
+      "codeNm": "군포시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "25",
+      "codeNm": "사상구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "25",
+      "codeNm": "관악구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "25",
+      "codeNm": "의왕시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "26",
+      "codeNm": "강남구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "26",
+      "codeNm": "시흥시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "27",
+      "codeNm": "남양주시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "27",
+      "codeNm": "강동구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "28",
+      "codeNm": "하남시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "28",
+      "codeNm": "송파구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "29",
+      "codeNm": "중랑구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "30",
+      "codeNm": "기장군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "30",
+      "codeNm": "노원구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "30",
+      "codeNm": "달성군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "30",
+      "codeNm": "강화군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "31",
+      "codeNm": "서초구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "31",
+      "codeNm": "완주군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "31",
+      "codeNm": "청원군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "31",
+      "codeNm": "옹진군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "31",
+      "codeNm": "양주시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "31",
+      "codeNm": "금산군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "32",
+      "codeNm": "담양군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "32",
+      "codeNm": "양천구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "32",
+      "codeNm": "진안군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "32",
+      "codeNm": "보은군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "32",
+      "codeNm": "군위군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "32",
+      "codeNm": "홍천군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "32",
+      "codeNm": "의령군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "33",
+      "codeNm": "옥천군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "33",
+      "codeNm": "횡성군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "33",
+      "codeNm": "여주시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "33",
+      "codeNm": "무주군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "33",
+      "codeNm": "곡성군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "33",
+      "codeNm": "의성군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "33",
+      "codeNm": "광진구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "33",
+      "codeNm": "함안군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "33",
+      "codeNm": "연기군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "34",
+      "codeNm": "장수군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "34",
+      "codeNm": "구례군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "34",
+      "codeNm": "계룡시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "34",
+      "codeNm": "창녕군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "34",
+      "codeNm": "영동군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "34",
+      "codeNm": "강북구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "35",
+      "codeNm": "화성시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "35",
+      "codeNm": "진천군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "35",
+      "codeNm": "영월군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "35",
+      "codeNm": "임실군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "35",
+      "codeNm": "청송군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "35",
+      "codeNm": "논산시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "35",
+      "codeNm": "금천구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "36",
+      "codeNm": "영양군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "36",
+      "codeNm": "평창군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "36",
+      "codeNm": "양산시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "36",
+      "codeNm": "부여군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "36",
+      "codeNm": "괴산군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "37",
+      "codeNm": "음성군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "37",
+      "codeNm": "정선군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "37",
+      "codeNm": "서천군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "37",
+      "codeNm": "영덕군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "37",
+      "codeNm": "파주시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "37",
+      "codeNm": "순창군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "38",
+      "codeNm": "철원군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "38",
+      "codeNm": "고흥군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "39",
+      "codeNm": "청양군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "39",
+      "codeNm": "화천군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "39",
+      "codeNm": "고창군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "39",
+      "codeNm": "광주시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "39",
+      "codeNm": "보성군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "40",
+      "codeNm": "부안군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "40",
+      "codeNm": "연천군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "40",
+      "codeNm": "양구군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "40",
+      "codeNm": "홍성군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "40",
+      "codeNm": "단양군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "40",
+      "codeNm": "화순군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "41",
+      "codeNm": "예산군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "41",
+      "codeNm": "장흥군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "41",
+      "codeNm": "인제군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "41",
+      "codeNm": "포천시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "42",
+      "codeNm": "고성군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "42",
+      "codeNm": "가평군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "42",
+      "codeNm": "청도군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "42",
+      "codeNm": "강진군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "42",
+      "codeNm": "고성군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "43",
+      "codeNm": "양양군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "43",
+      "codeNm": "고령군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "43",
+      "codeNm": "양평군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "43",
+      "codeNm": "해남군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "43",
+      "codeNm": "당진시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "44",
+      "codeNm": "성주군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "44",
+      "codeNm": "이천시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "44",
+      "codeNm": "영암군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "44",
+      "codeNm": "남해군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "45",
+      "codeNm": "칠곡군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "45",
+      "codeNm": "무안군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "45",
+      "codeNm": "하동군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "45",
+      "codeNm": "용인시 처인구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "46",
+      "codeNm": "산청군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "46",
+      "codeNm": "안성시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "46",
+      "codeNm": "태안군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "47",
+      "codeNm": "함양군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "47",
+      "codeNm": "김포시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "47",
+      "codeNm": "함평군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "48",
+      "codeNm": "거창군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "48",
+      "codeNm": "영광군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "48",
+      "codeNm": "안산시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "49",
+      "codeNm": "안산시 단원구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "49",
+      "codeNm": "합천군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "49",
+      "codeNm": "장성군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "50",
+      "codeNm": "완도군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "50",
+      "codeNm": "예천군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "51",
+      "codeNm": "진도군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "52",
+      "codeNm": "신안군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "52",
+      "codeNm": "봉화군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "53",
+      "codeNm": "울진군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "54",
+      "codeNm": "울릉군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "59",
+      "codeNm": "울산시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "60",
+      "codeNm": "울산시 북구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "60",
+      "codeNm": "청주시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "60",
+      "codeNm": "전주시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "60",
+      "codeNm": "북구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "60",
+      "codeNm": "포항시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "61",
+      "codeNm": "부천시 원미구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "61",
+      "codeNm": "울산시 동구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "61",
+      "codeNm": "전주시 덕진구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "61",
+      "codeNm": "청주시 상당구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "61",
+      "codeNm": "동구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "61",
+      "codeNm": "포항시 남구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "62",
+      "codeNm": "청주시 흥덕구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "62",
+      "codeNm": "부천시 소사구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "62",
+      "codeNm": "포항시 북구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "62",
+      "codeNm": "전주시 완산구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "62",
+      "codeNm": "중구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "62",
+      "codeNm": "울산시 중구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "63",
+      "codeNm": "부천시 오정구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "63",
+      "codeNm": "울산시 남구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "63",
+      "codeNm": "증평군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "63",
+      "codeNm": "남구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "64",
+      "codeNm": "울산시 울주군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "64",
+      "codeNm": "부천시 남구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "64",
+      "codeNm": "청주시 청원구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "64",
+      "codeNm": "울주군"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "65",
+      "codeNm": "청주시 서원구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "65",
+      "codeNm": "창원시 마산합포구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "66",
+      "codeNm": "창원시 마산회원구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "67",
+      "codeNm": "성남시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "67",
+      "codeNm": "창원시 의창구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "68",
+      "codeNm": "성남시 수정구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "68",
+      "codeNm": "창원시 성산구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "69",
+      "codeNm": "성남시 중원구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "70",
+      "codeNm": "성남시 분당구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "73",
+      "codeNm": "수원시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "74",
+      "codeNm": "수원시 장안구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "75",
+      "codeNm": "수원시 권선구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "76",
+      "codeNm": "수원시 팔달구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "77",
+      "codeNm": "수원시 영통구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "79",
+      "codeNm": "안양시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "80",
+      "codeNm": "안양시 만안구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "81",
+      "codeNm": "안양시 동안구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "84",
+      "codeNm": "고양시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "85",
+      "codeNm": "고양시 덕양구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "86",
+      "codeNm": "고양시 일산동구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "87",
+      "codeNm": "고양시 일산서구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "89",
+      "codeNm": "용인시"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "90",
+      "codeNm": "용인시 기흥구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "91",
+      "codeNm": "용인시 수지구"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "cityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "cntrCd",
+      "code": "100",
+      "codeNm": "주택용"
+    },
+    {
+      "codeTy": "cntrCd",
+      "code": "200",
+      "codeNm": "일반용"
+    },
+    {
+      "codeTy": "cntrCd",
+      "code": "250",
+      "codeNm": "교육용"
+    },
+    {
+      "codeTy": "cntrCd",
+      "code": "300",
+      "codeNm": "산업용"
+    },
+    {
+      "codeTy": "cntrCd",
+      "code": "500",
+      "codeNm": "농사용"
+    },
+    {
+      "codeTy": "cntrCd",
+      "code": "600",
+      "codeNm": "가로등"
+    },
+    {
+      "codeTy": "cntrCd",
+      "code": "900",
+      "codeNm": "심 야"
+    },
+    {
+      "codeTy": "genSrcCd",
+      "code": "1",
+      "codeNm": "태양광"
+    },
+    {
+      "codeTy": "genSrcCd",
+      "code": "2",
+      "codeNm": "소수력"
+    },
+    {
+      "codeTy": "genSrcCd",
+      "code": "3",
+      "codeNm": "풍력"
+    },
+    {
+      "codeTy": "genSrcCd",
+      "code": "4",
+      "codeNm": "바이오"
+    },
+    {
+      "codeTy": "genSrcCd",
+      "code": "5",
+      "codeNm": "폐기물"
+    },
+    {
+      "codeTy": "genSrcCd",
+      "code": "6",
+      "codeNm": "매립지가스(LFG)"
+    },
+    {
+      "codeTy": "genSrcCd",
+      "code": "7",
+      "codeNm": "연료전지"
+    },
+    {
+      "codeTy": "genSrcCd",
+      "code": "8",
+      "codeNm": "해양에너지"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "110",
+      "codeNm": "중구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "110",
+      "codeNm": "제주시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "110",
+      "codeNm": "수원시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "110",
+      "codeNm": "중구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "110",
+      "codeNm": "춘천시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "110",
+      "codeNm": "전주시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "110",
+      "codeNm": "동구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "110",
+      "codeNm": "청주시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "110",
+      "codeNm": "종로구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "110",
+      "codeNm": "동구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "110",
+      "codeNm": "중구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "110",
+      "codeNm": "중구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "110",
+      "codeNm": "목포시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "110",
+      "codeNm": "세종시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "110",
+      "codeNm": "포항시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "111",
+      "codeNm": "포항시 남구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "111",
+      "codeNm": "수원시 장안구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "111",
+      "codeNm": "청주시 상당구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "111",
+      "codeNm": "전주시 완산구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "112",
+      "codeNm": "청주시 서원구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "113",
+      "codeNm": "청주시 흥덕구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "113",
+      "codeNm": "포항시 북구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "113",
+      "codeNm": "수원시 권선구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "113",
+      "codeNm": "전주시 덕진구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "114",
+      "codeNm": "청주시 청원구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "115",
+      "codeNm": "수원시 팔달구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "117",
+      "codeNm": "수원시 영통구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "120",
+      "codeNm": "창원시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "121",
+      "codeNm": "창원시 의창구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "123",
+      "codeNm": "창원시 성산구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "125",
+      "codeNm": "창원시 마산합포구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "127",
+      "codeNm": "창원시 마산회원구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "129",
+      "codeNm": "창원시 진해구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "130",
+      "codeNm": "여수시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "130",
+      "codeNm": "서귀포시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "130",
+      "codeNm": "충주시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "130",
+      "codeNm": "경주시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "130",
+      "codeNm": "군산시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "130",
+      "codeNm": "천안시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "130",
+      "codeNm": "원주시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "130",
+      "codeNm": "성남시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "131",
+      "codeNm": "천안시 동남구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "131",
+      "codeNm": "성남시 수정구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "133",
+      "codeNm": "성남시 중원구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "133",
+      "codeNm": "천안시 서북구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "135",
+      "codeNm": "성남시 분당구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "140",
+      "codeNm": "서구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "140",
+      "codeNm": "동구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "140",
+      "codeNm": "익산시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "140",
+      "codeNm": "동구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "140",
+      "codeNm": "서구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "140",
+      "codeNm": "중구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "140",
+      "codeNm": "중구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "140",
+      "codeNm": "남구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "150",
+      "codeNm": "제천시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "150",
+      "codeNm": "의정부시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "150",
+      "codeNm": "순천시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "150",
+      "codeNm": "김천시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "150",
+      "codeNm": "강릉시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "150",
+      "codeNm": "공주시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "155",
+      "codeNm": "남구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "170",
+      "codeNm": "동해시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "170",
+      "codeNm": "서구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "170",
+      "codeNm": "동구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "170",
+      "codeNm": "용산구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "170",
+      "codeNm": "동구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "170",
+      "codeNm": "안동시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "170",
+      "codeNm": "진주시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "170",
+      "codeNm": "안양시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "170",
+      "codeNm": "서구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "170",
+      "codeNm": "나주시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "170",
+      "codeNm": "북구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "171",
+      "codeNm": "안양시 만안구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "173",
+      "codeNm": "안양시 동안구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "177",
+      "codeNm": "미추홀구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "180",
+      "codeNm": "보령시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "180",
+      "codeNm": "정읍시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "185",
+      "codeNm": "연수구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "190",
+      "codeNm": "구미시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "190",
+      "codeNm": "남원시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "190",
+      "codeNm": "태백시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "190",
+      "codeNm": "부천시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "200",
+      "codeNm": "남구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "200",
+      "codeNm": "아산시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "200",
+      "codeNm": "광산구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "200",
+      "codeNm": "성동구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "200",
+      "codeNm": "북구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "200",
+      "codeNm": "남동구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "200",
+      "codeNm": "유성구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "200",
+      "codeNm": "영도구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "210",
+      "codeNm": "김제시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "210",
+      "codeNm": "속초시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "210",
+      "codeNm": "서산시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "210",
+      "codeNm": "광명시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "210",
+      "codeNm": "영주시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "215",
+      "codeNm": "광진구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "220",
+      "codeNm": "평택시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "220",
+      "codeNm": "통영시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "230",
+      "codeNm": "논산시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "230",
+      "codeNm": "삼척시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "230",
+      "codeNm": "영천시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "230",
+      "codeNm": "북구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "230",
+      "codeNm": "대덕구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "230",
+      "codeNm": "광양시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "230",
+      "codeNm": "동대문구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "230",
+      "codeNm": "부산진구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "237",
+      "codeNm": "부평구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "240",
+      "codeNm": "사천시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "245",
+      "codeNm": "계양구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "250",
+      "codeNm": "계룡시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "250",
+      "codeNm": "김해시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "250",
+      "codeNm": "상주시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "250",
+      "codeNm": "동두천시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "260",
+      "codeNm": "중랑구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "260",
+      "codeNm": "수성구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "260",
+      "codeNm": "동래구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "260",
+      "codeNm": "서구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "270",
+      "codeNm": "밀양시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "270",
+      "codeNm": "당진시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "270",
+      "codeNm": "안산시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "271",
+      "codeNm": "안산시 상록구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "273",
+      "codeNm": "안산시 단원구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "280",
+      "codeNm": "문경시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "280",
+      "codeNm": "고양시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "281",
+      "codeNm": "고양시 덕양구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "285",
+      "codeNm": "고양시 일산동구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "287",
+      "codeNm": "고양시 일산서구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "290",
+      "codeNm": "과천시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "290",
+      "codeNm": "달서구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "290",
+      "codeNm": "성북구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "290",
+      "codeNm": "경산시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "290",
+      "codeNm": "남구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "305",
+      "codeNm": "강북구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "310",
+      "codeNm": "거제시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "310",
+      "codeNm": "구리시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "320",
+      "codeNm": "도봉구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "320",
+      "codeNm": "북구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "330",
+      "codeNm": "양산시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "350",
+      "codeNm": "해운대구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "350",
+      "codeNm": "노원구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "360",
+      "codeNm": "남양주시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "370",
+      "codeNm": "오산시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "380",
+      "codeNm": "사하구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "380",
+      "codeNm": "은평구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "390",
+      "codeNm": "시흥시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "410",
+      "codeNm": "군포시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "410",
+      "codeNm": "서대문구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "410",
+      "codeNm": "금정구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "430",
+      "codeNm": "의왕시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "440",
+      "codeNm": "마포구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "440",
+      "codeNm": "강서구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "450",
+      "codeNm": "하남시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "460",
+      "codeNm": "용인시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "461",
+      "codeNm": "용인시 처인구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "463",
+      "codeNm": "용인시 기흥구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "465",
+      "codeNm": "용인시 수지구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "470",
+      "codeNm": "연제구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "470",
+      "codeNm": "양천구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "480",
+      "codeNm": "파주시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "500",
+      "codeNm": "이천시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "500",
+      "codeNm": "수영구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "500",
+      "codeNm": "강서구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "530",
+      "codeNm": "구로구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "530",
+      "codeNm": "사상구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "545",
+      "codeNm": "금천구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "550",
+      "codeNm": "안성시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "560",
+      "codeNm": "영등포구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "570",
+      "codeNm": "김포시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "590",
+      "codeNm": "동작구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "590",
+      "codeNm": "화성시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "610",
+      "codeNm": "광주시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "620",
+      "codeNm": "관악구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "630",
+      "codeNm": "양주시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "650",
+      "codeNm": "포천시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "650",
+      "codeNm": "서초구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "670",
+      "codeNm": "여주시"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "680",
+      "codeNm": "강남구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "710",
+      "codeNm": "강화군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "710",
+      "codeNm": "담양군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "710",
+      "codeNm": "달성군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "710",
+      "codeNm": "완주군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "710",
+      "codeNm": "송파구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "710",
+      "codeNm": "기장군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "710",
+      "codeNm": "울주군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "710",
+      "codeNm": "금산군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "720",
+      "codeNm": "곡성군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "720",
+      "codeNm": "진안군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "720",
+      "codeNm": "홍천군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "720",
+      "codeNm": "보은군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "720",
+      "codeNm": "옹진군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "720",
+      "codeNm": "의령군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "730",
+      "codeNm": "구례군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "730",
+      "codeNm": "함안군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "730",
+      "codeNm": "무주군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "730",
+      "codeNm": "의성군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "730",
+      "codeNm": "옥천군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "730",
+      "codeNm": "횡성군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "740",
+      "codeNm": "영동군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "740",
+      "codeNm": "창녕군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "740",
+      "codeNm": "장수군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "740",
+      "codeNm": "강동구"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "745",
+      "codeNm": "증평군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "750",
+      "codeNm": "영월군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "750",
+      "codeNm": "진천군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "750",
+      "codeNm": "청송군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "750",
+      "codeNm": "임실군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "760",
+      "codeNm": "평창군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "760",
+      "codeNm": "영양군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "760",
+      "codeNm": "부여군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "760",
+      "codeNm": "괴산군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "770",
+      "codeNm": "고흥군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "770",
+      "codeNm": "음성군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "770",
+      "codeNm": "순창군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "770",
+      "codeNm": "정선군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "770",
+      "codeNm": "서천군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "770",
+      "codeNm": "영덕군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "780",
+      "codeNm": "보성군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "780",
+      "codeNm": "철원군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "790",
+      "codeNm": "화순군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "790",
+      "codeNm": "화천군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "790",
+      "codeNm": "고창군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "790",
+      "codeNm": "청양군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "800",
+      "codeNm": "부안군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "800",
+      "codeNm": "단양군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "800",
+      "codeNm": "양구군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "800",
+      "codeNm": "연천군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "800",
+      "codeNm": "홍성군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "800",
+      "codeNm": "장흥군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "810",
+      "codeNm": "예산군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "810",
+      "codeNm": "강진군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "810",
+      "codeNm": "인제군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "820",
+      "codeNm": "고성군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "820",
+      "codeNm": "청도군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "820",
+      "codeNm": "해남군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "820",
+      "codeNm": "가평군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "820",
+      "codeNm": "고성군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "825",
+      "codeNm": "태안군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "830",
+      "codeNm": "양평군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "830",
+      "codeNm": "고령군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "830",
+      "codeNm": "영암군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "830",
+      "codeNm": "양양군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "840",
+      "codeNm": "무안군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "840",
+      "codeNm": "남해군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "840",
+      "codeNm": "성주군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "850",
+      "codeNm": "칠곡군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "850",
+      "codeNm": "하동군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "860",
+      "codeNm": "함평군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "860",
+      "codeNm": "산청군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "870",
+      "codeNm": "함양군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "870",
+      "codeNm": "영광군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "880",
+      "codeNm": "거창군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "880",
+      "codeNm": "장성군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "890",
+      "codeNm": "완도군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "890",
+      "codeNm": "합천군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "900",
+      "codeNm": "진도군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "900",
+      "codeNm": "예천군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "910",
+      "codeNm": "신안군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "920",
+      "codeNm": "봉화군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "930",
+      "codeNm": "울진군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "940",
+      "codeNm": "울릉군"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "lglDngCityCd",
+      "code": "99",
+      "codeNm": "미분류"
+    },
+    {
+      "codeTy": "lglDngMetroCd",
+      "code": "11",
+      "codeNm": "서울특별시"
+    },
+    {
+      "codeTy": "lglDngMetroCd",
+      "code": "26",
+      "codeNm": "부산광역시"
+    },
+    {
+      "codeTy": "lglDngMetroCd",
+      "code": "27",
+      "codeNm": "대구광역시"
+    },
+    {
+      "codeTy": "lglDngMetroCd",
+      "code": "28",
+      "codeNm": "인천광역시"
+    },
+    {
+      "codeTy": "lglDngMetroCd",
+      "code": "29",
+      "codeNm": "광주광역시"
+    },
+    {
+      "codeTy": "lglDngMetroCd",
+      "code": "30",
+      "codeNm": "대전광역시"
+    },
+    {
+      "codeTy": "lglDngMetroCd",
+      "code": "31",
+      "codeNm": "울산광역시"
+    },
+    {
+      "codeTy": "lglDngMetroCd",
+      "code": "36",
+      "codeNm": "세종특별자치시"
+    },
+    {
+      "codeTy": "lglDngMetroCd",
+      "code": "41",
+      "codeNm": "경기도"
+    },
+    {
+      "codeTy": "lglDngMetroCd",
+      "code": "43",
+      "codeNm": "충청북도"
+    },
+    {
+      "codeTy": "lglDngMetroCd",
+      "code": "44",
+      "codeNm": "충청남도"
+    },
+    {
+      "codeTy": "lglDngMetroCd",
+      "code": "45",
+      "codeNm": "전라북도"
+    },
+    {
+      "codeTy": "lglDngMetroCd",
+      "code": "46",
+      "codeNm": "전라남도"
+    },
+    {
+      "codeTy": "lglDngMetroCd",
+      "code": "47",
+      "codeNm": "경상북도"
+    },
+    {
+      "codeTy": "lglDngMetroCd",
+      "code": "48",
+      "codeNm": "경상남도"
+    },
+    {
+      "codeTy": "lglDngMetroCd",
+      "code": "50",
+      "codeNm": "제주특별자치도"
+    },
+    {
+      "codeTy": "lglDngMetroCd",
+      "code": "51",
+      "codeNm": "강원특별자치도"
+    },
+    {
+      "codeTy": "metroCd",
+      "code": "11",
+      "codeNm": "서울특별시"
+    },
+    {
+      "codeTy": "metroCd",
+      "code": "21",
+      "codeNm": "부산광역시"
+    },
+    {
+      "codeTy": "metroCd",
+      "code": "22",
+      "codeNm": "대구광역시"
+    },
+    {
+      "codeTy": "metroCd",
+      "code": "23",
+      "codeNm": "인천광역시"
+    },
+    {
+      "codeTy": "metroCd",
+      "code": "24",
+      "codeNm": "광주광역시"
+    },
+    {
+      "codeTy": "metroCd",
+      "code": "25",
+      "codeNm": "대전광역시"
+    },
+    {
+      "codeTy": "metroCd",
+      "code": "26",
+      "codeNm": "울산광역시"
+    },
+    {
+      "codeTy": "metroCd",
+      "code": "31",
+      "codeNm": "경기도"
+    },
+    {
+      "codeTy": "metroCd",
+      "code": "32",
+      "codeNm": "강원도"
+    },
+    {
+      "codeTy": "metroCd",
+      "code": "33",
+      "codeNm": "충청북도"
+    },
+    {
+      "codeTy": "metroCd",
+      "code": "34",
+      "codeNm": "충청남도"
+    },
+    {
+      "codeTy": "metroCd",
+      "code": "35",
+      "codeNm": "전라북도"
+    },
+    {
+      "codeTy": "metroCd",
+      "code": "36",
+      "codeNm": "전라남도"
+    },
+    {
+      "codeTy": "metroCd",
+      "code": "37",
+      "codeNm": "경상북도"
+    },
+    {
+      "codeTy": "metroCd",
+      "code": "38",
+      "codeNm": "경상남도"
+    },
+    {
+      "codeTy": "metroCd",
+      "code": "39",
+      "codeNm": "제주특별자치도"
+    },
+    {
+      "codeTy": "metroCd",
+      "code": "41",
+      "codeNm": "세종특별자치시"
+    },
+    {
+      "codeTy": "wfTypeCd",
+      "code": "01",
+      "codeNm": "장애우"
+    },
+    {
+      "codeTy": "wfTypeCd",
+      "code": "02",
+      "codeNm": "유공자"
+    },
+    {
+      "codeTy": "wfTypeCd",
+      "code": "03",
+      "codeNm": "기초수급자"
+    },
+    {
+      "codeTy": "wfTypeCd",
+      "code": "04",
+      "codeNm": "차상위"
+    },
+    {
+      "codeTy": "wfTypeCd",
+      "code": "06",
+      "codeNm": "사회복지시설"
+    },
+    {
+      "codeTy": "wfTypeCd",
+      "code": "07",
+      "codeNm": "생명유지장치"
+    },
+    {
+      "codeTy": "wfTypeCd",
+      "code": "08",
+      "codeNm": "대가족"
+    },
+    {
+      "codeTy": "wfTypeCd",
+      "code": "09",
+      "codeNm": "다자녀"
+    }
+  ]
+}

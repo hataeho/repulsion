@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bigmap AI | Broiler Community</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=Noto+Sans+KR:wght@300;500;700;900&display=swap');
+        
+        :root {
+            --primary: #f59e0b; /* 육계를 상징하는 Amber/Gold */
+            --secondary: #ec4899; /* 역동성을 나타내는 Vibrant Pink */
+            --bg-color: #0f172a; /* 딥 슬레이트 다크모드 배경 */
+        }
+
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            font-family: 'Outfit', 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-color);
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* 다이내믹 그라데이션 애니메이션 백그라운드 */
+        .bg-gradient {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 15% 50%, rgba(245, 158, 11, 0.15), transparent 40%),
+                radial-gradient(circle at 85% 30%, rgba(236, 72, 153, 0.15), transparent 50%);
+            animation: bgShift 15s ease-in-out infinite alternate;
+        }
+
+        @keyframes bgShift {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        /* 프리미엄 글래스모피즘(Glassmorphism) 카드 UI */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            padding: 4rem 3rem;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+            transform: translateY(30px);
+            opacity: 0;
+            animation: slideUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideUp {
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .tag {
+            display: inline-block;
+            background: linear-gradient(90deg, rgba(245, 158, 11, 0.2), rgba(236, 72, 153, 0.2));
+            color: #fbbf24;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            line-height: 1.2;
+            margin: 0 0 1.5rem 0;
+            background: linear-gradient(135deg, #fbbf24 0%, #f43f5e 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        p.subtitle {
+            font-size: 1.25rem;
+            color: #cbd5e1;
+            font-weight: 300;
+            line-height: 1.8;
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto; margin-right: auto;
+        }
+
+        .btn-group {
+            display: flex; gap: 1rem; justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 16px 36px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 20px 35px -5px rgba(236, 72, 153, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px);
+        }
+
+        /* 배경에 은은하게 떠다니는 3D 오브젝트 */
+        .floater {
+            position: absolute;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .f1 { width: 80px; height: 80px; top: 15%; left: 10%; animation-delay: 0s; }
+        .f2 { width: 120px; height: 120px; bottom: 20%; right: 10%; border-radius: 50%; animation-delay: -3s; }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2rem; }
+            .glass-card { padding: 3rem 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient"></div>
+    <div class="floater f1"></div>
+    <div class="floater f2"></div>
+    
+    <div class="container">
+        <div class="glass-card">
+            <div class="tag">빅맵 육계 데이터 커뮤니티</div>
+            <h1>대한민국 육계산업의<br>새로운 지표를 열다</h1>
+            <p class="subtitle">
+                최첨단 스마트 환경 데이터 분석과 현장 사양관리 노하우가 결합된, 프리미엄 육계인 전용 소통 공간(커뮤니티)에 오신 것을 환영합니다.
+            </p>
+            <div class="btn-group">
+                <a href="#" class="btn btn-primary" onclick="alert('데이터베이스 연동 중...')">커뮤니티 입장하기</a>
+                <a href="#" class="btn btn-secondary">Bigmap AI 소개</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

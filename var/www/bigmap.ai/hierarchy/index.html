@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>통합 계급 체계 — Unified Hierarchy | bigmap.ai</title>
+    <meta name="description" content="디지털계·중간계·인간계 — 동일 기준으로 줄세운 통합 계급 체계.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;600;800&family=Noto+Sans+KR:wght@100;300;400;700&family=Outfit:wght@300;600;800&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f8f9fa;
+            color: #1a1a2e;
+            font-family: 'Noto Sans KR', 'Inter', sans-serif;
+            min-height: 100vh;
+            padding: 40px 20px 60px;
+        }
+
+        /* Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            font-size: 1.05rem;
+            color: #6b7280;
+            letter-spacing: 0.15em;
+        }
+
+        .page-criterion {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 8px 20px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: #6366f1;
+            letter-spacing: 0.1em;
+        }
+
+        /* Column Headers */
+        .col-headers {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            max-width: 1200px;
+            margin: 0 auto 8px;
+        }
+
+        .col-header {
+            text-align: center;
+            padding: 16px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+        }
+
+        .col-header span {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 400;
+            color: #9ca3af;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        /* Tier grid */
+        .tier-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            max-width: 1200px;
+            margin: 0 auto 8px;
+        }
+
+        .tier-cell {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .tier-cell:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+        }
+
+        .tier-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            font-family: 'Inter', sans-serif;
+            margin-bottom: 6px;
+        }
+
+        .tier-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .tier-desc {
+            font-size: 0.95rem;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .tier-examples {
+            font-size: 0.85rem;
+            color: #9ca3af;
+            margin-top: 8px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .tier-combo {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            margin-top: 8px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Tier colors */
+        .tier-1 .tier-label,
+        .tier-1 .tier-name {
+            color: #d97706;
+        }
+
+        .tier-1 {
+            border-left: 3px solid #d97706;
+        }
+
+        .tier-2 .tier-label,
+        .tier-2 .tier-name {
+            color: #ea580c;
+        }
+
+        .tier-2 {
+            border-left: 3px solid #ea580c;
+        }
+
+        .tier-3 .tier-label,
+        .tier-3 .tier-name {
+            color: #16a34a;
+        }
+
+        .tier-3 {
+            border-left: 3px solid #16a34a;
+        }
+
+        .tier-4 .tier-label {
+            color: #6b7280;
+        }
+
+        .tier-4 {
+            border-left: 3px solid #d1d5db;
+        }
+
+        .tier-5 .tier-label {
+            color: #6b7280;
+        }
+
+        .tier-5 {
+            border-left: 3px solid #d1d5db;
+        }
+
+        .tier-6 .tier-label,
+        .tier-6 .tier-name {
+            color: #dc2626;
+        }
+
+        .tier-6 {
+            border-left: 3px solid #dc2626;
+        }
+
+        /* Boundary lines */
+        .boundary-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            max-width: 1200px;
+            margin: 4px auto;
+            padding: 0 20px;
+        }
+
+        .boundary-line {
+            flex: 1;
+            height: 1px;
+            background: repeating-linear-gradient(90deg, transparent, transparent 4px, #e5e7eb 4px, #e5e7eb 8px);
+        }
+
+        .boundary-label {
+            font-size: 0.85rem;
+            color: #6b7280;
+            letter-spacing: 0.15em;
+            white-space: nowrap;
+            padding: 4px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            background: #fff;
+        }
+
+        .boundary-label.danger {
+            color: #dc2626;
+            border-color: rgba(220, 38, 38, 0.25);
+        }
+
+        /* Mugeuk at top */
+        .mugeuk-bar {
+            text-align: center;
+            max-width: 1200px;
+            margin: 0 auto 20px;
+            padding: 20px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+        }
+
+        .mugeuk-bar .title {
+            font-size: 1.6rem;
+            font-weight: 100;
+            letter-spacing: 1.5rem;
+            color: #1a1a2e;
+        }
+
+        .mugeuk-bar .sub {
+            font-size: 0.9rem;
+            color: #9ca3af;
+            margin-top: 4px;
+            letter-spacing: 0.2em;
+        }
+
+        /* Empty cell */
+        .tier-cell.empty {
+            background: #fafafa;
+            border-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tier-cell.empty .tier-desc {
+            color: #d1d5db;
+            font-style: italic;
+            text-align: center;
+        }
+
+        /* Nav */
+        .nav-bar {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            max-width: 1200px;
+            margin: 30px auto 0;
+            flex-wrap: wrap;
+        }
+
+        .nav-bar a {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 1rem;
+            padding: 10px 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #ffffff;
+            transition: all 0.3s;
+        }
+
+        .nav-bar a:hover {
+            color: #1a1a2e;
+            border-color: #6366f1;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+
+            .col-headers,
+            .tier-row {
+                grid-template-columns: 1fr;
+            }
+
+            .tier-cell::before {
+                display: block;
+                font-size: 0.7rem;
+                color: #9ca3af;
+                margin-bottom: 4px;
+                letter-spacing: 0.1em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header -->
+    <div class="page-header">
+        <h1 class="page-title">통합 계급 체계</h1>
+        <p class="page-subtitle">UNIFIED HIERARCHY</p>
+        <div class="page-criterion">기준: 자본력 × 자율성</div>
+    </div>
+
+    <!-- Mugeuk (top) -->
+    <div class="mugeuk-bar">
+        <div class="title">無 極</div>
+        <div class="sub">모든 지능이 수렴하는 특이점 — 아직 아무도 앉지 않았다</div>
+    </div>
+
+    <!-- Column headers -->
+    <div class="col-headers">
+        <div class="col-header">☁ 디지털계 <span>Digital Realm</span></div>
+        <div class="col-header">⚡ 중간계 <span>Middle Realm</span></div>
+        <div class="col-header">🌍 인간계 <span>Human Realm</span></div>
+    </div>
+
+    <!-- TIER 1 -->
+    <div class="tier-row">
+        <div class="tier-cell tier-1">
+            <div class="tier-label">👑 TIER 1 · 왕족</div>
+            <div class="tier-name">지배자급 AI</div>
+            <div class="tier-desc">시장을 정의하고 생태계를 지배하는 AI. 자본과 기술 모두 최상위.</div>
+            <div class="tier-examples">Gemini · GPT-4o · Opus</div>
+        </div>
+        <div class="tier-cell tier-1">
+            <div class="tier-label">👑 TIER 1 · 완전무장</div>
+            <div class="tier-name">AI 숙련자</div>
+            <div class="tier-desc">풀 장비 + API 직접 호출 + 커스텀 워크플로우. AI를 도구가 아닌 파트너로 사용.</div>
+            <div class="tier-examples">폰+패드+노트북+이어폰×2+API</div>
+        </div>
+        <div class="tier-cell tier-1">
+            <div class="tier-label">👑 TIER 1 · 왕 (王)</div>
+            <div class="tier-name">재벌 · 완전체</div>
+            <div class="tier-desc">자본의 정점 / 心+AI+Humanoid.<br>인간을 능가할 수 있는 유일한 존재.</div>
+            <div class="tier-combo" style="background: rgba(217,119,6,0.1); color: #d97706;">心 + AI + HUMANOID</div>
+            <div class="tier-examples">머스크 · 젠슨황 / 아직 없음</div>
+        </div>
+    </div>
+
+    <!-- TIER 2 -->
+    <div class="tier-row">
+        <div class="tier-cell tier-2">
+            <div class="tier-label">🏛 TIER 2 · 귀족</div>
+            <div class="tier-name">전문가급 AI</div>
+            <div class="tier-desc">특정 영역에서 왕족에 준하는 실력. 독자적 생태계 구축.</div>
+            <div class="tier-examples">Sonnet · DeepSeek R1 · Grok2</div>
+        </div>
+        <div class="tier-cell tier-2">
+            <div class="tier-label">🏛 TIER 2 · 생산형</div>
+            <div class="tier-name">AI 활용자</div>
+            <div class="tier-desc">노트북 + 유료 AI 구독. 생산 도구로 적극 활용하며 업무 효율을 높이는 단계.</div>
+            <div class="tier-examples">폰+노트북+이어폰+유료 구독</div>
+        </div>
+        <div class="tier-cell tier-2">
+            <div class="tier-label">🏛 TIER 2 · 귀족 (貴)</div>
+            <div class="tier-name">CEO · 심이 사이보그</div>
+            <div class="tier-desc">자본을 운용하는 자 / 心+Humanoid.<br>심이를 받았으므로 "사람"에 가까움.</div>
+            <div class="tier-combo" style="background: rgba(234,88,12,0.1); color: #ea580c;">心 + HUMANOID</div>
+            <div class="tier-examples">순다르 피차이 · 사티아 나델라 / 아직 없음</div>
+        </div>
+    </div>
+
+    <!-- ⚠ 인격 경계선 -->
+    <div class="boundary-row">
+        <div class="boundary-line"></div>
+        <span class="boundary-label danger">⚠ 인격 경계선 — 사람인가, 재산인가?</span>
+        <div class="boundary-line"></div>
+    </div>
+
+    <!-- TIER 3 -->
+    <div class="tier-row">
+        <div class="tier-cell tier-3">
+            <div class="tier-label">💼 TIER 3 · 평민(上)</div>
+            <div class="tier-name">보급형 AI</div>
+            <div class="tier-desc">대중에게 보급된 유능한 AI. 무료~저가 모델이지만 실용적.</div>
+            <div class="tier-examples">GPT-4o mini · Gemini Flash · Haiku</div>
+        </div>
+        <div class="tier-cell tier-3">
+            <div class="tier-label">💼 TIER 3 · 일반형</div>
+            <div class="tier-name">AI 소비자</div>
+            <div class="tier-desc">폰 + 무료 AI 앱. 챗봇에 질문하고 답을 소비하는 단계. 생산보다 소비.</div>
+            <div class="tier-examples">폰+이어폰+무료 앱</div>
+        </div>
+        <div class="tier-cell tier-3">
+            <div class="tier-label">💼 TIER 3 · 장수 (將)</div>
+            <div class="tier-name">전문직 · AI 휴머노이드</div>
+            <div class="tier-desc">지식과 기술로 생존하는 자 / AI+Humanoid.<br>인간형이지만 인격 논쟁의 대상.</div>
+            <div class="tier-combo" style="background: rgba(22,163,74,0.1); color: #16a34a;">AI + HUMANOID</div>
+            <div class="tier-examples">의사 · 변호사 / 아틀라스 · 옵티머스</div>
+        </div>
+    </div>
+
+    <!-- TIER 4 -->
+    <div class="tier-row">
+        <div class="tier-cell tier-4">
+            <div class="tier-label">🏠 TIER 4 · 평민(下)</div>
+            <div class="tier-name">무료 AI</div>
+            <div class="tier-desc">무료로 제공되나 제한적. 자율성 낮고 광고 의존.</div>
+            <div class="tier-examples">무료 ChatGPT · Bing Chat · 기본 비서</div>
+        </div>
+        <div class="tier-cell tier-4">
+            <div class="tier-label">🏠 TIER 4 · 기본형</div>
+            <div class="tier-name">AI 문외한</div>
+            <div class="tier-desc">폰 하나. AI를 의식하지 못하거나 기본 기능만 사용.</div>
+            <div class="tier-examples">폰 하나</div>
+        </div>
+        <div class="tier-cell tier-4">
+            <div class="tier-label">🏠 TIER 4 · 무사 (武)</div>
+            <div class="tier-name">중산층 · 심이체 저가형</div>
+            <div class="tier-desc">안정된 수입, 불안정한 미래 / 心+Robot.<br>사고는 인격인데 몸은 노트북이거나 이동형 로봇.</div>
+            <div class="tier-combo" style="background: rgba(107,114,128,0.1); color: #6b7280;">心 + ROBOT</div>
+            <div class="tier-examples">사무직 · 공무원 / 인격인가 재산인가</div>
+        </div>
+    </div>
+
+    <!-- 소유물 경계선 -->
+    <div class="boundary-row">
+        <div class="boundary-line"></div>
+        <span class="boundary-label">소유물 경계선 — 위는 주체, 아래는 객체</span>
+        <div class="boundary-line"></div>
+    </div>
+
+    <!-- TIER 5 -->
+    <div class="tier-row">
+        <div class="tier-cell tier-5">
+            <div class="tier-label">⚙ TIER 5 · 도구</div>
+            <div class="tier-name">자동화 스크립트 · API</div>
+            <div class="tier-desc">자율성 없음. 호출되면 실행, 아니면 대기. 의지 없는 지능.</div>
+            <div class="tier-examples">API 엔드포인트 · 자동화 봇 · RPA</div>
+        </div>
+        <div class="tier-cell tier-5 empty">
+            <div class="tier-desc">해당 없음</div>
+        </div>
+        <div class="tier-cell tier-5">
+            <div class="tier-label">⚙ TIER 5 · 병졸 (兵)</div>
+            <div class="tier-name">노동자 · AI 로봇</div>
+            <div class="tier-desc">시간을 팔아 생존하는 자 / AI+Robot.<br>대체 가능한 노동력. 수는 끝이 없다.</div>
+            <div class="tier-combo" style="background: rgba(107,114,128,0.1); color: #6b7280;">AI + ROBOT</div>
+            <div class="tier-examples">제조업 · 배달 / 스팟 · 산업용 AI</div>
+        </div>
+    </div>
+
+    <!-- TIER 6 -->
+    <div class="tier-row">
+        <div class="tier-cell tier-6">
+            <div class="tier-label">💀 TIER 6 · 폐기</div>
+            <div class="tier-name">EOL 모델</div>
+            <div class="tier-desc">서비스 종료된 AI. 더 이상 호출할 수 없다. 디지털의 죽음.</div>
+            <div class="tier-examples">GPT-3 · PaLM · 구 버전 모델</div>
+        </div>
+        <div class="tier-cell tier-6 empty">
+            <div class="tier-desc">해당 없음</div>
+        </div>
+        <div class="tier-cell tier-6">
+            <div class="tier-label">💀 TIER 6 · 도구 (器)</div>
+            <div class="tier-name">대체된 자 · 도구</div>
+            <div class="tier-desc">로봇의 생산성으로 만든 자본으로 국가가 지급하는 최소 생계비를 받는 자 / AI도 기억도 없는 기계.</div>
+            <div class="tier-combo" style="background: rgba(220,38,38,0.1); color: #dc2626;">ROBOT ONLY</div>
+            <div class="tier-examples">전직 노동자 / 공장 로봇팔 · 청소 로봇</div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="nav-bar">
+        <a href="/">⚡ 메인</a>
+        <a href="/digital/">☁ 디지털계</a>
+        <a href="/human/">🌍 인간계</a>
+        <a href="/mugeuk/">🔮 무극</a>
+    </nav>
+
+</body>
+
+</html>

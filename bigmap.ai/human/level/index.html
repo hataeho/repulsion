@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛠 AI 활용 레벨 — 당신은 어디까지 가능합니까? | bigmap.ai</title>
+    <meta name="description" content="장비 × AI 앱 × 활용 능력 = 당신의 AI 등급. 투입 비용과 월 유지비로 보는 냉정한 현실.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&family=Noto+Sans+KR:wght@300;400;500;700;900&family=Outfit:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-primary: #1a1a2e;
+            --text-secondary: #6b7280;
+            --text-hint: #9ca3af;
+            --border: #e5e7eb;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text-primary);
+            font-family: 'Noto Sans KR', 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            text-align: center;
+            padding: 50px 20px 30px;
+        }
+
+        .back-link {
+            font-size: 1.3rem;
+            color: var(--text-hint);
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0.1em;
+        }
+
+        .back-link:hover {
+            color: var(--text-secondary);
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 900;
+            margin: 20px 0 8px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-sub {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+        }
+
+        .formula {
+            max-width: 600px;
+            margin: 24px auto;
+            padding: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .formula-text {
+            font-size: 1.1rem;
+            font-weight: 700;
+            font-family: 'Inter', 'Outfit', sans-serif;
+            letter-spacing: 0.05em;
+        }
+
+        .formula-text span {
+            color: #6366f1;
+        }
+
+        .formula-sub {
+            font-size: 0.85rem;
+            color: var(--text-hint);
+            margin-top: 6px;
+        }
+
+        /* Level cards */
+        .levels {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 10px 20px 30px;
+        }
+
+        .level-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            margin-bottom: 14px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s;
+        }
+
+        .level-card:hover {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            transform: translateY(-2px);
+        }
+
+        .level-top {
+            display: flex;
+            align-items: center;
+            padding: 20px 24px;
+            gap: 16px;
+            cursor: pointer;
+        }
+
+        .level-num {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: #1a1a2e;
+            flex-shrink: 0;
+        }
+
+        .level-info {
+            flex: 1;
+        }
+
+        .level-name {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .level-devices {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+        }
+
+        .level-cost {
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .level-cost-init {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .level-cost-monthly {
+            font-size: 0.85rem;
+            color: var(--text-hint);
+        }
+
+        .level-detail {
+            padding: 0 24px 20px;
+            border-top: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            padding-top: 16px;
+        }
+
+        .detail-col h4 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-hint);
+            margin-bottom: 8px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .detail-col ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .detail-col li {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            padding: 3px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .detail-col li::before {
+            content: '✓';
+            color: #4ade80;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .check-bar {
+            padding: 14px 24px;
+            background: rgba(99, 102, 241, 0.03);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .check-label {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+        }
+
+        .check-btn {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 14px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .check-btn:hover {
+            border-color: #6366f1;
+            color: #6366f1;
+        }
+
+        .check-btn.checked {
+            background: #6366f1;
+            color: #1a1a2e;
+            border-color: #6366f1;
+        }
+
+        /* Provocation */
+        .provocation-section {
+            max-width: 700px;
+            margin: 20px auto 10px;
+            padding: 0 20px;
+        }
+
+        .provo-card {
+            background: linear-gradient(135deg, #1a1a2e, #2d1b4e);
+            border-radius: 16px;
+            padding: 40px 32px;
+            text-align: center;
+            color: #1a1a2e;
+        }
+
+        .provo-q1 {
+            font-size: 1.4rem;
+            font-weight: 900;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .provo-divider {
+            width: 40px;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.15);
+            margin: 20px auto;
+        }
+
+        .provo-q2 {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.5;
+        }
+
+        .provo-q2 em {
+            color: #a855f7;
+            font-style: normal;
+            font-weight: 700;
+        }
+
+        /* Nav */
+        .nav-footer {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            padding: 30px 20px 50px;
+        }
+
+        .nav-footer a {
+            color: var(--text-hint);
+            text-decoration: none;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+            padding: 8px 14px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .nav-footer a:hover {
+            color: var(--text-primary);
+            border-color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .level-detail {
+                grid-template-columns: 1fr;
+            }
+
+            .level-top {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="page-header">
+        <a href="/" class="back-link">← bigmap.ai</a>
+        <h1 class="page-title">AI 활용 레벨</h1>
+        <p class="page-sub">장비가 등급을 만들고, 앱이 능력을 결정한다</p>
+    </header>
+
+    <div class="formula">
+        <div class="formula-text"><span>장비(HW)</span> × <span>AI 앱(SW)</span> × <span>활용 능력</span> = 당신의 AI 등급</div>
+        <div class="formula-sub">같은 장비라도 앱을 모르면 Lv.1과 같다</div>
+    </div>
+
+    <section class="levels">
+
+        <!-- Lv.1 -->
+        <div class="level-card">
+            <div class="level-top">
+                <div class="level-num" style="background: linear-gradient(135deg, #9ca3af, #6b7280);">1</div>
+                <div class="level-info">
+                    <div class="level-name">기본형</div>
+                    <div class="level-devices">📱 휴대폰 하나</div>
+                </div>
+                <div class="level-cost">
+                    <div class="level-cost-init">~100만원</div>
+                    <div class="level-cost-monthly">월 5만원</div>
+                </div>
+            </div>
+            <div class="level-detail">
+                <div class="detail-col">
+                    <h4>사용 가능한 AI</h4>
+                    <ul>
+                        <li>ChatGPT 앱 (무료)</li>
+                        <li>네이버 파파고</li>
+                        <li>Siri / Google 어시스턴트</li>
+                    </ul>
+                </div>
+                <div class="detail-col">
+                    <h4>할 수 있는 일</h4>
+                    <ul>
+                        <li>간단한 질문/검색</li>
+                        <li>번역</li>
+                        <li>일정 관리</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="check-bar">
+                <span class="check-label">이것이 나의 현재 레벨입니다</span>
+                <button class="check-btn" data-lv="1" onclick="checkLevel(this)">✓ 나입니다</button>
+            </div>
+        </div>
+
+        <!-- Lv.2 -->
+        <div class="level-card">
+            <div class="level-top">
+                <div class="level-num" style="background: linear-gradient(135deg, #6b7280, #4b5563);">2</div>
+                <div class="level-info">
+                    <div class="level-name">일반형</div>
+                    <div class="level-devices">📱🎧 폰 + 이어폰</div>
+                </div>
+                <div class="level-cost">
+                    <div class="level-cost-init">~130만원</div>
+                    <div class="level-cost-monthly">월 5만원</div>
+                </div>
+            </div>
+            <div class="level-detail">
+                <div class="detail-col">
+                    <h4>사용 가능한 AI</h4>
+                    <ul>
+                        <li>+ 음성 AI 비서</li>
+                        <li>+ AI 실시간 통역</li>
+                        <li>+ 팟캐스트 AI 요약</li>
+                    </ul>
+                </div>
+                <div class="detail-col">
+                    <h4>할 수 있는 일</h4>
+                    <ul>
+                        <li>핸즈프리 AI 대화</li>
+                        <li>해외여행 동시통역</li>
+                        <li>운동·이동 중 학습</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="check-bar">
+                <span class="check-label">이것이 나의 현재 레벨입니다</span>
+                <button class="check-btn" data-lv="2" onclick="checkLevel(this)">✓ 나입니다</button>
+            </div>
+        </div>
+
+        <!-- Lv.3 -->
+        <div class="level-card">
+            <div class="level-top">
+                <div class="level-num" style="background: linear-gradient(135deg, #4ade80, #16a34a);">3</div>
+                <div class="level-info">
+                    <div class="level-name">생산형</div>
+                    <div class="level-devices">📱💻🎧 폰 + 노트북 + 이어폰</div>
+                </div>
+                <div class="level-cost">
+                    <div class="level-cost-init">~300만원</div>
+                    <div class="level-cost-monthly">월 7만원</div>
+                </div>
+            </div>
+            <div class="level-detail">
+                <div class="detail-col">
+                    <h4>사용 가능한 AI</h4>
+                    <ul>
+                        <li>+ Cursor (코딩 AI)</li>
+                        <li>+ Midjourney / DALL-E</li>
+                        <li>+ Claude / ChatGPT Pro</li>
+                        <li>+ Notion AI</li>
+                    </ul>
+                </div>
+                <div class="detail-col">
+                    <h4>할 수 있는 일</h4>
+                    <ul>
+                        <li>AI로 코드 작성</li>
+                        <li>AI 이미지 생성</li>
+                        <li>문서 자동 작성</li>
+                        <li>웹사이트 제작</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="check-bar">
+                <span class="check-label">이것이 나의 현재 레벨입니다</span>
+                <button class="check-btn" data-lv="3" onclick="checkLevel(this)">✓ 나입니다</button>
+            </div>
+        </div>
+
+        <!-- Lv.4 -->
+        <div class="level-card">
+            <div class="level-top">
+                <div class="level-num" style="background: linear-gradient(135deg, #818cf8, #6366f1);">4</div>
+                <div class="level-info">
+                    <div class="level-name">완전무장</div>
+                    <div class="level-devices">📱📱💻🎧🎧 폰 + 아이패드 + 노트북 + 이어폰×2</div>
+                </div>
+                <div class="level-cost">
+                    <div class="level-cost-init">~500만원</div>
+                    <div class="level-cost-monthly">월 10만원</div>
+                </div>
+            </div>
+            <div class="level-detail">
+                <div class="detail-col">
+                    <h4>사용 가능한 AI</h4>
+                    <ul>
+                        <li>+ 다중 디바이스 워크플로우</li>
+                        <li>+ 영상 AI (Runway, Sora)</li>
+                        <li>+ 복합 AI 파이프라인</li>
+                    </ul>
+                </div>
+                <div class="detail-col">
+                    <h4>할 수 있는 일</h4>
+                    <ul>
+                        <li>AI 영상 편집</li>
+                        <li>멀티 화면 생산성</li>
+                        <li>이동 중에도 풀 생산</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="check-bar">
+                <span class="check-label">이것이 나의 현재 레벨입니다</span>
+                <button class="check-btn" data-lv="4" onclick="checkLevel(this)">✓ 나입니다</button>
+            </div>
+        </div>
+
+        <!-- Lv.5 -->
+        <div class="level-card">
+            <div class="level-top">
+                <div class="level-num" style="background: linear-gradient(135deg, #a855f7, #7c3aed);">5</div>
+                <div class="level-info">
+                    <div class="level-name">요새형</div>
+                    <div class="level-devices">🖥🖥 + 데스크탑 + 외장 모니터</div>
+                </div>
+                <div class="level-cost">
+                    <div class="level-cost-init">~800만원</div>
+                    <div class="level-cost-monthly">월 13만원</div>
+                </div>
+            </div>
+            <div class="level-detail">
+                <div class="detail-col">
+                    <h4>사용 가능한 AI</h4>
+                    <ul>
+                        <li>+ 로컬 LLM (Llama, Mistral)</li>
+                        <li>+ GPU 기반 이미지 생성</li>
+                        <li>+ 대용량 데이터 분석</li>
+                    </ul>
+                </div>
+                <div class="detail-col">
+                    <h4>할 수 있는 일</h4>
+                    <ul>
+                        <li>인터넷 없이 AI 사용</li>
+                        <li>기밀 데이터 AI 분석</li>
+                        <li>AI 모델 파인튜닝</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="check-bar">
+                <span class="check-label">이것이 나의 현재 레벨입니다</span>
+                <button class="check-btn" data-lv="5" onclick="checkLevel(this)">✓ 나입니다</button>
+            </div>
+        </div>
+
+        <!-- Lv.6 -->
+        <div class="level-card">
+            <div class="level-top">
+                <div class="level-num" style="background: linear-gradient(135deg, #ec4899, #be185d);">6</div>
+                <div class="level-info">
+                    <div class="level-name">기지형</div>
+                    <div class="level-devices">🗄 + 홈 서버 (24/7 가동)</div>
+                </div>
+                <div class="level-cost">
+                    <div class="level-cost-init">~1,500만원</div>
+                    <div class="level-cost-monthly">월 20만원</div>
+                </div>
+            </div>
+            <div class="level-detail">
+                <div class="detail-col">
+                    <h4>사용 가능한 AI</h4>
+                    <ul>
+                        <li>+ 24시간 AI 에이전트</li>
+                        <li>+ 자동화 파이프라인</li>
+                        <li>+ 개인 AI 비서 상시 가동</li>
+                    </ul>
+                </div>
+                <div class="detail-col">
+                    <h4>할 수 있는 일</h4>
+                    <ul>
+                        <li>잠자는 동안 AI가 일함</li>
+                        <li>자동 모니터링·알림</li>
+                        <li>개인 데이터 완전 소유</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="check-bar">
+                <span class="check-label">이것이 나의 현재 레벨입니다</span>
+                <button class="check-btn" data-lv="6" onclick="checkLevel(this)">✓ 나입니다</button>
+            </div>
+        </div>
+
+        <!-- Lv.7 -->
+        <div class="level-card">
+            <div class="level-top">
+                <div class="level-num" style="background: linear-gradient(135deg, #f59e0b, #d97706);">7</div>
+                <div class="level-info">
+                    <div class="level-name">제국형</div>
+                    <div class="level-devices">☁ + 클라우드 서버 (무제한 확장)</div>
+                </div>
+                <div class="level-cost">
+                    <div class="level-cost-init">~1,500만원+</div>
+                    <div class="level-cost-monthly">월 20~200만원</div>
+                </div>
+            </div>
+            <div class="level-detail">
+                <div class="detail-col">
+                    <h4>사용 가능한 AI</h4>
+                    <ul>
+                        <li>+ 무제한 스케일 AI</li>
+                        <li>+ 커스텀 AI 모델 학습</li>
+                        <li>+ 멀티 에이전트 시스템</li>
+                        <li>+ AI SaaS 서비스 운영</li>
+                    </ul>
+                </div>
+                <div class="detail-col">
+                    <h4>할 수 있는 일</h4>
+                    <ul>
+                        <li>AI 서비스 사업</li>
+                        <li>글로벌 스케일 자동화</li>
+                        <li>AI로 AI를 만드는 단계</li>
+                        <li>사실상 1인 기업 가능</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="check-bar">
+                <span class="check-label">이것이 나의 현재 레벨입니다</span>
+                <button class="check-btn" data-lv="7" onclick="checkLevel(this)">✓ 나입니다</button>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- Provocation -->
+    <section class="provocation-section">
+        <div class="provo-card">
+            <div class="provo-q1">당신은 어디까지<br>가능합니까?</div>
+            <div class="provo-divider"></div>
+            <div class="provo-q2">당신의 <em>자녀</em>들은<br>어디까지 해주고 싶습니까?</div>
+        </div>
+    </section>
+
+    <nav class="nav-footer">
+        <a href="/">← 홈</a>
+        <a href="/human/">⚔ 인간계</a>
+        <a href="/digital/">☁ 디지털계</a>
+        <a href="/mugeuk/">🔮 특이점</a>
+    </nav>
+
+    <script>
+        function checkLevel(btn) {
+            document.querySelectorAll('.check-btn').forEach(b => b.classList.remove('checked'));
+            btn.classList.add('checked');
+            const lv = btn.dataset.lv;
+            // Could send to server later
+            localStorage.setItem('my_ai_level', lv);
+        }
+
+        // Restore
+        const saved = localStorage.getItem('my_ai_level');
+        if (saved) {
+            const btn = document.querySelector(`.check-btn[data-lv="${saved}"]`);
+            if (btn) btn.classList.add('checked');
+        }
+    </script>
+</body>
+
+</html>

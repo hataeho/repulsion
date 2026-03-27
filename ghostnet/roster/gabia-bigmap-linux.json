@@ -1,0 +1,13 @@
+{
+  "hostname": "gabia-bigmap-linux",
+  "alias": "가비아 서버",
+  "location": "가비아 클라우드 (국내)",
+  "os": "Ubuntu 24.04 LTS",
+  "ip_tailscale": "100.112.104.93",
+  "ip_public": "1.201.124.238",
+  "role": "cloud-server",
+  "capabilities": ["web-hosting", "backend", "ghostnet-node", "antigravity-agent"],
+  "last_active": "2026-03-26T05:22:00+09:00",
+  "last_conversation_id": null,
+  "status": "online"
+}

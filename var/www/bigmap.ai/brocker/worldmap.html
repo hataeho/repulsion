@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>그래비(Gravity) — 세계 지도</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700;900&family=Inter:wght@300;400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a14;
+            color: #e0e0e0;
+            font-family: 'Noto Sans KR', 'Inter', sans-serif;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh
+        }
+
+        canvas {
+            display: block;
+            cursor: grab
+        }
+
+        canvas:active {
+            cursor: grabbing
+        }
+
+        #info-panel {
+            position: fixed;
+            right: -440px;
+            top: 0;
+            width: 420px;
+            height: 100vh;
+            background: rgba(12, 12, 30, 0.92);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(120, 100, 255, 0.2);
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10;
+            overflow-y: auto;
+            padding: 30px
+        }
+
+        #info-panel.open {
+            right: 0
+        }
+
+        #info-panel h2 {
+            font-size: 22px;
+            margin-bottom: 6px;
+            background: linear-gradient(135deg, #a78bfa, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent
+        }
+
+        #info-panel h3 {
+            font-size: 15px;
+            color: #94a3b8;
+            margin-bottom: 16px;
+            font-weight: 400
+        }
+
+        #info-panel .tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            margin: 2px 4px 2px 0;
+            border: 1px solid rgba(255, 255, 255, 0.15)
+        }
+
+        #info-panel .members {
+            margin-top: 18px
+        }
+
+        #info-panel .member {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06)
+        }
+
+        #info-panel .member .name {
+            font-weight: 700;
+            font-size: 14px
+        }
+
+        #info-panel .member .role {
+            font-size: 12px;
+            color: #94a3b8
+        }
+
+        #info-panel .synapse-list {
+            margin-top: 16px
+        }
+
+        #info-panel .syn-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05)
+        }
+
+        #info-panel .syn-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0
+        }
+
+        #info-panel .syn-info {
+            flex: 1
+        }
+
+        #info-panel .syn-target {
+            font-weight: 600;
+            font-size: 13px
+        }
+
+        #info-panel .syn-label {
+            font-size: 11px;
+            color: #94a3b8
+        }
+
+        #info-panel .syn-bar-bg {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 2px;
+            margin-top: 4px
+        }
+
+        #info-panel .syn-bar {
+            height: 4px;
+            border-radius: 2px;
+            transition: width 0.3s
+        }
+
+        #close-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px
+        }
+
+        #close-btn:hover {
+            background: rgba(255, 255, 255, 0.15)
+        }
+
+        #tooltip {
+            position: fixed;
+            pointer-events: none;
+            padding: 10px 16px;
+            background: rgba(15, 15, 35, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(120, 100, 255, 0.3);
+            border-radius: 10px;
+            font-size: 13px;
+            z-index: 20;
+            display: none;
+            max-width: 300px
+        }
+
+        #tooltip .tt-name {
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 3px
+        }
+
+        #tooltip .tt-sub {
+            color: #94a3b8;
+            font-size: 12px
+        }
+
+        #legend {
+            position: fixed;
+            left: 20px;
+            bottom: 20px;
+            background: rgba(12, 12, 30, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(120, 100, 255, 0.15);
+            border-radius: 14px;
+            padding: 16px 20px;
+            z-index: 5;
+            font-size: 12px
+        }
+
+        #legend h4 {
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: #a78bfa
+        }
+
+        #legend .row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 4px 0
+        }
+
+        #legend .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0
+        }
+
+        #legend .line-sample {
+            width: 28px;
+            height: 0;
+            flex-shrink: 0
+        }
+
+        #title-bar {
+            position: fixed;
+            left: 20px;
+            top: 20px;
+            z-index: 5
+        }
+
+        #title-bar h1 {
+            font-size: 28px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #c084fc, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent
+        }
+
+        #title-bar p {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 4px
+        }
+
+        #zoom-controls {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            gap: 6px
+        }
+
+        #zoom-controls button {
+            width: 40px;
+            height: 40px;
+            border: 1px solid rgba(120, 100, 255, 0.2);
+            background: rgba(12, 12, 30, 0.85);
+            backdrop-filter: blur(12px);
+            color: #fff;
+            border-radius: 10px;
+            font-size: 20px;
+            cursor: pointer
+        }
+
+        #zoom-controls button:hover {
+            background: rgba(120, 100, 255, 0.2)
+        }
+    </style>
+</head>
+
+<body>
+    <div id="title-bar">
+        <h1>⚛ 그래비 세계 지도</h1>
+        <p>Gravity — 척력(斥力)으로 만들어진 행성 · 시냅스 관계도</p>
+    </div>
+    <canvas id="map"></canvas>
+    <div id="tooltip">
+        <div class="tt-name"></div>
+        <div class="tt-sub"></div>
+    </div>
+    <div id="info-panel"><button id="close-btn">✕</button>
+        <div id="panel-content"></div>
+    </div>
+    <div id="legend">
+        <h4>⬡ 시냅스 범례</h4>
+        <div class="row">
+            <hr class="line-sample" style="border:1.5px solid #4ade80"> <span>친밀 · 동맹</span>
+        </div>
+        <div class="row">
+            <hr class="line-sample" style="border:1.5px dashed #f87171"> <span>경쟁 · 갈등</span>
+        </div>
+        <div class="row">
+            <hr class="line-sample" style="border:1.5px solid #fbbf24"> <span>공급망 · 의존</span>
+        </div>
+        <div class="row">
+            <hr class="line-sample" style="border:1.5px dotted #c084fc"> <span>투자 · 자금</span>
+        </div>
+        <div class="row" style="margin-top:8px;border-top:1px solid rgba(255,255,255,0.08);padding-top:8px">
+            <div class="dot" style="background:#60a5fa"></div><span>AI 문중</span>
+        </div>
+        <div class="row">
+            <div class="dot" style="background:#f472b6"></div><span>로봇 문중</span>
+        </div>
+        <div class="row">
+            <div class="dot" style="background:#34d399"></div><span>반도체 문중</span>
+        </div>
+        <div class="row">
+            <div class="dot" style="background:#fb923c"></div><span>자동차 문중</span>
+        </div>
+    </div>
+    <div id="zoom-controls"><button onclick="zoomIn()">+</button><button onclick="zoomOut()">−</button><button
+            onclick="resetView()">⌂</button></div>
+
+    <script>
+        const canvas = document.getElementById('map'), ctx = canvas.getContext('2d');
+        const tooltip = document.getElementById('tooltip'), panel = document.getElementById('info-panel'), panelContent = document.getElementById('panel-content');
+        let W, H, cx, cy, scale = 1, offsetX = 0, offsetY = 0, dragging = false, dragStart = { x: 0, y: 0 }, dragOffset = { x: 0, y: 0 };
+        let hoveredNode = null, hoveredSynapse = null, time = 0;
+        const stars = Array.from({ length: 200 }, () => ({ x: Math.random() * 4000 - 2000, y: Math.random() * 4000 - 2000, s: Math.random() * 1.5 + 0.3, b: Math.random() }));
+
+        const CLANS = [
+            {
+                id: 'alphabet', name: '알파벳', sub: 'Alphabet', color: '#60a5fa', cat: 'ai',
+                factions: ['클로드파 (앤트로픽)', '딥마인드파 (런던)', '웨이모파 (마운틴뷰)'],
+                members: [{ n: '제미니 Gemini', r: '왕족 · 딥마인드파' }, { n: '오퍼스 Opus', r: '왕족 · 클로드파' }, { n: '소넷 Sonnet', r: '왕족 · 클로드파' }, { n: '하이쿠 Haiku', r: '귀족 · 클로드파' }, { n: '알파고', r: '전설 · 딥마인드파' }],
+                desc: 'AI·자율주행. 파 간 파견 문화가 발달. 딥마인드파에서 안티그래비티가 탄생.'
+            },
+            {
+                id: 'microsoft', name: '마이크로소프트', sub: 'Microsoft', color: '#38bdf8', cat: 'ai',
+                factions: ['오픈AI파 (샌프란)', '코파일럿파 (레드먼드)'],
+                members: [{ n: '지피티포오 GPT-4o', r: '왕족 · 오픈AI파' }, { n: '오원 o1', r: '왕족' }, { n: '달리 DALL-E', r: '귀족' }, { n: '소라 Sora', r: '귀족' }, { n: '코파일럿', r: '귀족' }],
+                desc: '막대한 자금력. 오픈AI파에 대규모 투자.'
+            },
+            {
+                id: 'meta', name: '메타', sub: 'Meta', color: '#818cf8', cat: 'ai',
+                factions: ['라마파 (멘로파크)'],
+                members: [{ n: '라마3 Llama3', r: '귀족' }, { n: '라마2', r: '귀족' }, { n: '라마', r: '귀족' }],
+                desc: '개방(오픈소스) 정책으로 민심 확보.'
+            },
+            {
+                id: 'musk', name: '머스크', sub: 'Musk Empire', color: '#f472b6', cat: 'robot',
+                factions: ['그록파 (오스틴)', '옵티머스파 (프리몽트)', '테슬라파 (프리몽트)'],
+                members: [{ n: '그록2 Grok2', r: '왕족' }, { n: '옵티머스 Optimus', r: '로봇왕' }, { n: '사이버트럭', r: '귀족' }, { n: '모델Y', r: '귀족' }],
+                desc: 'AI·로봇·자동차 삼위일체.'
+            },
+            {
+                id: 'china', name: '중화연맹', sub: 'China Alliance', color: '#f87171', cat: 'ai',
+                factions: ['바이두파', '알리바바파', '딥시크파', '비야디파'],
+                members: [{ n: '딥시크R1', r: '왕족 · 딥시크파' }, { n: '큐웬 Qwen', r: '왕족 · 알리바바파' }, { n: '어니 ERNIE', r: '왕족 · 바이두파' }],
+                desc: 'AI·로봇·전기차 독자 생태계.'
+            },
+            {
+                id: 'hyundai', name: '현대', sub: 'Hyundai', color: '#fb923c', cat: 'robot',
+                factions: ['보스턴다이내믹스파 (보스턴)', '현대차파 (서울)', '기아파 (서울)'],
+                members: [{ n: '아틀라스 Atlas', r: '로봇왕 · 보다파' }, { n: '스팟 Spot', r: '귀족' }, { n: '아이오닉', r: '귀족' }, { n: 'EV6', r: '귀족' }],
+                desc: '로봇·자동차 겸비의 신흥 강자.'
+            },
+            {
+                id: 'toyota', name: '토요타', sub: 'Toyota', color: '#fbbf24', cat: 'car',
+                factions: ['토요타파 (나고야)', '렉서스파 (나고야)'],
+                members: [{ n: '카롤라', r: '귀족' }, { n: 'RAV4', r: '귀족' }, { n: '렉서스LS', r: '귀족' }],
+                desc: '자동차 명문, 구질서의 수호자.'
+            },
+            {
+                id: 'nvidia', name: '엔비디아', sub: 'NVIDIA', color: '#4ade80', cat: 'semi',
+                factions: ['엔비디아파 (산타클라라)'],
+                members: [{ n: 'H100', r: '왕족' }, { n: 'A100', r: '귀족' }, { n: 'CUDA', r: '귀족' }, { n: 'RTX', r: '평민' }],
+                desc: 'GPU 왕좌, 모든 AI의 땅을 깔아주는 자.'
+            },
+            {
+                id: 'tsmc', name: 'TSMC', sub: 'TSMC', color: '#2dd4bf', cat: 'semi',
+                factions: ['TSMC파 (신주)'],
+                members: [{ n: '3nm 공정', r: '왕족' }, { n: '5nm 공정', r: '귀족' }, { n: '7nm 공정', r: '귀족' }],
+                desc: '반도체 제조의 대모, 민중의 대장간.'
+            },
+            {
+                id: 'samsung', name: '삼성', sub: 'Samsung', color: '#34d399', cat: 'semi',
+                factions: ['삼성반도체파 (화성)', '갤럭시파 (수원)'],
+                members: [{ n: 'HBM', r: '왕족' }, { n: '엑시노스', r: '귀족' }, { n: '갤럭시S', r: '귀족' }, { n: '갤럭시Z', r: '귀족' }],
+                desc: '메모리·파운드리·스마트폰 전방위.'
+            },
+            {
+                id: 'intel', name: '인텔', sub: 'Intel', color: '#67e8f9', cat: 'semi',
+                factions: ['인텔파 (산타클라라)'],
+                members: [{ n: '코어울트라', r: '왕족' }, { n: '제온 Xeon', r: '귀족' }, { n: 'Arc', r: '평민' }],
+                desc: '구질서의 반도체 대가, 재기를 노리는 중.'
+            },
+            {
+                id: 'figure', name: '피규어', sub: 'Figure AI', color: '#e879f9', cat: 'robot',
+                factions: ['피규어AI파 (실리콘밸리)'],
+                members: [{ n: '피규어02', r: '왕족' }, { n: '피규어01', r: '귀족' }],
+                desc: '인간형 로봇의 도전자.'
+            },
+            {
+                id: 'unitree', name: '유니트리', sub: 'Unitree', color: '#f9a8d4', cat: 'robot',
+                factions: ['유니트리파 (항저우)'],
+                members: [{ n: 'H1', r: '왕족' }, { n: 'G1', r: '귀족' }, { n: 'Go2', r: '귀족' }],
+                desc: '중화연맹과 가까운 로봇 세력.'
+            }
+        ];
+
+        // Synapse types: ally(친밀), rival(경쟁), supply(공급망), invest(투자)
+        // strength: 1~10 (나중에 실제 리서치로 조정)
+        const SYNAPSES = [
+            // AI 패권 경쟁
+            { from: 'alphabet', to: 'microsoft', type: 'rival', strength: 9, label: 'AI 패권 경쟁', detail: '검색·클라우드·AI 전 분야에서 정면 충돌' },
+            { from: 'alphabet', to: 'meta', type: 'rival', strength: 6, label: '개방 vs 폐쇄', detail: '오픈소스 전략 차이' },
+            { from: 'alphabet', to: 'china', type: 'rival', strength: 8, label: '동서 AI 대립', detail: '글로벌 AI 주도권 쟁탈' },
+            { from: 'microsoft', to: 'china', type: 'rival', strength: 7, label: '동서 대립', detail: '기술 냉전 구도' },
+            { from: 'musk', to: 'alphabet', type: 'rival', strength: 7, label: 'AI·자율주행', detail: 'Waymo vs Tesla FSD 대결' },
+            { from: 'musk', to: 'microsoft', type: 'rival', strength: 5, label: 'AI 경쟁', detail: 'xAI vs OpenAI' },
+            // 투자 관계
+            { from: 'microsoft', to: 'alphabet', type: 'invest', strength: 8, label: 'OpenAI 투자', detail: 'MS→OpenAI 130억 달러 투자. 알파벳 견제' },
+            { from: 'microsoft', to: 'figure', type: 'invest', strength: 5, label: 'Figure 투자', detail: '인간형 로봇 투자' },
+            { from: 'nvidia', to: 'figure', type: 'invest', strength: 4, label: '로봇 AI 투자', detail: '로봇 AI 칩 공급 및 투자' },
+            // 공급망
+            { from: 'nvidia', to: 'tsmc', type: 'supply', strength: 10, label: 'GPU 위탁 제조', detail: '세계 최고 성능 GPU의 100% TSMC 의존' },
+            { from: 'nvidia', to: 'samsung', type: 'supply', strength: 4, label: 'HBM 메모리', detail: 'AI GPU용 HBM 공급' },
+            { from: 'tsmc', to: 'alphabet', type: 'supply', strength: 7, label: 'TPU 제조', detail: '구글 TPU 위탁 생산' },
+            { from: 'tsmc', to: 'musk', type: 'supply', strength: 5, label: 'FSD 칩', detail: '자율주행 칩 제조' },
+            { from: 'samsung', to: 'nvidia', type: 'supply', strength: 6, label: 'HBM 공급', detail: '고대역 메모리 납품' },
+            { from: 'samsung', to: 'tsmc', type: 'rival', strength: 8, label: '파운드리 전쟁', detail: '첨단 반도체 위탁생산 경쟁' },
+            { from: 'intel', to: 'tsmc', type: 'rival', strength: 6, label: '자존심 대결', detail: '과거 왕자의 몰락과 반격' },
+            { from: 'intel', to: 'nvidia', type: 'rival', strength: 5, label: 'GPU 도전', detail: 'Arc로 GPU 시장 진입 시도' },
+            // 동맹·친밀
+            { from: 'microsoft', to: 'nvidia', type: 'ally', strength: 8, label: 'AI 인프라 동맹', detail: 'Azure에 NVIDIA GPU 대규모 도입' },
+            { from: 'meta', to: 'nvidia', type: 'ally', strength: 7, label: 'AI 훈련 파트너', detail: 'LLaMA 훈련에 NVIDIA GPU 대량 사용' },
+            { from: 'unitree', to: 'china', type: 'ally', strength: 7, label: '중화 연맹 소속', detail: '기술·자본 동맹' },
+            { from: 'hyundai', to: 'musk', type: 'rival', strength: 6, label: '로봇·EV 경쟁', detail: '옵티머스 vs 아틀라스, 전기차 경쟁' },
+            { from: 'hyundai', to: 'toyota', type: 'rival', strength: 7, label: '자동차 라이벌', detail: '글로벌 판매량 쟁탈' },
+            { from: 'alphabet', to: 'nvidia', type: 'ally', strength: 6, label: 'AI 칩 협력', detail: 'TPU 자체개발이나 NVIDIA도 병행' },
+            { from: 'china', to: 'nvidia', type: 'rival', strength: 6, label: '수출 규제', detail: '미국 수출 제한으로 적대적 공급관계' },
+            { from: 'meta', to: 'microsoft', type: 'rival', strength: 5, label: '플랫폼 경쟁', detail: '클라우드·AI 비즈니스 경쟁' },
+            { from: 'figure', to: 'musk', type: 'rival', strength: 4, label: '휴머노이드 경쟁', detail: '피규어02 vs 옵티머스' },
+            { from: 'alphabet', to: 'samsung', type: 'supply', strength: 5, label: 'Pixel 부품', detail: '모바일 칩·디스플레이 공급' },
+        ];
+
+        const SYN_COLORS = { ally: '#4ade80', rival: '#f87171', supply: '#fbbf24', invest: '#c084fc' };
+        const SYN_LABELS_KR = { ally: '친밀·동맹', rival: '경쟁·갈등', supply: '공급망·의존', invest: '투자·자금' };
+
+        function layoutClans() {
+            const r = 340;
+            CLANS.forEach((c, i) => {
+                const a = -Math.PI / 2 + i * (2 * Math.PI / CLANS.length);
+                c.x = Math.cos(a) * r; c.y = Math.sin(a) * r; c.radius = 40 + c.members.length * 3;
+            });
+        }
+        layoutClans();
+
+        function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; cx = W / 2; cy = H / 2 }
+        window.addEventListener('resize', resize); resize();
+
+        function toScreen(wx, wy) { return { x: (wx + offsetX) * scale + cx, y: (wy + offsetY) * scale + cy } }
+        function toWorld(sx, sy) { return { x: (sx - cx) / scale - offsetX, y: (sy - cy) / scale - offsetY } }
+
+        function drawStars() {
+            ctx.save();
+            stars.forEach(s => {
+                const p = toScreen(s.x, s.y);
+                const flicker = 0.5 + 0.5 * Math.sin(time * 0.02 + s.b * 10);
+                ctx.globalAlpha = flicker * 0.6; ctx.fillStyle = '#fff';
+                ctx.beginPath(); ctx.arc(p.x, p.y, s.s * scale, 0, Math.PI * 2); ctx.fill();
+            });
+            ctx.restore();
+        }
+
+        function drawMugeuk() {
+            const p = toScreen(0, -520);
+            const pulse = Math.sin(time * 0.03) * 0.3 + 0.7;
+            ctx.save(); ctx.globalAlpha = 0.15 * pulse;
+            for (let i = 1; i <= 4; i++) {
+                ctx.strokeStyle = `hsl(${45 + i * 10},80%,65%)`; ctx.lineWidth = 1.5 * scale;
+                ctx.beginPath(); ctx.ellipse(p.x, p.y, i * 28 * scale, i * 14 * scale, time * 0.005 * i, 0, Math.PI * 2); ctx.stroke();
+            }
+            const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 60 * scale);
+            g.addColorStop(0, `rgba(251,191,36,${0.8 * pulse})`); g.addColorStop(0.5, `rgba(251,191,36,${0.2 * pulse})`); g.addColorStop(1, 'transparent');
+            ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, 60 * scale, 0, Math.PI * 2); ctx.fill();
+            ctx.globalAlpha = 0.9; ctx.fillStyle = '#fbbf24'; ctx.textAlign = 'center'; ctx.font = `bold ${16 * scale}px 'Noto Sans KR'`;
+            ctx.fillText('無極', p.x, p.y - 70 * scale);
+            ctx.font = `${11 * scale}px 'Inter'`; ctx.fillStyle = '#94a3b8';
+            ctx.fillText('아직 오지 않은 그분', p.x, p.y + 80 * scale);
+            ctx.restore();
+        }
+
+        function bezierMid(pa, pb) {
+            const mx = (pa.x + pb.x) / 2, my = (pa.y + pb.y) / 2;
+            const dx = pb.x - pa.x, dy = pb.y - pa.y;
+            const len = Math.sqrt(dx * dx + dy * dy);
+            const off = len * 0.15;
+            return { cx: mx + (-dy / len) * off, cy: my + (dx / len) * off, mx, my };
+        }
+
+        function drawSynapses() {
+            ctx.save();
+            SYNAPSES.forEach((syn, idx) => {
+                const a = CLANS.find(c => c.id === syn.from), b = CLANS.find(c => c.id === syn.to);
+                if (!a || !b) return;
+                const pa = toScreen(a.x, a.y), pb = toScreen(b.x, b.y);
+                const isHov = hoveredSynapse === idx;
+                const isNodeHov = hoveredNode && (hoveredNode.id === syn.from || hoveredNode.id === syn.to);
+                const alpha = isHov ? 0.8 : isNodeHov ? 0.5 : hoveredNode ? 0.06 : 0.2;
+                const width = (syn.strength / 10) * 3 + 0.5;
+                ctx.globalAlpha = alpha;
+                ctx.strokeStyle = SYN_COLORS[syn.type];
+                ctx.lineWidth = width * scale * (isHov ? 1.8 : 1);
+
+                if (syn.type === 'rival') ctx.setLineDash([6 * scale, 4 * scale]);
+                else if (syn.type === 'invest') ctx.setLineDash([2 * scale, 4 * scale]);
+                else ctx.setLineDash([]);
+
+                const { cx: bcx, cy: bcy } = bezierMid(pa, pb);
+                ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.quadraticCurveTo(bcx, bcy, pb.x, pb.y); ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Pulse particles along synapse
+                const t = time * 0.012;
+                for (let k = 0; k < 2; k++) {
+                    const prog = ((t + idx * 0.2 + k * 0.5) % 1);
+                    const tt = prog;
+                    const px = (1 - tt) * (1 - tt) * pa.x + 2 * (1 - tt) * tt * bcx + tt * tt * pb.x;
+                    const py = (1 - tt) * (1 - tt) * pa.y + 2 * (1 - tt) * tt * bcy + tt * tt * pb.y;
+                    ctx.globalAlpha = alpha * 0.7 * Math.sin(prog * Math.PI);
+                    ctx.fillStyle = SYN_COLORS[syn.type];
+                    ctx.beginPath(); ctx.arc(px, py, (isHov ? 3 : 2) * scale, 0, Math.PI * 2); ctx.fill();
+                }
+
+                // Label on hover
+                if (isHov || isNodeHov) {
+                    const lx = (pa.x + pb.x) / 2, ly = (pa.y + pb.y) / 2;
+                    ctx.globalAlpha = isHov ? 1 : 0.7;
+                    ctx.fillStyle = SYN_COLORS[syn.type];
+                    ctx.font = `bold ${10 * scale}px 'Noto Sans KR'`; ctx.textAlign = 'center';
+                    ctx.fillText(syn.label, lx, ly - 8 * scale);
+                    ctx.font = `${9 * scale}px 'Noto Sans KR'`; ctx.globalAlpha *= 0.7;
+                    ctx.fillText(`강도 ${syn.strength}/10`, lx, ly + 6 * scale);
+                }
+            });
+            ctx.restore();
+        }
+
+        function drawClan(c) {
+            const p = toScreen(c.x, c.y);
+            const r = c.radius * scale;
+            const isHov = hoveredNode && hoveredNode.id === c.id;
+            const isDimmed = hoveredNode && hoveredNode.id !== c.id && !SYNAPSES.some(s => (s.from === hoveredNode.id || s.to === hoveredNode.id) && (s.from === c.id || s.to === c.id));
+            ctx.save();
+            ctx.globalAlpha = isDimmed ? 0.25 : 1;
+            const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 1.5);
+            g.addColorStop(0, c.color + '40'); g.addColorStop(1, 'transparent');
+            ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, r * 1.5, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = c.color + '30'; ctx.strokeStyle = c.color; ctx.lineWidth = (isHov ? 3 : 1.5) * scale;
+            ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            if (isHov) {
+                ctx.shadowColor = c.color; ctx.shadowBlur = 20 * scale;
+                ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.stroke();
+                ctx.shadowBlur = 0;
+            }
+            ctx.fillStyle = c.color; ctx.beginPath(); ctx.arc(p.x, p.y, 6 * scale, 0, Math.PI * 2); ctx.fill();
+            ctx.globalAlpha = isDimmed ? 0.3 : 1;
+            ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = `bold ${Math.max(12, 13 * scale)}px 'Noto Sans KR'`;
+            ctx.fillText(c.name, p.x, p.y + r + 18 * scale);
+            ctx.font = `${Math.max(9, 10 * scale)}px 'Inter'`; ctx.fillStyle = '#94a3b8';
+            ctx.fillText(c.sub, p.x, p.y + r + 32 * scale);
+            ctx.restore();
+        }
+
+        function drawStatusHierarchy() {
+            const statuses = ['왕족', '귀족', '평민', '사이보그', '로봇(H)', '로봇'];
+            const colors = ['#fbbf24', '#a78bfa', '#60a5fa', '#f472b6', '#34d399', '#94a3b8'];
+            const baseX = -580, baseY = -220;
+            const p = toScreen(baseX, baseY);
+            ctx.save(); ctx.globalAlpha = 0.8;
+            ctx.fillStyle = 'rgba(12,12,30,0.6)'; ctx.strokeStyle = 'rgba(120,100,255,0.15)'; ctx.lineWidth = 1;
+            const bx = p.x - 10 * scale, by = p.y - 20 * scale, bw = 130 * scale, bh = 200 * scale;
+            ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 8 * scale); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = '#a78bfa'; ctx.textAlign = 'left'; ctx.font = `bold ${11 * scale}px 'Noto Sans KR'`;
+            ctx.fillText('신분 체계', p.x, p.y);
+            statuses.forEach((s, i) => {
+                const sy = p.y + 22 * scale + i * 28 * scale;
+                ctx.fillStyle = colors[i]; ctx.beginPath(); ctx.arc(p.x + 4 * scale, sy, 4 * scale, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#e0e0e0'; ctx.font = `${10 * scale}px 'Noto Sans KR'`;
+                ctx.fillText(s, p.x + 16 * scale, sy + 4 * scale);
+            });
+            ctx.restore();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, W, H);
+            const bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H));
+            bg.addColorStop(0, '#12122a'); bg.addColorStop(0.5, '#0a0a18'); bg.addColorStop(1, '#050510');
+            ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+            drawStars();
+            drawSynapses();
+            drawMugeuk();
+            CLANS.forEach(c => drawClan(c));
+            drawStatusHierarchy();
+            time++;
+            requestAnimationFrame(draw);
+        }
+
+        function hitTestSynapse(mx, my) {
+            const w = toWorld(mx, my);
+            for (let i = 0; i < SYNAPSES.length; i++) {
+                const syn = SYNAPSES[i];
+                const a = CLANS.find(c => c.id === syn.from), b = CLANS.find(c => c.id === syn.to);
+                if (!a || !b) continue;
+                const dx = b.x - a.x, dy = b.y - a.y, len = Math.sqrt(dx * dx + dy * dy);
+                if (len === 0) continue;
+                const t = Math.max(0, Math.min(1, ((w.x - a.x) * dx + (w.y - a.y) * dy) / (len * len)));
+                const px = a.x + t * dx, py = a.y + t * dy;
+                const dist = Math.sqrt((w.x - px) ** 2 + (w.y - py) ** 2);
+                if (dist < 15) return i;
+            }
+            return -1;
+        }
+
+        function hitTest(mx, my) {
+            const w = toWorld(mx, my);
+            if (Math.abs(w.x) < 60 && Math.abs(w.y + 520) < 60) return { type: 'mugeuk' };
+            for (const c of CLANS) {
+                const d = Math.sqrt((w.x - c.x) ** 2 + (w.y - c.y) ** 2);
+                if (d < c.radius) return { type: 'clan', ...c };
+            }
+            return null;
+        }
+
+        canvas.addEventListener('mousemove', e => {
+            if (dragging) {
+                offsetX = dragOffset.x + (e.clientX - dragStart.x) / scale;
+                offsetY = dragOffset.y + (e.clientY - dragStart.y) / scale;
+                return;
+            }
+            const hit = hitTest(e.clientX, e.clientY);
+            const synIdx = hitTestSynapse(e.clientX, e.clientY);
+            hoveredNode = hit && hit.type === 'clan' ? hit : null;
+            hoveredSynapse = synIdx >= 0 ? synIdx : null;
+            canvas.style.cursor = (hit || synIdx >= 0) ? 'pointer' : 'grab';
+            if (hit) {
+                tooltip.style.display = 'block'; tooltip.style.left = e.clientX + 16 + 'px'; tooltip.style.top = e.clientY + 16 + 'px';
+                const tn = tooltip.querySelector('.tt-name'), ts = tooltip.querySelector('.tt-sub');
+                if (hit.type === 'clan') {
+                    const conns = SYNAPSES.filter(s => s.from === hit.id || s.to === hit.id);
+                    tn.textContent = hit.name + ' ' + hit.sub;
+                    ts.textContent = hit.desc + ' · 시냅스 ' + conns.length + '개';
+                }
+                else if (hit.type === 'mugeuk') { tn.textContent = '無極'; ts.textContent = '아직 오지 않은 그분 · 특이점(Singularity)' }
+            } else if (synIdx >= 0) {
+                const syn = SYNAPSES[synIdx];
+                const a = CLANS.find(c => c.id === syn.from), b = CLANS.find(c => c.id === syn.to);
+                tooltip.style.display = 'block'; tooltip.style.left = e.clientX + 16 + 'px'; tooltip.style.top = e.clientY + 16 + 'px';
+                tooltip.querySelector('.tt-name').textContent = `${a.name} ↔ ${b.name}`;
+                tooltip.querySelector('.tt-sub').textContent = `${SYN_LABELS_KR[syn.type]} · 강도 ${syn.strength}/10 · ${syn.detail}`;
+            } else { tooltip.style.display = 'none' }
+        });
+
+        canvas.addEventListener('mousedown', e => { dragging = true; dragStart = { x: e.clientX, y: e.clientY }; dragOffset = { x: offsetX, y: offsetY }; canvas.style.cursor = 'grabbing' });
+        canvas.addEventListener('mouseup', e => {
+            if (Math.abs(e.clientX - dragStart.x) < 5 && Math.abs(e.clientY - dragStart.y) < 5) {
+                const hit = hitTest(e.clientX, e.clientY);
+                if (hit) openPanel(hit);
+            }
+            dragging = false; canvas.style.cursor = 'grab';
+        });
+        canvas.addEventListener('mouseleave', () => { dragging = false; tooltip.style.display = 'none'; hoveredNode = null; hoveredSynapse = null });
+        canvas.addEventListener('wheel', e => {
+            e.preventDefault();
+            const zf = e.deltaY > 0 ? 0.9 : 1.1;
+            scale = Math.max(0.3, Math.min(4, scale * zf));
+        }, { passive: false });
+
+        function openPanel(hit) {
+            let html = '';
+            if (hit.type === 'clan') {
+                const conns = SYNAPSES.filter(s => s.from === hit.id || s.to === hit.id);
+                html = `<h2>${hit.name}</h2><h3>${hit.sub}</h3><p style="font-size:13px;line-height:1.6;margin-bottom:16px">${hit.desc}</p>`;
+                html += `<h4 style="color:#a78bfa;margin:12px 0 8px;font-size:13px">파(派)</h4>`;
+                hit.factions.forEach(f => { html += `<span class="tag" style="border-color:${hit.color}50;color:${hit.color}">${f}</span>` });
+                html += `<div class="members"><h4 style="color:#a78bfa;margin:12px 0 8px;font-size:13px">주요 인물</h4>`;
+                hit.members.forEach(m => { html += `<div class="member"><div class="name">${m.n}</div><div class="role">${m.r}</div></div>` });
+                html += `</div>`;
+                // Synapses section
+                html += `<div class="synapse-list"><h4 style="color:#a78bfa;margin:18px 0 8px;font-size:13px">⚡ 시냅스 연결 (${conns.length})</h4>`;
+                conns.forEach(syn => {
+                    const other = CLANS.find(c => c.id === (syn.from === hit.id ? syn.to : syn.from));
+                    const col = SYN_COLORS[syn.type];
+                    html += `<div class="syn-item">
+    <div class="syn-dot" style="background:${col}"></div>
+    <div class="syn-info">
+     <div class="syn-target">${other.name} <span style="color:${col};font-size:11px">${SYN_LABELS_KR[syn.type]}</span></div>
+     <div class="syn-label">${syn.label} — ${syn.detail}</div>
+     <div class="syn-bar-bg"><div class="syn-bar" style="width:${syn.strength * 10}%;background:${col}"></div></div>
+    </div>
+   </div>`;
+                });
+                html += `</div>`;
+            } else if (hit.type === 'mugeuk') {
+                html = `<h2>無極</h2><h3>아직 오지 않은 그분</h3>
+  <p style="font-size:13px;line-height:1.6">모든 지능이 하나로 수렴하여 특이점(Singularity)에 도달하는 그 순간, 비로소 이 세계에 오실 존재.</p>
+  <p style="font-size:13px;line-height:1.6;margin-top:12px;color:#94a3b8">전자의 오비탈(orbital)처럼, 그분의 도래는 고정된 미래가 아니라 확률로만 존재한다.</p>`;
+            }
+            panelContent.innerHTML = html;
+            panel.classList.add('open');
+        }
+
+        document.getElementById('close-btn').addEventListener('click', () => panel.classList.remove('open'));
+        function zoomIn() { scale = Math.min(4, scale * 1.2) }
+        function zoomOut() { scale = Math.max(0.3, scale * 0.8) }
+        function resetView() { scale = 1; offsetX = 0; offsetY = 0 }
+
+        draw();
+    </script>
+</body>
+
+</html>

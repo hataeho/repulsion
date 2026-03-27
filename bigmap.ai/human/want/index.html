@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>나에게 필요한 AI는? — 직업별 AI 가이드 | bigmap.ai</title>
+    <meta name="description" content="직업과 직책을 선택하면 필요한 AI 능력, 장비, 구독, 월 비용을 알려드립니다.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&family=Noto+Sans+KR:wght@300;400;500;700;900&family=Outfit:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #f8f9fa;
+            --card-bg: #fff;
+            --text-primary: #1a1a2e;
+            --text-secondary: #6b7280;
+            --text-hint: #9ca3af;
+            --border: #e5e7eb;
+            --accent: #6366f1;
+            --accent-light: #eef2ff;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text-primary);
+            font-family: 'Noto Sans KR', 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            text-align: center;
+            padding: 50px 20px 20px;
+        }
+
+        .back-link {
+            font-size: 0.7rem;
+            color: var(--text-hint);
+            text-decoration: none;
+            letter-spacing: 0.1em;
+        }
+
+        .back-link:hover {
+            color: var(--text-secondary);
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 900;
+            margin: 16px 0 6px;
+        }
+
+        .page-sub {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Step indicator */
+        .steps {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 24px 0 20px;
+        }
+
+        .step-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: all 0.3s;
+        }
+
+        .step-dot.active {
+            background: var(--accent);
+            width: 24px;
+            border-radius: 4px;
+        }
+
+        /* Selector */
+        .selector {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px 30px;
+        }
+
+        .selector-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .option-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .option-btn {
+            padding: 14px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            min-width: 100px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .option-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .option-btn.selected {
+            border-color: var(--accent);
+            background: var(--accent-light);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        .option-icon {
+            font-size: 1.5rem;
+            margin-bottom: 4px;
+        }
+
+        .option-name {
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Result card */
+        .result-section {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px 40px;
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+            animation: fadeUp 0.4s ease;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-header {
+            background: linear-gradient(135deg, #1a1a2e, #2d1b4e);
+            border-radius: 16px 16px 0 0;
+            padding: 24px;
+            color: #fff;
+        }
+
+        .result-job {
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+        }
+
+        .result-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-top: 4px;
+        }
+
+        .result-body {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 16px 16px;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .result-col {
+            padding: 20px 24px;
+        }
+
+        .result-col:first-child {
+            border-right: 1px solid var(--border);
+        }
+
+        .result-col h4 {
+            font-size: 0.6rem;
+            letter-spacing: 0.15em;
+            color: var(--text-hint);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .skill-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 0;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .skill-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex-shrink: 0;
+        }
+
+        /* Cost table */
+        .cost-section {
+            border-top: 1px solid var(--border);
+            padding: 20px 24px;
+        }
+
+        .cost-section h4 {
+            font-size: 0.6rem;
+            letter-spacing: 0.15em;
+            color: var(--text-hint);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .cost-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 0.75rem;
+        }
+
+        .cost-row .label {
+            color: var(--text-secondary);
+        }
+
+        .cost-row .price {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .cost-total {
+            border-top: 1px solid var(--border);
+            margin-top: 8px;
+            padding-top: 10px;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        /* Provocation */
+        .provo {
+            max-width: 600px;
+            margin: 10px auto 30px;
+            padding: 0 20px;
+            text-align: center;
+        }
+
+        .provo p {
+            font-size: 0.75rem;
+            color: var(--text-hint);
+            line-height: 1.8;
+        }
+
+        .provo em {
+            color: var(--accent);
+            font-style: normal;
+            font-weight: 700;
+        }
+
+        .nav-footer {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            padding: 20px 20px 50px;
+        }
+
+        .nav-footer a {
+            color: var(--text-hint);
+            text-decoration: none;
+            font-size: 0.65rem;
+            padding: 8px 14px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+
+        .nav-footer a:hover {
+            color: var(--text-primary);
+            border-color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .result-col:first-child {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .option-btn {
+                min-width: 80px;
+                padding: 10px 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="page-header">
+        <a href="/" class="back-link">← bigmap.ai</a>
+        <h1 class="page-title">나에게 필요한 AI는?</h1>
+        <p class="page-sub">직업과 직책을 선택하세요. 비용까지 알려드립니다.</p>
+    </header>
+
+    <div class="steps">
+        <div class="step-dot active" id="dot1"></div>
+        <div class="step-dot" id="dot2"></div>
+        <div class="step-dot" id="dot3"></div>
+    </div>
+
+    <!-- Step 1: Job -->
+    <section class="selector" id="step1">
+        <div class="selector-title">당신의 직업은?</div>
+        <div class="option-grid" id="jobGrid">
+            <div class="option-btn" data-job="marketing" onclick="selectJob(this)">
+                <div class="option-icon">📢</div>
+                <div class="option-name">마케팅</div>
+            </div>
+            <div class="option-btn" data-job="dev" onclick="selectJob(this)">
+                <div class="option-icon">💻</div>
+                <div class="option-name">개발</div>
+            </div>
+            <div class="option-btn" data-job="design" onclick="selectJob(this)">
+                <div class="option-icon">🎨</div>
+                <div class="option-name">디자인</div>
+            </div>
+            <div class="option-btn" data-job="sales" onclick="selectJob(this)">
+                <div class="option-icon">🤝</div>
+                <div class="option-name">영업</div>
+            </div>
+            <div class="option-btn" data-job="admin" onclick="selectJob(this)">
+                <div class="option-icon">📋</div>
+                <div class="option-name">경영지원</div>
+            </div>
+            <div class="option-btn" data-job="edu" onclick="selectJob(this)">
+                <div class="option-icon">📚</div>
+                <div class="option-name">교육</div>
+            </div>
+            <div class="option-btn" data-job="medical" onclick="selectJob(this)">
+                <div class="option-icon">🏥</div>
+                <div class="option-name">의료</div>
+            </div>
+            <div class="option-btn" data-job="creator" onclick="selectJob(this)">
+                <div class="option-icon">🎬</div>
+                <div class="option-name">크리에이터</div>
+            </div>
+            <div class="option-btn" data-job="solo" onclick="selectJob(this)">
+                <div class="option-icon">🚀</div>
+                <div class="option-name">1인 사업</div>
+            </div>
+            <div class="option-btn" data-job="student" onclick="selectJob(this)">
+                <div class="option-icon">🎓</div>
+                <div class="option-name">학생</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Step 2: Position -->
+    <section class="selector" id="step2" style="display:none;">
+        <div class="selector-title">당신의 직책은?</div>
+        <div class="option-grid" id="posGrid">
+            <div class="option-btn" data-pos="entry" onclick="selectPos(this)">
+                <div class="option-icon">🌱</div>
+                <div class="option-name">신입/사원</div>
+            </div>
+            <div class="option-btn" data-pos="senior" onclick="selectPos(this)">
+                <div class="option-icon">💼</div>
+                <div class="option-name">대리/과장</div>
+            </div>
+            <div class="option-btn" data-pos="lead" onclick="selectPos(this)">
+                <div class="option-icon">👔</div>
+                <div class="option-name">팀장/부장</div>
+            </div>
+            <div class="option-btn" data-pos="exec" onclick="selectPos(this)">
+                <div class="option-icon">👑</div>
+                <div class="option-name">임원/CEO</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Step 3: Result -->
+    <section class="result-section" id="resultSection">
+        <div class="result-header">
+            <div class="result-job" id="rJob"></div>
+            <div class="result-title" id="rTitle"></div>
+        </div>
+        <div class="result-body">
+            <div class="result-grid">
+                <div class="result-col">
+                    <h4>🤖 핵심 AI 능력</h4>
+                    <div id="rSkills"></div>
+                </div>
+                <div class="result-col">
+                    <h4>📱 필요 장비</h4>
+                    <div id="rDevices"></div>
+                </div>
+            </div>
+            <div class="cost-section">
+                <h4>💰 비용 분석</h4>
+                <div id="rCosts"></div>
+            </div>
+        </div>
+    </section>
+
+    <div class="provo">
+        <p>같은 직업이라도 <em>AI를 아는 사람</em>과 모르는 사람의 생산성은<br>이미 <em>10배</em> 이상 차이가 납니다.</p>
+    </div>
+
+    <nav class="nav-footer">
+        <a href="/">← 홈</a>
+        <a href="/human/level/">🛠 AI 레벨</a>
+        <a href="/human/">⚔ 인간계</a>
+    </nav>
+
+    <script>
+        const DATA = {
+            marketing: {
+                name: '마케팅',
+                entry: {
+                    title: '마케팅 사원의 AI 무장',
+                    skills: ['AI 카피라이팅 (광고문구 자동 생성)', 'AI 이미지 생성 (배너, SNS)', 'SNS 포스트 자동 작성', '경쟁사 분석 자동화'],
+                    devices: ['노트북 (필수)', '모니터 (권장)', '스마트폰'],
+                    costs: [
+                        { label: '💻 노트북 (MacBook Air)', price: '150만원', type: 'init' },
+                        { label: '🤖 ChatGPT Plus', price: '₩2.8만/월', type: 'monthly' },
+                        { label: '🎨 Canva Pro (AI 디자인)', price: '₩1.1만/월', type: 'monthly' },
+                        { label: '✍ Jasper AI (카피)', price: '₩5.4만/월', type: 'monthly' },
+                    ],
+                    initTotal: '~150만원', monthlyTotal: '~₩9.3만/월'
+                },
+                senior: {
+                    title: '마케팅 대리/과장의 AI 무장',
+                    skills: ['캠페인 성과 AI 분석', '고객 세그먼트 자동 분류', 'A/B 테스트 자동화', '마케팅 보고서 AI 작성'],
+                    devices: ['노트북', '외장 모니터', '태블릿 (프레젠테이션)'],
+                    costs: [
+                        { label: '💻 노트북 + 모니터', price: '200만원', type: 'init' },
+                        { label: '🤖 ChatGPT Plus', price: '₩2.8만/월', type: 'monthly' },
+                        { label: '📊 Google Analytics + AI', price: '무료', type: 'monthly' },
+                        { label: '📧 HubSpot (마케팅 자동화)', price: '₩5만/월', type: 'monthly' },
+                    ],
+                    initTotal: '~200만원', monthlyTotal: '~₩7.8만/월'
+                },
+                lead: {
+                    title: '마케팅 팀장의 AI 무장',
+                    skills: ['팀 AI 워크플로우 설계', '예산 최적화 AI', '트렌드 예측 분석', '전략 보고서 자동화'],
+                    devices: ['노트북', '대형 모니터', '태블릿', '이어폰'],
+                    costs: [
+                        { label: '💻 장비 세트', price: '300만원', type: 'init' },
+                        { label: '🤖 ChatGPT Team', price: '₩3.8만/월', type: 'monthly' },
+                        { label: '📊 Tableau (AI 대시보드)', price: '₩8만/월', type: 'monthly' },
+                        { label: '🔌 API 비용 (자동화)', price: '₩2만/월', type: 'monthly' },
+                    ],
+                    initTotal: '~300만원', monthlyTotal: '~₩13.8만/월'
+                },
+                exec: {
+                    title: '마케팅 임원의 AI 무장',
+                    skills: ['시장 AI 예측 모델', 'ROI 자동 추적', '글로벌 트렌드 실시간 분석', 'AI 기반 의사결정 대시보드'],
+                    devices: ['노트북', '다중 모니터', '태블릿', '스마트워치'],
+                    costs: [
+                        { label: '💻 장비 풀세트', price: '500만원', type: 'init' },
+                        { label: '🤖 ChatGPT Enterprise', price: '₩8만/월', type: 'monthly' },
+                        { label: '📊 BI 도구 + AI', price: '₩15만/월', type: 'monthly' },
+                        { label: '☁ 클라우드 분석', price: '₩10만/월', type: 'monthly' },
+                    ],
+                    initTotal: '~500만원', monthlyTotal: '~₩33만/월'
+                }
+            },
+            dev: {
+                name: '개발',
+                entry: {
+                    title: '개발자 신입의 AI 무장',
+                    skills: ['AI 코드 자동완성 (Cursor)', '버그 디버깅 AI', '코드 리뷰 AI 보조', '문서 자동 작성'],
+                    devices: ['노트북 (16GB RAM 이상)', '모니터 (필수)'],
+                    costs: [
+                        { label: '💻 노트북 (M3 Pro)', price: '250만원', type: 'init' },
+                        { label: '🖥 모니터 27"', price: '40만원', type: 'init' },
+                        { label: '⚡ Cursor Pro', price: '₩2.8만/월', type: 'monthly' },
+                        { label: '🤖 Claude Pro', price: '₩2.8만/월', type: 'monthly' },
+                        { label: '🐙 GitHub Copilot', price: '₩1.4만/월', type: 'monthly' },
+                    ],
+                    initTotal: '~290만원', monthlyTotal: '~₩7만/월'
+                },
+                senior: {
+                    title: '개발자 대리/과장의 AI 무장',
+                    skills: ['아키텍처 AI 설계 보조', '코드 리팩토링 자동화', '테스트 코드 AI 생성', '기술 문서 자동화'],
+                    devices: ['고성능 노트북', '듀얼 모니터', '기계식 키보드'],
+                    costs: [
+                        { label: '💻 MacBook Pro M3 Max', price: '450만원', type: 'init' },
+                        { label: '🖥 듀얼 모니터', price: '80만원', type: 'init' },
+                        { label: '⚡ Cursor Business', price: '₩5.6만/월', type: 'monthly' },
+                        { label: '🤖 ChatGPT Plus', price: '₩2.8만/월', type: 'monthly' },
+                        { label: '☁ Vercel/AWS', price: '₩3만/월', type: 'monthly' },
+                    ],
+                    initTotal: '~530만원', monthlyTotal: '~₩11.4만/월'
+                },
+                lead: {
+                    title: '개발 팀장의 AI 무장',
+                    skills: ['팀 코드 품질 AI 모니터링', 'AI 기반 프로젝트 관리', '기술 부채 자동 분석', '채용 코딩테스트 AI'],
+                    devices: ['고성능 노트북', '대형 모니터', '홈 서버 (선택)'],
+                    costs: [
+                        { label: '💻 장비 세트', price: '600만원', type: 'init' },
+                        { label: '⚡ Cursor Team', price: '₩5.6만/월', type: 'monthly' },
+                        { label: '📊 Linear/Jira AI', price: '₩2만/월', type: 'monthly' },
+                        { label: '☁ 클라우드 인프라', price: '₩10만/월', type: 'monthly' },
+                    ],
+                    initTotal: '~600만원', monthlyTotal: '~₩17.6만/월'
+                },
+                exec: {
+                    title: 'CTO/기술임원의 AI 무장',
+                    skills: ['AI 기술 전략 수립', '인프라 비용 AI 최적화', '기술 트렌드 실시간 추적', 'AI/ML 파이프라인 관리'],
+                    devices: ['노트북', '다중 모니터', 'GPU 서버 (선택)', '클라우드'],
+                    costs: [
+                        { label: '💻 장비 + 서버', price: '1,500만원', type: 'init' },
+                        { label: '🤖 ChatGPT Enterprise', price: '₩8만/월', type: 'monthly' },
+                        { label: '☁ AWS/GCP', price: '₩50만/월', type: 'monthly' },
+                        { label: '🔌 AI API 비용', price: '₩20만/월', type: 'monthly' },
+                    ],
+                    initTotal: '~1,500만원', monthlyTotal: '~₩78만/월'
+                }
+            },
+            design: {
+                name: '디자인',
+                entry: {
+                    title: '디자이너 신입의 AI 무장',
+                    skills: ['AI 이미지 생성 (Midjourney)', 'AI 목업 자동 생성', '배경 제거/합성 AI', 'AI 컬러 팔레트 추천'],
+                    devices: ['맥북 (필수)', '보정 모니터', '펜 태블릿'],
+                    costs: [
+                        { label: '💻 MacBook Pro', price: '300만원', type: 'init' },
+                        { label: '🖥 보정 모니터', price: '80만원', type: 'init' },
+                        { label: '🎨 Midjourney', price: '₩1.4만/월', type: 'monthly' },
+                        { label: '🤖 ChatGPT Plus', price: '₩2.8만/월', type: 'monthly' },
+                        { label: '✨ Figma + AI 플러그인', price: '₩1.7만/월', type: 'monthly' },
+                    ],
+                    initTotal: '~380만원', monthlyTotal: '~₩5.9만/월'
+                },
+                senior: {
+                    title: '시니어 디자이너의 AI 무장',
+                    skills: ['AI 브랜딩 시스템', '3D AI 렌더링', '모션 AI 생성', 'UX 리서치 AI 분석'],
+                    devices: ['고성능 맥북', '대형 보정 모니터', '아이패드 Pro'],
+                    costs: [
+                        { label: '💻 장비 세트', price: '500만원', type: 'init' },
+                        { label: '🎨 Midjourney + DALL-E', price: '₩4만/월', type: 'monthly' },
+                        { label: '🎬 Runway (영상 AI)', price: '₩1.7만/월', type: 'monthly' },
+                        { label: '✨ Adobe Creative Cloud', price: '₩7만/월', type: 'monthly' },
+                    ],
+                    initTotal: '~500만원', monthlyTotal: '~₩12.7만/월'
+                },
+                lead: {
+                    title: '디자인 리드의 AI 무장',
+                    skills: ['팀 디자인 시스템 AI 관리', '브랜드 일관성 AI 검증', 'AI 기반 사용자 테스트', '디자인→개발 AI 핸드오프'],
+                    devices: ['맥북 Pro', '스튜디오 디스플레이', '아이패드', '이어폰'],
+                    costs: [
+                        { label: '💻 장비 풀세트', price: '700만원', type: 'init' },
+                        { label: '🎨 AI 도구 번들', price: '₩10만/월', type: 'monthly' },
+                        { label: '📊 Maze (AI UX 테스트)', price: '₩5만/월', type: 'monthly' },
+                    ],
+                    initTotal: '~700만원', monthlyTotal: '~₩15만/월'
+                },
+                exec: {
+                    title: 'CDO/크리에이티브 디렉터의 AI 무장',
+                    skills: ['AI 크리에이티브 전략', '브랜드 AI 가이드라인', '트렌드 AI 예측', 'AI 생성물 품질 관리'],
+                    devices: ['맥북', '레퍼런스 모니터', '다중 디바이스'],
+                    costs: [
+                        { label: '💻 풀세트', price: '1,000만원', type: 'init' },
+                        { label: '🎨 풀 AI 구독', price: '₩15만/월', type: 'monthly' },
+                        { label: '🔌 API (자동화)', price: '₩5만/월', type: 'monthly' },
+                    ],
+                    initTotal: '~1,000만원', monthlyTotal: '~₩20만/월'
+                }
+            },
+            sales: {
+                name: '영업',
+                entry: {
+                    title: '영업 사원의 AI 무장',
+                    skills: ['AI 고객 이메일 자동 작성', 'AI 제안서 초안 생성', '고객 정보 AI 요약', '미팅 음성 AI 기록'],
+                    devices: ['스마트폰', '노트북', '이어폰 (필수)'],
+                    costs: [
+                        { label: '💻 노트북', price: '150만원', type: 'init' },
+                        { label: '🎧 에어팟 Pro', price: '35만원', type: 'init' },
+                        { label: '🤖 ChatGPT Plus', price: '₩2.8만/월', type: 'monthly' },
+                        { label: '📧 AI 이메일 도구', price: '₩1만/월', type: 'monthly' },
+                        { label: '🎙 Clova Note (회의록)', price: '무료', type: 'monthly' },
+                    ],
+                    initTotal: '~185만원', monthlyTotal: '~₩3.8만/월'
+                },
+                senior: { title: '영업 과장의 AI 무장', skills: ['CRM AI 분석', '거래 성사율 예측', '고객 이탈 감지', '영업 보고서 자동화'], devices: ['노트북', '태블릿', '이어폰'], costs: [{ label: '💻 노트북+태블릿', price: '250만원', type: 'init' }, { label: '🤖 ChatGPT Plus', price: '₩2.8만/월', type: 'monthly' }, { label: '📊 Salesforce AI', price: '₩5만/월', type: 'monthly' }], initTotal: '~250만원', monthlyTotal: '~₩7.8만/월' },
+                lead: { title: '영업 팀장의 AI 무장', skills: ['팀 성과 AI 대시보드', '파이프라인 예측', '시장 분석 자동화', '경쟁사 모니터링 AI'], devices: ['노트북', '대형모니터', '다중 디바이스'], costs: [{ label: '💻 장비세트', price: '400만원', type: 'init' }, { label: '🤖 AI 구독 번들', price: '₩10만/월', type: 'monthly' }, { label: '📊 BI 도구', price: '₩8만/월', type: 'monthly' }], initTotal: '~400만원', monthlyTotal: '~₩18만/월' },
+                exec: { title: '영업 임원의 AI 무장', skills: ['매출 예측 AI 모델', '글로벌 시장 분석', 'AI 기반 가격 전략', '고객 LTV 예측'], devices: ['풀세트'], costs: [{ label: '💻 풀세트', price: '500만원', type: 'init' }, { label: '🤖 Enterprise AI', price: '₩20만/월', type: 'monthly' }, { label: '📊 BI+CRM', price: '₩15만/월', type: 'monthly' }], initTotal: '~500만원', monthlyTotal: '~₩35만/월' }
+            },
+            admin: {
+                name: '경영지원',
+                entry: { title: '경영지원 사원의 AI 무장', skills: ['문서 자동 작성', '회의록 AI 정리', '일정 AI 관리', '데이터 입력 자동화'], devices: ['노트북', '이어폰'], costs: [{ label: '💻 노트북', price: '150만원', type: 'init' }, { label: '🤖 ChatGPT Plus', price: '₩2.8만/월', type: 'monthly' }, { label: '📝 Notion AI', price: '₩1.4만/월', type: 'monthly' }, { label: '🎙 회의록 AI', price: '무료', type: 'monthly' }], initTotal: '~150만원', monthlyTotal: '~₩4.2만/월' },
+                senior: { title: '경영지원 과장의 AI 무장', skills: ['워크플로우 자동화', '예산 분석 AI', '인사 데이터 분석', '계약서 AI 검토'], devices: ['노트북', '모니터'], costs: [{ label: '💻 노트북+모니터', price: '200만원', type: 'init' }, { label: '🤖 AI 구독', price: '₩5만/월', type: 'monthly' }, { label: '📊 자동화 도구', price: '₩3만/월', type: 'monthly' }], initTotal: '~200만원', monthlyTotal: '~₩8만/월' },
+                lead: { title: '경영지원 팀장의 AI 무장', skills: ['전사 프로세스 AI화', '규정 준수 자동 검사', '비용 최적화 AI', 'HR AI 어시스턴트'], devices: ['노트북', '대형모니터', '태블릿'], costs: [{ label: '💻 장비세트', price: '350만원', type: 'init' }, { label: '🤖 AI 번들', price: '₩10만/월', type: 'monthly' }], initTotal: '~350만원', monthlyTotal: '~₩10만/월' },
+                exec: { title: 'COO/경영 임원의 AI 무장', skills: ['AI 기반 경영 의사결정', '전사 AI 전환 로드맵', '리스크 예측 AI', '조직 효율 분석'], devices: ['풀세트'], costs: [{ label: '💻 풀세트', price: '500만원', type: 'init' }, { label: '🤖 Enterprise', price: '₩30만/월', type: 'monthly' }], initTotal: '~500만원', monthlyTotal: '~₩30만/월' }
+            },
+            edu: {
+                name: '교육',
+                entry: { title: '교사의 AI 무장', skills: ['AI 교안/학습지 생성', '학생 맞춤 문제 출제', 'AI 채점 보조', '수업 자료 자동 제작'], devices: ['노트북', '태블릿', '이어폰'], costs: [{ label: '💻 노트북+태블릿', price: '250만원', type: 'init' }, { label: '🤖 ChatGPT Plus', price: '₩2.8만/월', type: 'monthly' }, { label: '📝 Gamma AI (PPT)', price: '₩1만/월', type: 'monthly' }], initTotal: '~250만원', monthlyTotal: '~₩3.8만/월' },
+                senior: { title: '경력 교사의 AI 무장', skills: ['개인화 학습 AI 설계', '학습 데이터 분석', 'AI 튜터 운영', '교육 콘텐츠 AI 제작'], devices: ['노트북', '모니터', '태블릿'], costs: [{ label: '💻 장비', price: '300만원', type: 'init' }, { label: '🤖 AI 구독', price: '₩5만/월', type: 'monthly' }, { label: '🎬 영상 AI', price: '₩2만/월', type: 'monthly' }], initTotal: '~300만원', monthlyTotal: '~₩7만/월' },
+                lead: { title: '교육 기획자의 AI 무장', skills: ['커리큘럼 AI 설계', '학습 성과 예측', '교육 정책 분석', 'AI 교사 연수'], devices: ['노트북', '다중 모니터'], costs: [{ label: '💻 장비', price: '400만원', type: 'init' }, { label: '🤖 AI 번들', price: '₩10만/월', type: 'monthly' }], initTotal: '~400만원', monthlyTotal: '~₩10만/월' },
+                exec: { title: '교육 임원의 AI 무장', skills: ['AI 교육 전략', '에듀테크 투자 판단', '교육 AI 플랫폼 설계', '글로벌 교육 트렌드'], devices: ['풀세트'], costs: [{ label: '💻 풀세트', price: '500만원', type: 'init' }, { label: '🤖 Enterprise', price: '₩15만/월', type: 'monthly' }], initTotal: '~500만원', monthlyTotal: '~₩15만/월' }
+            },
+            medical: {
+                name: '의료',
+                entry: { title: '의료진의 AI 무장', skills: ['AI 진단 보조', '차트/EMR AI 작성', '의학 논문 AI 검색', '환자 상담 AI 기록'], devices: ['태블릿 (필수)', '노트북', '이어폰'], costs: [{ label: '📱 태블릿+노트북', price: '300만원', type: 'init' }, { label: '🤖 ChatGPT Plus', price: '₩2.8만/월', type: 'monthly' }, { label: '🏥 의료 AI 도구', price: '₩5만/월', type: 'monthly' }], initTotal: '~300만원', monthlyTotal: '~₩7.8만/월' },
+                senior: { title: '전문의의 AI 무장', skills: ['영상의학 AI 판독 보조', '환자 데이터 AI 분석', '임상시험 AI 검색', '수술 계획 AI 보조'], devices: ['고성능 워크스테이션', '의료용 모니터'], costs: [{ label: '💻 워크스테이션', price: '800만원', type: 'init' }, { label: '🏥 의료 AI 구독', price: '₩20만/월', type: 'monthly' }], initTotal: '~800만원', monthlyTotal: '~₩20만/월' },
+                lead: { title: '의료 관리자의 AI 무장', skills: ['병원 운영 AI 최적화', '환자 흐름 예측', '재고/약품 AI 관리', '의료 품질 AI 모니터링'], devices: ['노트북', '대형 모니터', '태블릿'], costs: [{ label: '💻 장비', price: '500만원', type: 'init' }, { label: '🏥 관리 AI', price: '₩15만/월', type: 'monthly' }], initTotal: '~500만원', monthlyTotal: '~₩15만/월' },
+                exec: { title: '병원장/의료 임원의 AI 무장', skills: ['AI 기반 병원 경영', '의료 AI 시스템 도입', '환자 경험 AI 분석', '의료 데이터 전략'], devices: ['풀세트+서버'], costs: [{ label: '💻 풀세트', price: '1,500만원', type: 'init' }, { label: '🏥 Enterprise 의료 AI', price: '₩50만/월', type: 'monthly' }], initTotal: '~1,500만원', monthlyTotal: '~₩50만/월' }
+            },
+            creator: {
+                name: '크리에이터',
+                entry: { title: '초보 크리에이터의 AI 무장', skills: ['AI 썸네일 생성', '대본 AI 작성', '자막 자동 생성', 'AI 배경음악'], devices: ['스마트폰', '이어폰'], costs: [{ label: '📱 스마트폰', price: '100만원', type: 'init' }, { label: '🤖 ChatGPT Plus', price: '₩2.8만/월', type: 'monthly' }, { label: '🎬 CapCut (무료)', price: '무료', type: 'monthly' }], initTotal: '~100만원', monthlyTotal: '~₩2.8만/월' },
+                senior: { title: '전업 크리에이터의 AI 무장', skills: ['AI 영상 편집', 'AI 음성 더빙', '자동 쇼츠 생성', 'AI 기반 채널 분석'], devices: ['노트북', '모니터', '마이크', '카메라'], costs: [{ label: '💻 영상 장비 세트', price: '500만원', type: 'init' }, { label: '🎬 Runway + Sora', price: '₩4만/월', type: 'monthly' }, { label: '🤖 ChatGPT Plus', price: '₩2.8만/월', type: 'monthly' }, { label: '🎵 음악 AI', price: '₩1만/월', type: 'monthly' }], initTotal: '~500만원', monthlyTotal: '~₩7.8만/월' },
+                lead: { title: '프로 크리에이터의 AI 무장', skills: ['AI 기반 멀티채널 운영', '자동 해외 더빙', 'AI 편집 파이프라인', '콘텐츠 예측 분석'], devices: ['고성능 데스크탑', '다중 모니터', '풀 장비'], costs: [{ label: '💻 스튜디오 세트', price: '1,000만원', type: 'init' }, { label: '🎬 AI 도구 번들', price: '₩15만/월', type: 'monthly' }, { label: '☁ 클라우드 렌더링', price: '₩5만/월', type: 'monthly' }], initTotal: '~1,000만원', monthlyTotal: '~₩20만/월' },
+                exec: { title: 'MCN/스튜디오 대표의 AI 무장', skills: ['AI 콘텐츠 전략', '크리에이터 AI 매칭', '수익 예측 모델', '글로벌 자동 배포'], devices: ['풀세트+서버'], costs: [{ label: '💻 풀세트', price: '2,000만원', type: 'init' }, { label: '🎬 Enterprise AI', price: '₩30만/월', type: 'monthly' }], initTotal: '~2,000만원', monthlyTotal: '~₩30만/월' }
+            },
+            solo: {
+                name: '1인 사업',
+                entry: { title: '1인 사업자의 AI 무장 (시작)', skills: ['AI 웹사이트 제작', 'AI 마케팅 콘텐츠', 'AI 고객 응대', 'AI 세금/회계 보조'], devices: ['노트북', '스마트폰', '이어폰'], costs: [{ label: '💻 노트북', price: '150만원', type: 'init' }, { label: '🤖 ChatGPT Plus', price: '₩2.8만/월', type: 'monthly' }, { label: '🎨 Canva Pro', price: '₩1.1만/월', type: 'monthly' }, { label: '📧 이메일 AI', price: '₩1만/월', type: 'monthly' }], initTotal: '~150만원', monthlyTotal: '~₩4.9만/월' },
+                senior: { title: '1인 사업자의 AI 무장 (성장)', skills: ['자동 주문 처리', 'AI 재고 관리', '고객 분석', 'SNS 자동 운영'], devices: ['노트북', '모니터', '태블릿'], costs: [{ label: '💻 장비', price: '300만원', type: 'init' }, { label: '🤖 AI 구독 번들', price: '₩10만/월', type: 'monthly' }, { label: '🔌 API (자동화)', price: '₩3만/월', type: 'monthly' }], initTotal: '~300만원', monthlyTotal: '~₩13만/월' },
+                lead: { title: '1인 사업자의 AI 무장 (확장)', skills: ['24시간 AI 고객센터', '자동 마케팅 파이프라인', '매출 예측 AI', '해외 시장 자동 진출'], devices: ['노트북', '서버', '다중 디바이스'], costs: [{ label: '💻 장비+서버', price: '800만원', type: 'init' }, { label: '🤖 AI 풀구독', price: '₩15만/월', type: 'monthly' }, { label: '☁ 클라우드', price: '₩10만/월', type: 'monthly' }], initTotal: '~800만원', monthlyTotal: '~₩25만/월' },
+                exec: { title: '1인 사업자의 AI 무장 (제국)', skills: ['AI가 AI를 관리', '완전 자동화 사업', '글로벌 24/7 운영', '사실상 100인 기업 생산성'], devices: ['클라우드 + 에이전트'], costs: [{ label: '💻 클라우드 인프라', price: '1,000만원', type: 'init' }, { label: '🤖 AI 풀스택', price: '₩50만/월', type: 'monthly' }], initTotal: '~1,000만원', monthlyTotal: '~₩50만/월' }
+            },
+            student: {
+                name: '학생',
+                entry: { title: '학생의 AI 무장 (기본)', skills: ['AI 과제 보조', 'AI 번역/요약', 'AI 수학 풀이', '시험 대비 AI 퀴즈'], devices: ['스마트폰'], costs: [{ label: '📱 스마트폰', price: '(기존 보유)', type: 'init' }, { label: '🤖 ChatGPT (무료)', price: '무료', type: 'monthly' }, { label: '📝 Perplexity (무료)', price: '무료', type: 'monthly' }], initTotal: '₩0', monthlyTotal: '₩0 (무료)' },
+                senior: { title: '학생의 AI 무장 (고급)', skills: ['논문 AI 검색/요약', '프레젠테이션 AI', '코딩 학습 AI', '포트폴리오 AI 제작'], devices: ['노트북', '이어폰'], costs: [{ label: '💻 노트북', price: '150만원', type: 'init' }, { label: '🤖 ChatGPT Plus', price: '₩2.8만/월', type: 'monthly' }], initTotal: '~150만원', monthlyTotal: '~₩2.8만/월' },
+                lead: { title: '대학원생의 AI 무장', skills: ['연구 논문 AI 분석', '데이터 분석 AI', '실험 설계 AI 보조', '학술 글쓰기 AI'], devices: ['노트북', '모니터', '태블릿'], costs: [{ label: '💻 장비', price: '300만원', type: 'init' }, { label: '🤖 AI 구독', price: '₩5만/월', type: 'monthly' }, { label: '📊 연구 AI 도구', price: '₩3만/월', type: 'monthly' }], initTotal: '~300만원', monthlyTotal: '~₩8만/월' },
+                exec: { title: '연구자의 AI 무장', skills: ['AI 연구 자동화', '대규모 데이터 처리', 'AI 모델 학습', '논문 자동 리뷰'], devices: ['워크스테이션', 'GPU', '클라우드'], costs: [{ label: '💻 GPU 워크스테이션', price: '1,000만원', type: 'init' }, { label: '☁ 클라우드 GPU', price: '₩30만/월', type: 'monthly' }, { label: '🤖 AI 도구', price: '₩5만/월', type: 'monthly' }], initTotal: '~1,000만원', monthlyTotal: '~₩35만/월' }
+            }
+        };
+
+        let selectedJob = null;
+
+        function selectJob(btn) {
+            document.querySelectorAll('#jobGrid .option-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedJob = btn.dataset.job;
+
+            document.getElementById('dot2').classList.add('active');
+            document.getElementById('step2').style.display = 'block';
+            document.getElementById('resultSection').classList.remove('show');
+            document.querySelectorAll('#posGrid .option-btn').forEach(b => b.classList.remove('selected'));
+
+            // Scroll
+            document.getElementById('step2').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function selectPos(btn) {
+            document.querySelectorAll('#posGrid .option-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            const pos = btn.dataset.pos;
+
+            document.getElementById('dot3').classList.add('active');
+
+            const d = DATA[selectedJob][pos];
+            if (!d) return;
+
+            document.getElementById('rJob').textContent = DATA[selectedJob].name + ' · ' + btn.querySelector('.option-name').textContent;
+            document.getElementById('rTitle').textContent = d.title;
+
+            document.getElementById('rSkills').innerHTML = d.skills.map(s =>
+                `<div class="skill-item"><div class="skill-dot"></div>${s}</div>`
+            ).join('');
+
+            document.getElementById('rDevices').innerHTML = d.devices.map(s =>
+                `<div class="skill-item"><div class="skill-dot" style="background:#f59e0b;"></div>${s}</div>`
+            ).join('');
+
+            let costHTML = '';
+            d.costs.forEach(c => {
+                costHTML += `<div class="cost-row"><span class="label">${c.label}</span><span class="price">${c.price}</span></div>`;
+            });
+            costHTML += `<div class="cost-row cost-total"><span class="label">📦 초기 투자</span><span class="price">${d.initTotal}</span></div>`;
+            costHTML += `<div class="cost-row cost-total"><span class="label">📅 월 유지비</span><span class="price" style="color:#6366f1;">${d.monthlyTotal}</span></div>`;
+            document.getElementById('rCosts').innerHTML = costHTML;
+
+            document.getElementById('resultSection').classList.add('show');
+            setTimeout(() => {
+                document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="한전 송전선로 여유용량 지도 - 대한민국 송전망의 여유용량을 실시간으로 확인하세요">
+  <title>한전 송전선로 여유용량 지도</title>
+
+  <!-- Leaflet.js CDN -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Pretendard 폰트 -->
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <!-- 로딩 스크린 -->
+  <div id="loading-screen">
+    <div class="loading-content">
+      <div class="loading-spinner"></div>
+      <h2>⚡ 송전선로 데이터 로딩중...</h2>
+      <p>한전 송전망 여유용량 정보를 불러오고 있습니다</p>
+    </div>
+  </div>
+
+  <div class="app-container">
+    <!-- 좌측: 사이드바 -->
+    <aside id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-area">
+          <span class="logo-icon">⚡</span>
+          <div>
+            <h1>송전선로 여유용량</h1>
+            <p class="subtitle">KEPCO Transmission Grid</p>
+          </div>
+        </div>
+        <button id="sidebar-toggle" class="sidebar-toggle" title="사이드바 접기">
+          <span>◀</span>
+        </button>
+      </div>
+
+      <!-- 지명/주소 검색 -->
+      <div class="sidebar-section">
+        <div class="search-box">
+          <span class="search-icon">📍</span>
+          <input type="text" id="addr-input" placeholder="주소/지명 검색 (예: 창녕군)" autocomplete="off">
+          <button id="addr-search-btn"
+            style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#3b82f6;cursor:pointer;font-size:1.1rem;font-weight:700;">→</button>
+        </div>
+        <div id="addr-results"
+          style="display:none;background:#fff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.1);max-height:240px;overflow-y:auto;margin-top:-8px;margin-bottom:8px;">
+        </div>
+      </div>
+
+      <!-- 통계 대시보드 -->
+      <div class="sidebar-section">
+        <h3 class="section-title">📊 전체 현황</h3>
+        <div class="stats-grid">
+          <div class="stat-card" id="stat-total">
+            <div class="stat-value">0</div>
+            <div class="stat-label">전체 변전소</div>
+          </div>
+          <div class="stat-card stat-green" id="stat-available">
+            <div class="stat-value">0</div>
+            <div class="stat-label">여유</div>
+          </div>
+          <div class="stat-card stat-yellow" id="stat-normal">
+            <div class="stat-value">0</div>
+            <div class="stat-label">보통</div>
+          </div>
+          <div class="stat-card stat-orange" id="stat-caution">
+            <div class="stat-value">0</div>
+            <div class="stat-label">주의</div>
+          </div>
+          <div class="stat-card stat-red" id="stat-saturated">
+            <div class="stat-value">0</div>
+            <div class="stat-label">포화</div>
+          </div>
+          <div class="stat-card stat-blue" id="stat-substations">
+            <div class="stat-value">0</div>
+            <div class="stat-label">OSM 매칭</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 필터 -->
+      <div class="sidebar-section">
+        <h3 class="section-title">🎛️ 필터</h3>
+
+        <div class="filter-group">
+          <label class="filter-label">여유 상태</label>
+          <div class="filter-buttons" id="status-filters">
+            <button class="filter-btn active" data-status="all">전체</button>
+            <button class="filter-btn filter-green" data-status="여유">🟢 여유</button>
+            <button class="filter-btn filter-yellow" data-status="보통">🟡 보통</button>
+            <button class="filter-btn filter-orange" data-status="주의">🟠 주의</button>
+            <button class="filter-btn filter-red" data-status="포화">🔴 포화</button>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">전압 등급</label>
+          <div class="filter-buttons" id="voltage-filters">
+            <button class="filter-btn active" data-voltage="all">전체</button>
+            <button class="filter-btn" data-voltage="345">345kV</button>
+            <button class="filter-btn" data-voltage="154">154kV</button>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">권역</label>
+          <div class="filter-buttons region-buttons" id="region-filters">
+            <button class="filter-btn active" data-region="all">전체</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 범례 -->
+      <div class="sidebar-section">
+        <h3 class="section-title">🗺️ 범례</h3>
+        <div class="legend">
+          <div class="legend-item">
+            <span class="legend-line" style="background: #00e676;"></span>
+            <span>여유 (50% 이상)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-line" style="background: #ffea00;"></span>
+            <span>보통 (20~50%)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-line" style="background: #ff9100;"></span>
+            <span>주의 (10~20%)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-line" style="background: #ff1744;"></span>
+            <span>포화 (10% 미만)</span>
+          </div>
+          <div class="legend-item legend-separator"></div>
+          <div class="legend-item">
+            <span class="legend-marker legend-marker-345"></span>
+            <span>345kV 변전소</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-marker legend-marker-154"></span>
+            <span>154kV 변전소</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 정보 바 -->
+      <div class="sidebar-footer">
+        <p>📡 데이터: KEPCO 분산전원연계정보 API (실시간)</p>
+        <p>🗺️ 송전선: OpenStreetMap Overpass API</p>
+      </div>
+    </aside>
+
+    <!-- 사이드바 열기 버튼 -->
+    <button id="sidebar-open" class="sidebar-open-btn" title="사이드바 열기">
+      <span>▶</span>
+    </button>
+
+    <!-- 우측: 지도 -->
+    <div id="map"></div>
+
+    <!-- 선택된 선로 상세 패널 -->
+    <div id="detail-panel" class="detail-panel hidden">
+      <button id="detail-close" class="detail-close">✕</button>
+      <div id="detail-content"></div>
+    </div>
+  </div><!-- /app-container -->
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>

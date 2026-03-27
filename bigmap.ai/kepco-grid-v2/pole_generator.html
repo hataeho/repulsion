@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한전 전주번호 생성기</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background: #f8fafc;
+            color: #0f172a;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* 사이드 패널 */
+        .panel {
+            width: 420px;
+            min-width: 420px;
+            background: #fff;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .panel-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: #fff;
+        }
+
+        .panel-header h1 {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .panel-header p {
+            font-size: 0.8rem;
+            opacity: 0.85;
+            margin-top: 4px;
+        }
+
+        .panel-body {
+            padding: 20px 24px;
+            flex: 1;
+        }
+
+        /* 안내 */
+        .guide {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            font-size: 0.82rem;
+            color: #1e40af;
+        }
+
+        .guide strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        /* 좌표 입력 */
+        .coord-section {
+            margin-bottom: 20px;
+        }
+
+        .coord-section label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #94a3b8;
+            letter-spacing: 0.05em;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .coord-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .coord-input {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background: #f8fafc;
+        }
+
+        .coord-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        /* 결과 */
+        .result-section {
+            margin-top: 20px;
+        }
+
+        .result-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .result-card h3 {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #94a3b8;
+            margin-bottom: 10px;
+            letter-spacing: 0.05em;
+        }
+
+        .pole-number {
+            font-size: 2rem;
+            font-weight: 800;
+            text-align: center;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            padding: 12px;
+            letter-spacing: 2px;
+        }
+
+        .pole-sub {
+            font-size: 0.78rem;
+            color: #94a3b8;
+            text-align: center;
+            margin-top: 4px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 0.82rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .info-label {
+            color: #94a3b8;
+        }
+
+        .info-value {
+            font-weight: 600;
+        }
+
+        .nearby-list {
+            margin-top: 10px;
+        }
+
+        .nearby-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .nearby-item:hover {
+            background: #eff6ff;
+        }
+
+        .nearby-code {
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            color: #3b82f6;
+        }
+
+        .nearby-dir {
+            color: #94a3b8;
+            font-size: 0.72rem;
+        }
+
+        /* 지도 */
+        #map {
+            flex: 1;
+            height: 100vh;
+        }
+
+        /* 마커 팝업 */
+        .pole-popup {
+            text-align: center;
+        }
+
+        .pole-popup .code {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #3b82f6;
+            font-family: monospace;
+        }
+
+        .pole-popup .loc {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        /* 그리드 레이블 */
+        .grid-label {
+            background: rgba(59, 130, 246, 0.8);
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            white-space: nowrap;
+            font-family: monospace;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- 사이드 패널 -->
+        <div class="panel">
+            <div class="panel-header">
+                <h1>⚡ 한전 전주번호 생성기</h1>
+                <p>TM좌표 기반 전산화번호 역산 도구</p>
+            </div>
+            <div class="panel-body">
+                <div class="guide">
+                    <strong>📍 사용법</strong>
+                    지도를 클릭하면 해당 위치의 추정 전주번호가 자동 계산됩니다.<br>
+                    또는 아래에 위경도를 직접 입력하세요.
+                </div>
+
+                <div class="coord-section">
+                    <label>📐 좌표 입력</label>
+                    <div class="coord-row">
+                        <input type="text" class="coord-input" id="input-lat" placeholder="위도 (예: 37.5665)">
+                        <input type="text" class="coord-input" id="input-lng" placeholder="경도 (예: 126.978)">
+                    </div>
+                    <button class="btn btn-primary btn-full" onclick="generateFromInput()">전주번호 생성</button>
+                </div>
+
+                <div class="result-section" id="result-area" style="display:none;">
+                    <!-- TM 좌표 -->
+                    <div class="result-card">
+                        <h3>📐 TM 좌표 변환 결과</h3>
+                        <div id="tm-info"></div>
+                    </div>
+
+                    <!-- 추정 전주번호 -->
+                    <div class="result-card">
+                        <h3>⚡ 추정 전주번호 (기본관리구)</h3>
+                        <div class="pole-number" id="pole-result">----</div>
+                        <div class="pole-sub" id="pole-desc"></div>
+                    </div>
+
+                    <!-- 인접 관리구 -->
+                    <div class="result-card">
+                        <h3>🗺️ 인접 관리구 번호</h3>
+                        <div class="nearby-list" id="nearby-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 지도 -->
+        <div id="map"></div>
+    </div>
+
+    <script>
+        // ──────────────────────────────────────
+        //  TM 좌표 변환 (WGS84 → TM)
+        // ──────────────────────────────────────
+
+        // 한국 TM 원점 (4개)
+        const TM_ORIGINS = {
+            west: { name: '서부원점', lng0: 125.0, lat0: 38.0, x0: 200000, y0: 500000 },
+            central: { name: '중부원점', lng0: 127.0, lat0: 38.0, x0: 200000, y0: 500000 },
+            east: { name: '동부원점', lng0: 129.0, lat0: 38.0, x0: 200000, y0: 500000 },
+            eastsea: { name: '동해원점', lng0: 131.0, lat0: 38.0, x0: 200000, y0: 500000 }
+        };
+
+        // GRS80 타원체 파라미터
+        const a = 6378137.0;
+        const f = 1 / 298.257222101;
+        const b = a * (1 - f);
+        const e2 = (a * a - b * b) / (a * a);
+        const e_prime2 = (a * a - b * b) / (b * b);
+
+        function deg2rad(d) { return d * Math.PI / 180; }
+
+        /** WGS84 위경도 → TM 좌표 변환 */
+        function wgs84ToTM(lat, lng, origin) {
+            const phi = deg2rad(lat);
+            const lam = deg2rad(lng);
+            const phi0 = deg2rad(origin.lat0);
+            const lam0 = deg2rad(origin.lng0);
+
+            const k0 = 1.0;  // 축척계수
+
+            const N = a / Math.sqrt(1 - e2 * Math.sin(phi) * Math.sin(phi));
+            const T = Math.tan(phi) * Math.tan(phi);
+            const C = e_prime2 * Math.cos(phi) * Math.cos(phi);
+            const A = Math.cos(phi) * (lam - lam0);
+
+            // 자오선 호 길이
+            const e4 = e2 * e2;
+            const e6 = e4 * e2;
+            const M = a * ((1 - e2 / 4 - 3 * e4 / 64 - 5 * e6 / 256) * phi
+                - (3 * e2 / 8 + 3 * e4 / 32 + 45 * e6 / 1024) * Math.sin(2 * phi)
+                + (15 * e4 / 256 + 45 * e6 / 1024) * Math.sin(4 * phi)
+                - (35 * e6 / 3072) * Math.sin(6 * phi));
+
+            const M0 = a * ((1 - e2 / 4 - 3 * e4 / 64 - 5 * e6 / 256) * phi0
+                - (3 * e2 / 8 + 3 * e4 / 32 + 45 * e6 / 1024) * Math.sin(2 * phi0)
+                + (15 * e4 / 256 + 45 * e6 / 1024) * Math.sin(4 * phi0)
+                - (35 * e6 / 3072) * Math.sin(6 * phi0));
+
+            const x = k0 * N * (A + (1 - T + C) * A * A * A / 6
+                + (5 - 18 * T + T * T + 72 * C - 58 * e_prime2) * A * A * A * A * A / 120);
+
+            const y = k0 * (M - M0 + N * Math.tan(phi) * (A * A / 2
+                + (5 - T + 9 * C + 4 * C * C) * A * A * A * A / 24
+                + (61 - 58 * T + T * T + 600 * C - 330 * e_prime2) * A * A * A * A * A * A / 720));
+
+            return {
+                x: x + origin.x0,
+                y: y + origin.y0
+            };
+        }
+
+        /** 위경도로 가장 가까운 TM 원점 선택 */
+        function selectOrigin(lng) {
+            if (lng < 126) return TM_ORIGINS.west;
+            if (lng < 128) return TM_ORIGINS.central;
+            if (lng < 130) return TM_ORIGINS.east;
+            return TM_ORIGINS.eastsea;
+        }
+
+        // ──────────────────────────────────────
+        //  전주번호 생성
+        // ──────────────────────────────────────
+
+        const GRID_SIZE = 2000;  // 2km 기본 관리구
+
+        function generatePoleNumber(lat, lng) {
+            const origin = selectOrigin(lng);
+            const tm = wgs84ToTM(lat, lng, origin);
+
+            // 관리구 번호 계산 (2km 그리드)
+            const gridX = Math.floor(tm.x / GRID_SIZE);
+            const gridY = Math.floor(tm.y / GRID_SIZE);
+
+            // 4자리 관리구 코드: XX(동서) + YY(남북)
+            const codeX = (gridX % 100).toString().padStart(2, '0');
+            const codeY = (gridY % 100).toString().padStart(2, '0');
+            const areaCode = codeX + codeY;
+
+            // 관리구 내 위치 비율 (알파벳 세분화 추정)
+            const subX = (tm.x % GRID_SIZE) / GRID_SIZE;
+            const subY = (tm.y % GRID_SIZE) / GRID_SIZE;
+            // A~Z를 2D 그리드(5x5=25+1)로 매핑
+            const subIdx = Math.floor(subY * 5) * 5 + Math.floor(subX * 5);
+            const subLetter = String.fromCharCode(65 + Math.min(subIdx, 25));
+
+            // 인접 관리구
+            const neighbors = [];
+            for (let dy = -1; dy <= 1; dy++) {
+                for (let dx = -1; dx <= 1; dx++) {
+                    if (dx === 0 && dy === 0) continue;
+                    const nx = ((gridX + dx) % 100 + 100) % 100;
+                    const ny = ((gridY + dy) % 100 + 100) % 100;
+                    const nCode = nx.toString().padStart(2, '0') + ny.toString().padStart(2, '0');
+                    const dirs = [];
+                    if (dy > 0) dirs.push('북');
+                    if (dy < 0) dirs.push('남');
+                    if (dx > 0) dirs.push('동');
+                    if (dx < 0) dirs.push('서');
+                    neighbors.push({ code: nCode, dir: dirs.join('') });
+                }
+            }
+
+            return {
+                areaCode,
+                subLetter,
+                fullCode: `${areaCode} ${subLetter}`,
+                origin: origin.name,
+                tmX: Math.round(tm.x),
+                tmY: Math.round(tm.y),
+                gridX, gridY,
+                neighbors,
+                gridBounds: {
+                    south: gridY * GRID_SIZE,
+                    north: (gridY + 1) * GRID_SIZE,
+                    west: gridX * GRID_SIZE,
+                    east: (gridX + 1) * GRID_SIZE
+                }
+            };
+        }
+
+        // ──────────────────────────────────────
+        //  지도 & UI
+        // ──────────────────────────────────────
+
+        let map, marker, gridRect, gridLabels = [];
+
+        function initMap() {
+            map = L.map('map', {
+                center: [36.3, 127.8],
+                zoom: 7,
+                minZoom: 6, maxZoom: 18,
+                zoomControl: true
+            });
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OSM &copy; CARTO',
+                subdomains: 'abcd', maxZoom: 19
+            }).addTo(map);
+
+            map.on('click', (e) => {
+                const { lat, lng } = e.latlng;
+                document.getElementById('input-lat').value = lat.toFixed(6);
+                document.getElementById('input-lng').value = lng.toFixed(6);
+                showResult(lat, lng);
+            });
+        }
+
+        function generateFromInput() {
+            const lat = parseFloat(document.getElementById('input-lat').value);
+            const lng = parseFloat(document.getElementById('input-lng').value);
+            if (isNaN(lat) || isNaN(lng)) { alert('위경도를 입력해주세요'); return; }
+            map.flyTo([lat, lng], 14, { duration: 1 });
+            showResult(lat, lng);
+        }
+
+        function showResult(lat, lng) {
+            const result = generatePoleNumber(lat, lng);
+
+            // 마커
+            if (marker) map.removeLayer(marker);
+            marker = L.marker([lat, lng]).addTo(map)
+                .bindPopup(`<div class="pole-popup">
+      <div class="code">${result.fullCode} ***</div>
+      <div class="loc">${lat.toFixed(5)}, ${lng.toFixed(5)}</div>
+    </div>`).openPopup();
+
+            // 결과 영역 표시
+            document.getElementById('result-area').style.display = 'block';
+
+            // TM 정보
+            document.getElementById('tm-info').innerHTML = `
+    <div class="info-row"><span class="info-label">TM 원점</span><span class="info-value">${result.origin}</span></div>
+    <div class="info-row"><span class="info-label">TM X (동서)</span><span class="info-value">${result.tmX.toLocaleString()} m</span></div>
+    <div class="info-row"><span class="info-label">TM Y (남북)</span><span class="info-value">${result.tmY.toLocaleString()} m</span></div>
+    <div class="info-row"><span class="info-label">그리드 X</span><span class="info-value">${result.gridX} (×2km)</span></div>
+    <div class="info-row"><span class="info-label">그리드 Y</span><span class="info-value">${result.gridY} (×2km)</span></div>
+  `;
+
+            // 전주번호
+            document.getElementById('pole-result').textContent = `${result.fullCode} ***`;
+            document.getElementById('pole-desc').textContent =
+                `관리구 ${result.areaCode} / 세부구역 ${result.subLetter} / 순번은 현장 조사 필요`;
+
+            // 인접 관리구
+            const nearbyHtml = result.neighbors.map(n =>
+                `<div class="nearby-item" onclick="searchNearby('${n.code}')">
+      <span class="nearby-code">${n.code}</span>
+      <span class="nearby-dir">${n.dir}쪽 관리구</span>
+    </div>`
+            ).join('');
+            document.getElementById('nearby-list').innerHTML = nearbyHtml;
+
+            // 그리드 시각화
+            drawGrid(result, lat, lng);
+        }
+
+        function drawGrid(result, clickLat, clickLng) {
+            // 기존 그리드 제거
+            if (gridRect) map.removeLayer(gridRect);
+            gridLabels.forEach(l => map.removeLayer(l));
+            gridLabels = [];
+
+            const origin = selectOrigin(clickLng);
+
+            // 현재 관리구 및 인접 관리구의 대략적 경계를 표시
+            // TM → WGS84 역변환은 복잡하므로, 대략적인 위경도 계산
+            const kmPerDegLat = 111.32;
+            const kmPerDegLng = 111.32 * Math.cos(deg2rad(clickLat));
+            const gridSizeKm = GRID_SIZE / 1000; // 2km
+
+            const dLat = gridSizeKm / kmPerDegLat;
+            const dLng = gridSizeKm / kmPerDegLng;
+
+            // 현재 그리드의 대략 SW 코너
+            const baseLat = clickLat - (clickLat % dLat);
+            const baseLng = clickLng - (clickLng % dLng);
+
+            // 3x3 그리드 표시
+            for (let dy = -1; dy <= 1; dy++) {
+                for (let dx = -1; dx <= 1; dx++) {
+                    const sw = [baseLat + dy * dLat, baseLng + dx * dLng];
+                    const ne = [baseLat + (dy + 1) * dLat, baseLng + (dx + 1) * dLng];
+
+                    const isCurrent = dx === 0 && dy === 0;
+                    const rect = L.rectangle([sw, ne], {
+                        color: isCurrent ? '#3b82f6' : '#94a3b8',
+                        weight: isCurrent ? 3 : 1,
+                        fillOpacity: isCurrent ? 0.12 : 0.04,
+                        dashArray: isCurrent ? null : '4,4'
+                    }).addTo(map);
+
+                    if (isCurrent) gridRect = rect;
+                    else gridLabels.push(rect);
+
+                    // 라벨
+                    const nGridX = ((result.gridX + dx) % 100 + 100) % 100;
+                    const nGridY = ((result.gridY + dy) % 100 + 100) % 100;
+                    const code = nGridX.toString().padStart(2, '0') + nGridY.toString().padStart(2, '0');
+
+                    const label = L.marker([(sw[0] + ne[0]) / 2, (sw[1] + ne[1]) / 2], {
+                        icon: L.divIcon({
+                            className: 'grid-label-wrapper',
+                            html: `<div class="grid-label">${code}</div>`,
+                            iconSize: [50, 20],
+                            iconAnchor: [25, 10]
+                        })
+                    }).addTo(map);
+                    gridLabels.push(label);
+                }
+            }
+        }
+
+        function searchNearby(code) {
+            alert(`관리구 ${code}의 전주 목록 조회\n→ KEPCO API 복구 후 자동 조회 예정`);
+        }
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', initMap);
+    </script>
+
+</body>
+
+</html>

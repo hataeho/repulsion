@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>전국 송전선로 여유용량 지도 | 태양광 사업 입지 분석</title>
+    <meta name="description" content="한국전력 송전망 변전소별 여유용량을 시각적으로 확인하고 태양광 발전사업 최적 입지를 분석하는 인터랙티브 지도">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 헤더 -->
+    <header id="app-header">
+        <div class="header-left">
+            <div class="logo">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                    <circle cx="14" cy="14" r="12" stroke="url(#grad1)" stroke-width="2.5" fill="none"/>
+                    <path d="M14 6 L16.5 13 L14 11 L11.5 13 Z" fill="url(#grad1)"/>
+                    <path d="M14 22 L11.5 15 L14 17 L16.5 15 Z" fill="url(#grad2)"/>
+                    <defs>
+                        <linearGradient id="grad1" x1="0" y1="0" x2="28" y2="28">
+                            <stop offset="0%" stop-color="#00E5FF"/>
+                            <stop offset="100%" stop-color="#7C4DFF"/>
+                        </linearGradient>
+                        <linearGradient id="grad2" x1="0" y1="28" x2="28" y2="0">
+                            <stop offset="0%" stop-color="#FF6D00"/>
+                            <stop offset="100%" stop-color="#FFD600"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <h1>송전 여유용량 지도</h1>
+            </div>
+            <span class="subtitle">태양광 발전사업 입지 분석</span>
+        </div>
+        <div class="header-right">
+            <div class="legend-compact">
+                <span class="legend-item"><span class="dot green"></span>여유 (100MW+)</span>
+                <span class="legend-item"><span class="dot yellow"></span>보통 (30~100MW)</span>
+                <span class="legend-item"><span class="dot red"></span>포화 (&lt;30MW)</span>
+            </div>
+            <div class="data-note">📊 2025년 상반기 공개 기준 참고 데이터</div>
+        </div>
+    </header>
+
+    <!-- 사이드 패널 -->
+    <aside id="sidebar">
+        <div class="sidebar-section">
+            <h3>🔍 지역 필터</h3>
+            <div class="filter-group">
+                <select id="region-filter">
+                    <option value="all">전국</option>
+                    <option value="수도권">수도권</option>
+                    <option value="강원">강원</option>
+                    <option value="충청">충청</option>
+                    <option value="전라">전라</option>
+                    <option value="경상">경상</option>
+                    <option value="제주">제주</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>여유용량 필터</label>
+                <select id="capacity-filter">
+                    <option value="all">전체</option>
+                    <option value="high">여유 (100MW+)</option>
+                    <option value="mid">보통 (30~100MW)</option>
+                    <option value="low">포화 (&lt;30MW)</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>전압 등급</label>
+                <select id="voltage-filter">
+                    <option value="all">전체</option>
+                    <option value="345">345kV</option>
+                    <option value="154">154kV</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="sidebar-section stats-section">
+            <h3>📈 전국 요약</h3>
+            <div class="stats-grid" id="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-count">0</div>
+                    <div class="stat-label">총 변전소</div>
+                </div>
+                <div class="stat-card green-card">
+                    <div class="stat-value" id="green-count">0</div>
+                    <div class="stat-label">여유</div>
+                </div>
+                <div class="stat-card yellow-card">
+                    <div class="stat-value" id="yellow-count">0</div>
+                    <div class="stat-label">보통</div>
+                </div>
+                <div class="stat-card red-card">
+                    <div class="stat-value" id="red-count">0</div>
+                    <div class="stat-label">포화</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-section" id="detail-panel" style="display:none;">
+            <h3>📍 변전소 상세</h3>
+            <div id="detail-content"></div>
+        </div>
+
+        <div class="sidebar-section">
+            <h3>ℹ️ 안내</h3>
+            <div class="info-box">
+                <p>본 데이터는 <strong>한전 공개 자료 기반 참고용</strong>입니다.</p>
+                <p>실제 접속 가능 여부는 <strong>한전 지사 문의</strong>가 필요합니다.</p>
+                <p>업데이트: 반기(6개월) 단위</p>
+            </div>
+            <div class="links-box">
+                <a href="https://www.kepco.co.kr" target="_blank">🔗 한전ON</a>
+                <a href="https://www.recloud.or.kr" target="_blank">🔗 재생에너지 클라우드</a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 지도 영역 -->
+    <main id="map-container">
+        <div id="map"></div>
+    </main>
+
+    <!-- 하단 범례 (모바일용) -->
+    <div id="mobile-legend">
+        <span class="legend-item"><span class="dot green"></span>여유</span>
+        <span class="legend-item"><span class="dot yellow"></span>보통</span>
+        <span class="legend-item"><span class="dot red"></span>포화</span>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="substations.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

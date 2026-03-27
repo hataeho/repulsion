@@ -1,0 +1,1307 @@
+{
+  "tiers": {
+    "t2h": {
+      "yes": 2,
+      "no": 0
+    },
+    "t1h": {
+      "yes": 2,
+      "no": 0
+    },
+    "t1r": {
+      "yes": 1,
+      "no": 1
+    },
+    "t2r": {
+      "yes": 2,
+      "no": 0
+    },
+    "t3r": {
+      "yes": 2,
+      "no": 0
+    },
+    "t4r": {
+      "yes": 2,
+      "no": 0
+    },
+    "t4h": {
+      "yes": 2,
+      "no": 0
+    },
+    "t3h": {
+      "yes": 2,
+      "no": 0
+    },
+    "t5h": {
+      "yes": 2,
+      "no": 0
+    },
+    "t6h": {
+      "yes": 2,
+      "no": 0
+    },
+    "t5r": {
+      "yes": 1,
+      "no": 1
+    },
+    "t1hI7I3fX37": {
+      "yes": 1,
+      "no": 0
+    },
+    "t1h' AND 2*3*8=6*8 AND 'NYiF'='NYiF": {
+      "yes": 1,
+      "no": 0
+    },
+    "t1h\" AND 2*3*8=6*8 AND \"VRs4\"=\"VRs4": {
+      "yes": 1,
+      "no": 0
+    },
+    "t1h%' AND 2*3*8=6*8 AND 'L15W'!='L15W%": {
+      "yes": 1,
+      "no": 0
+    },
+    "-1 OR 2+118-118-1=0+0+0+1": {
+      "yes": 1,
+      "no": 0
+    },
+    "-1 OR 3+118-118-1=0+0+0+1": {
+      "yes": 1,
+      "no": 0
+    },
+    "t1h'||'": {
+      "yes": 1,
+      "no": 0
+    },
+    "if(now()=sysdate(),sleep(15),0)": {
+      "yes": 1,
+      "no": 0
+    },
+    "t1h0'XOR(if(now()=sysdate(),sleep(15),0))XOR'Z": {
+      "yes": 1,
+      "no": 0
+    },
+    "t1h0\"XOR(if(now()=sysdate(),sleep(15),0))XOR\"Z": {
+      "yes": 1,
+      "no": 0
+    },
+    "(select(0)from(select(sleep(15)))v)/*'+(select(0)from(select(sleep(15)))v)+'\"+(select(0)from(select(sleep(15)))v)+\"*/": {
+      "yes": 1,
+      "no": 0
+    },
+    "t1h-1 waitfor delay '0:0:15' -- ": {
+      "yes": 1,
+      "no": 0
+    },
+    "t1h1YUlm8Tw'; waitfor delay '0:0:15' -- ": {
+      "yes": 1,
+      "no": 0
+    },
+    "t1h8WjKC2nc' OR 175=(SELECT 175 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t1hhBNafKL0') OR 767=(SELECT 767 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t1hjlhuSCUf')) OR 189=(SELECT 189 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t1h'||DBMS_PIPE.RECEIVE_MESSAGE(CHR(98)||CHR(98)||CHR(98),15)||'": {
+      "yes": 1,
+      "no": 0
+    },
+    "t1h'\"": {
+      "yes": 1,
+      "no": 0
+    },
+    "t1h����%2527%2522\\'\\\"": {
+      "yes": 1,
+      "no": 0
+    },
+    "@@bTyjU": {
+      "yes": 1,
+      "no": 0
+    },
+    "t1ryryKMwWz": {
+      "yes": 0,
+      "no": 1
+    },
+    "t1r' AND 2*3*8=6*8 AND 'gwyb'='gwyb": {
+      "yes": 0,
+      "no": 1
+    },
+    "t1r\" AND 2*3*8=6*8 AND \"aQwv\"=\"aQwv": {
+      "yes": 0,
+      "no": 1
+    },
+    "t1r%' AND 2*3*8=6*8 AND 'fvwu'!='fvwu%": {
+      "yes": 0,
+      "no": 1
+    },
+    "-1 OR 2+159-159-1=0+0+0+1": {
+      "yes": 0,
+      "no": 1
+    },
+    "-1 OR 3+159-159-1=0+0+0+1": {
+      "yes": 0,
+      "no": 1
+    },
+    "t1r'||'": {
+      "yes": 0,
+      "no": 1
+    },
+    "t1r0'XOR(if(now()=sysdate(),sleep(15),0))XOR'Z": {
+      "yes": 0,
+      "no": 1
+    },
+    "t1r0\"XOR(if(now()=sysdate(),sleep(15),0))XOR\"Z": {
+      "yes": 0,
+      "no": 1
+    },
+    "t1r-1 waitfor delay '0:0:15' -- ": {
+      "yes": 0,
+      "no": 1
+    },
+    "t1rwZJgBzpQ'; waitfor delay '0:0:15' -- ": {
+      "yes": 0,
+      "no": 1
+    },
+    "t1rz26Cqddb' OR 117=(SELECT 117 FROM PG_SLEEP(15))--": {
+      "yes": 0,
+      "no": 1
+    },
+    "t1rAsGTEFJ2') OR 777=(SELECT 777 FROM PG_SLEEP(15))--": {
+      "yes": 0,
+      "no": 1
+    },
+    "t1rjDFfbavC')) OR 956=(SELECT 956 FROM PG_SLEEP(15))--": {
+      "yes": 0,
+      "no": 1
+    },
+    "t1r'||DBMS_PIPE.RECEIVE_MESSAGE(CHR(98)||CHR(98)||CHR(98),15)||'": {
+      "yes": 0,
+      "no": 1
+    },
+    "t1r'\"": {
+      "yes": 0,
+      "no": 1
+    },
+    "t1r����%2527%2522\\'\\\"": {
+      "yes": 0,
+      "no": 1
+    },
+    "@@bzfrv": {
+      "yes": 0,
+      "no": 1
+    },
+    "t2hqG1T15s0": {
+      "yes": 1,
+      "no": 0
+    },
+    "t2h' AND 2*3*8=6*8 AND 'zZ8y'='zZ8y": {
+      "yes": 1,
+      "no": 0
+    },
+    "t2h\" AND 2*3*8=6*8 AND \"h60r\"=\"h60r": {
+      "yes": 1,
+      "no": 0
+    },
+    "t2h%' AND 2*3*8=6*8 AND 'Bj9U'!='Bj9U%": {
+      "yes": 1,
+      "no": 0
+    },
+    "-1 OR 2+936-936-1=0+0+0+1": {
+      "yes": 1,
+      "no": 0
+    },
+    "-1 OR 3+936-936-1=0+0+0+1": {
+      "yes": 1,
+      "no": 0
+    },
+    "t2h'||'": {
+      "yes": 1,
+      "no": 0
+    },
+    "t2h0'XOR(if(now()=sysdate(),sleep(15),0))XOR'Z": {
+      "yes": 1,
+      "no": 0
+    },
+    "t2h0\"XOR(if(now()=sysdate(),sleep(15),0))XOR\"Z": {
+      "yes": 1,
+      "no": 0
+    },
+    "t2h-1 waitfor delay '0:0:15' -- ": {
+      "yes": 1,
+      "no": 0
+    },
+    "t2h8aMg33NB'; waitfor delay '0:0:15' -- ": {
+      "yes": 1,
+      "no": 0
+    },
+    "t2hgGEwHrd6' OR 452=(SELECT 452 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t2hABht3rDI') OR 526=(SELECT 526 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t2hVBXZedPd')) OR 950=(SELECT 950 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t2h'||DBMS_PIPE.RECEIVE_MESSAGE(CHR(98)||CHR(98)||CHR(98),15)||'": {
+      "yes": 1,
+      "no": 0
+    },
+    "t2h'\"": {
+      "yes": 1,
+      "no": 0
+    },
+    "t2h����%2527%2522\\'\\\"": {
+      "yes": 1,
+      "no": 0
+    },
+    "@@JoZmn": {
+      "yes": 1,
+      "no": 0
+    },
+    "t2rfCMvRe1l": {
+      "yes": 0,
+      "no": 1
+    },
+    "t2r' AND 2*3*8=6*8 AND '7M9G'='7M9G": {
+      "yes": 0,
+      "no": 1
+    },
+    "t2r\" AND 2*3*8=6*8 AND \"U229\"=\"U229": {
+      "yes": 0,
+      "no": 1
+    },
+    "t2r%' AND 2*3*8=6*8 AND 'nM3M'!='nM3M%": {
+      "yes": 0,
+      "no": 1
+    },
+    "-1 OR 2+76-76-1=0+0+0+1": {
+      "yes": 0,
+      "no": 1
+    },
+    "-1 OR 3+76-76-1=0+0+0+1": {
+      "yes": 0,
+      "no": 1
+    },
+    "t2r'||'": {
+      "yes": 0,
+      "no": 1
+    },
+    "t2r0'XOR(if(now()=sysdate(),sleep(15),0))XOR'Z": {
+      "yes": 0,
+      "no": 1
+    },
+    "t2r0\"XOR(if(now()=sysdate(),sleep(15),0))XOR\"Z": {
+      "yes": 0,
+      "no": 1
+    },
+    "t2r-1 waitfor delay '0:0:15' -- ": {
+      "yes": 0,
+      "no": 1
+    },
+    "t2r18OHSNSh'; waitfor delay '0:0:15' -- ": {
+      "yes": 0,
+      "no": 1
+    },
+    "t2r59xFiiwD' OR 311=(SELECT 311 FROM PG_SLEEP(15))--": {
+      "yes": 0,
+      "no": 1
+    },
+    "t2roSBeAwDQ') OR 620=(SELECT 620 FROM PG_SLEEP(15))--": {
+      "yes": 0,
+      "no": 1
+    },
+    "t2rY5qXksPQ')) OR 433=(SELECT 433 FROM PG_SLEEP(15))--": {
+      "yes": 0,
+      "no": 1
+    },
+    "t2r'||DBMS_PIPE.RECEIVE_MESSAGE(CHR(98)||CHR(98)||CHR(98),15)||'": {
+      "yes": 0,
+      "no": 1
+    },
+    "t2r'\"": {
+      "yes": 0,
+      "no": 1
+    },
+    "t2r����%2527%2522\\'\\\"": {
+      "yes": 0,
+      "no": 1
+    },
+    "@@V0KeS": {
+      "yes": 0,
+      "no": 1
+    },
+    "t3hLYjewrRk": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3h' AND 2*3*8=6*8 AND 'RyZL'='RyZL": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3h\" AND 2*3*8=6*8 AND \"t2AR\"=\"t2AR": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3h%' AND 2*3*8=6*8 AND 'NWdL'!='NWdL%": {
+      "yes": 1,
+      "no": 0
+    },
+    "-1 OR 2+845-845-1=0+0+0+1": {
+      "yes": 1,
+      "no": 0
+    },
+    "-1 OR 3+845-845-1=0+0+0+1": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3h'||'": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3h0'XOR(if(now()=sysdate(),sleep(15),0))XOR'Z": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3h0\"XOR(if(now()=sysdate(),sleep(15),0))XOR\"Z": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3h-1 waitfor delay '0:0:15' -- ": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3hosMHeBz2'; waitfor delay '0:0:15' -- ": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3hGTCOZQdB' OR 661=(SELECT 661 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3hd5FyBFBz') OR 628=(SELECT 628 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3hJB9NCcFK')) OR 193=(SELECT 193 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3h'||DBMS_PIPE.RECEIVE_MESSAGE(CHR(98)||CHR(98)||CHR(98),15)||'": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3h'\"": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3h����%2527%2522\\'\\\"": {
+      "yes": 1,
+      "no": 0
+    },
+    "@@2fEop": {
+      "yes": 1,
+      "no": 0
+    },
+    "t1hjY0d67bM": {
+      "yes": 0,
+      "no": 1
+    },
+    "t1h' AND 2*3*8=6*8 AND 'J64t'='J64t": {
+      "yes": 0,
+      "no": 1
+    },
+    "t1h\" AND 2*3*8=6*8 AND \"HFx5\"=\"HFx5": {
+      "yes": 0,
+      "no": 1
+    },
+    "t1h%' AND 2*3*8=6*8 AND 'MQ5d'!='MQ5d%": {
+      "yes": 0,
+      "no": 1
+    },
+    "-1 OR 2+758-758-1=0+0+0+1": {
+      "yes": 0,
+      "no": 1
+    },
+    "-1 OR 3+758-758-1=0+0+0+1": {
+      "yes": 0,
+      "no": 1
+    },
+    "t1h'|||'": {
+      "yes": 0,
+      "no": 1
+    },
+    "t1h'||''||'": {
+      "yes": 0,
+      "no": 1
+    },
+    "t1h7s7MKBTY'; waitfor delay '0:0:15' -- ": {
+      "yes": 0,
+      "no": 1
+    },
+    "t1hFmx2VzaS' OR 584=(SELECT 584 FROM PG_SLEEP(15))--": {
+      "yes": 0,
+      "no": 1
+    },
+    "t1hwEDTcxPT') OR 562=(SELECT 562 FROM PG_SLEEP(15))--": {
+      "yes": 0,
+      "no": 1
+    },
+    "t1hfuNz8zRO')) OR 614=(SELECT 614 FROM PG_SLEEP(15))--": {
+      "yes": 0,
+      "no": 1
+    },
+    "@@FsaNC": {
+      "yes": 0,
+      "no": 1
+    },
+    "t3rkO71u8Tp": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3r' AND 2*3*8=6*8 AND 'PhyR'='PhyR": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3r\" AND 2*3*8=6*8 AND \"Zphi\"=\"Zphi": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3r%' AND 2*3*8=6*8 AND 'qhcf'!='qhcf%": {
+      "yes": 1,
+      "no": 0
+    },
+    "-1 OR 2+493-493-1=0+0+0+1": {
+      "yes": 1,
+      "no": 0
+    },
+    "-1 OR 3+493-493-1=0+0+0+1": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3r'||'": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3r0'XOR(if(now()=sysdate(),sleep(15),0))XOR'Z": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3r0\"XOR(if(now()=sysdate(),sleep(15),0))XOR\"Z": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3r-1 waitfor delay '0:0:15' -- ": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3rk2m6AkVc'; waitfor delay '0:0:15' -- ": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3rWye0DRn2' OR 25=(SELECT 25 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3rfBxqztZv') OR 565=(SELECT 565 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3rOFDBJba5')) OR 167=(SELECT 167 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3r'||DBMS_PIPE.RECEIVE_MESSAGE(CHR(98)||CHR(98)||CHR(98),15)||'": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3r'\"": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3r����%2527%2522\\'\\\"": {
+      "yes": 1,
+      "no": 0
+    },
+    "@@hLzIc": {
+      "yes": 1,
+      "no": 0
+    },
+    "t2hcAiYcCr0": {
+      "yes": 0,
+      "no": 1
+    },
+    "t2h' AND 2*3*8=6*8 AND 'DAjX'='DAjX": {
+      "yes": 0,
+      "no": 1
+    },
+    "t2h\" AND 2*3*8=6*8 AND \"uEAN\"=\"uEAN": {
+      "yes": 0,
+      "no": 1
+    },
+    "t2h%' AND 2*3*8=6*8 AND 'lyz7'!='lyz7%": {
+      "yes": 0,
+      "no": 1
+    },
+    "-1 OR 2+660-660-1=0+0+0+1": {
+      "yes": 0,
+      "no": 1
+    },
+    "-1 OR 3+660-660-1=0+0+0+1": {
+      "yes": 0,
+      "no": 1
+    },
+    "t2h'|||'": {
+      "yes": 0,
+      "no": 1
+    },
+    "t2h'||''||'": {
+      "yes": 0,
+      "no": 1
+    },
+    "t2hH54UhKR3'; waitfor delay '0:0:15' -- ": {
+      "yes": 0,
+      "no": 1
+    },
+    "t2hU4PpbqNg' OR 387=(SELECT 387 FROM PG_SLEEP(15))--": {
+      "yes": 0,
+      "no": 1
+    },
+    "t2h75EoastD') OR 201=(SELECT 201 FROM PG_SLEEP(15))--": {
+      "yes": 0,
+      "no": 1
+    },
+    "t2hOF5tchh3')) OR 250=(SELECT 250 FROM PG_SLEEP(15))--": {
+      "yes": 0,
+      "no": 1
+    },
+    "@@syEPK": {
+      "yes": 0,
+      "no": 1
+    },
+    "t4hSGyiKJWJ": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4h' AND 2*3*8=6*8 AND 'avGY'='avGY": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4h\" AND 2*3*8=6*8 AND \"7EDs\"=\"7EDs": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4h%' AND 2*3*8=6*8 AND '6a76'!='6a76%": {
+      "yes": 1,
+      "no": 0
+    },
+    "-1 OR 2+837-837-1=0+0+0+1": {
+      "yes": 1,
+      "no": 0
+    },
+    "-1 OR 3+837-837-1=0+0+0+1": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4h'||'": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4h0'XOR(if(now()=sysdate(),sleep(15),0))XOR'Z": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4h0\"XOR(if(now()=sysdate(),sleep(15),0))XOR\"Z": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4h-1 waitfor delay '0:0:15' -- ": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4hSIQVTzxG'; waitfor delay '0:0:15' -- ": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4hmFACwRcZ' OR 340=(SELECT 340 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4hxHVNWFUD') OR 219=(SELECT 219 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4hv2CfIdLK')) OR 949=(SELECT 949 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4h'||DBMS_PIPE.RECEIVE_MESSAGE(CHR(98)||CHR(98)||CHR(98),15)||'": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4h'\"": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4h����%2527%2522\\'\\\"": {
+      "yes": 1,
+      "no": 0
+    },
+    "@@kuoxh": {
+      "yes": 1,
+      "no": 0
+    },
+    "t3hTLzF5AwK": {
+      "yes": 0,
+      "no": 1
+    },
+    "t3h' AND 2*3*8=6*8 AND '6PlD'='6PlD": {
+      "yes": 0,
+      "no": 1
+    },
+    "t3h\" AND 2*3*8=6*8 AND \"YU2t\"=\"YU2t": {
+      "yes": 0,
+      "no": 1
+    },
+    "t3h%' AND 2*3*8=6*8 AND 'w5Pn'!='w5Pn%": {
+      "yes": 0,
+      "no": 1
+    },
+    "-1 OR 2+321-321-1=0+0+0+1": {
+      "yes": 0,
+      "no": 1
+    },
+    "-1 OR 3+321-321-1=0+0+0+1": {
+      "yes": 0,
+      "no": 1
+    },
+    "t3h'|||'": {
+      "yes": 0,
+      "no": 1
+    },
+    "t3h'||''||'": {
+      "yes": 0,
+      "no": 1
+    },
+    "t3hZWQ45BOd'; waitfor delay '0:0:15' -- ": {
+      "yes": 0,
+      "no": 1
+    },
+    "t3hiK9aoTmN' OR 294=(SELECT 294 FROM PG_SLEEP(15))--": {
+      "yes": 0,
+      "no": 1
+    },
+    "t3hdWPYuF1C') OR 839=(SELECT 839 FROM PG_SLEEP(15))--": {
+      "yes": 0,
+      "no": 1
+    },
+    "t3hfjmobRZJ')) OR 94=(SELECT 94 FROM PG_SLEEP(15))--": {
+      "yes": 0,
+      "no": 1
+    },
+    "@@MteMX": {
+      "yes": 0,
+      "no": 1
+    },
+    "t4rOcJdJ9zd": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4r' AND 2*3*8=6*8 AND 'Yhdj'='Yhdj": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4r\" AND 2*3*8=6*8 AND \"K1De\"=\"K1De": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4r%' AND 2*3*8=6*8 AND 'rYJb'!='rYJb%": {
+      "yes": 1,
+      "no": 0
+    },
+    "-1 OR 2+235-235-1=0+0+0+1": {
+      "yes": 1,
+      "no": 0
+    },
+    "-1 OR 3+235-235-1=0+0+0+1": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4r'||'": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4r0'XOR(if(now()=sysdate(),sleep(15),0))XOR'Z": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4r0\"XOR(if(now()=sysdate(),sleep(15),0))XOR\"Z": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4r-1 waitfor delay '0:0:15' -- ": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4rSkNiiH1b'; waitfor delay '0:0:15' -- ": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4rAlmWWmbc' OR 274=(SELECT 274 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4rlWeuipwe') OR 582=(SELECT 582 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4rTRqJexDy')) OR 359=(SELECT 359 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4r'||DBMS_PIPE.RECEIVE_MESSAGE(CHR(98)||CHR(98)||CHR(98),15)||'": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4r'\"": {
+      "yes": 1,
+      "no": 0
+    },
+    "t4r����%2527%2522\\'\\\"": {
+      "yes": 1,
+      "no": 0
+    },
+    "@@2s22e": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5hYH7JrNWS": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5h' AND 2*3*8=6*8 AND '8QRA'='8QRA": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5h\" AND 2*3*8=6*8 AND \"bZoe\"=\"bZoe": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5h%' AND 2*3*8=6*8 AND '1C2W'!='1C2W%": {
+      "yes": 1,
+      "no": 0
+    },
+    "-1 OR 2+805-805-1=0+0+0+1": {
+      "yes": 1,
+      "no": 0
+    },
+    "-1 OR 3+805-805-1=0+0+0+1": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5h'||'": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5h0'XOR(if(now()=sysdate(),sleep(15),0))XOR'Z": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5h0\"XOR(if(now()=sysdate(),sleep(15),0))XOR\"Z": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5h-1 waitfor delay '0:0:15' -- ": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5hWUBsFwYf'; waitfor delay '0:0:15' -- ": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5hPvTizPFc' OR 310=(SELECT 310 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5h4kBjraom') OR 631=(SELECT 631 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5h9CxuAaI9')) OR 439=(SELECT 439 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5h'||DBMS_PIPE.RECEIVE_MESSAGE(CHR(98)||CHR(98)||CHR(98),15)||'": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5h'\"": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5h����%2527%2522\\'\\\"": {
+      "yes": 1,
+      "no": 0
+    },
+    "@@pucA2": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5rmN23gnCZ": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5r' AND 2*3*8=6*8 AND 'QKha'='QKha": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5r\" AND 2*3*8=6*8 AND \"zBJ7\"=\"zBJ7": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5r%' AND 2*3*8=6*8 AND 'Jx3Y'!='Jx3Y%": {
+      "yes": 1,
+      "no": 0
+    },
+    "-1 OR 2+117-117-1=0+0+0+1": {
+      "yes": 1,
+      "no": 0
+    },
+    "-1 OR 3+117-117-1=0+0+0+1": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5r'||'": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5r0'XOR(if(now()=sysdate(),sleep(15),0))XOR'Z": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5r0\"XOR(if(now()=sysdate(),sleep(15),0))XOR\"Z": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5r-1 waitfor delay '0:0:15' -- ": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5rbXOLtQWh'; waitfor delay '0:0:15' -- ": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5rHDmQ7BT7' OR 580=(SELECT 580 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5r2ISOBHet') OR 610=(SELECT 610 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5rTPLl8yZM')) OR 600=(SELECT 600 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5r'||DBMS_PIPE.RECEIVE_MESSAGE(CHR(98)||CHR(98)||CHR(98),15)||'": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5r'\"": {
+      "yes": 1,
+      "no": 0
+    },
+    "t5r����%2527%2522\\'\\\"": {
+      "yes": 1,
+      "no": 0
+    },
+    "@@nQtng": {
+      "yes": 1,
+      "no": 0
+    },
+    "t1rxdfgwZea": {
+      "yes": 1,
+      "no": 0
+    },
+    "t1r' AND 2*3*8=6*8 AND 'iqSi'='iqSi": {
+      "yes": 1,
+      "no": 0
+    },
+    "t1r\" AND 2*3*8=6*8 AND \"RBlo\"=\"RBlo": {
+      "yes": 1,
+      "no": 0
+    },
+    "t1r%' AND 2*3*8=6*8 AND '7d0q'!='7d0q%": {
+      "yes": 1,
+      "no": 0
+    },
+    "-1 OR 2+343-343-1=0+0+0+1": {
+      "yes": 1,
+      "no": 0
+    },
+    "-1 OR 3+343-343-1=0+0+0+1": {
+      "yes": 1,
+      "no": 0
+    },
+    "t1r'|||'": {
+      "yes": 1,
+      "no": 0
+    },
+    "t1r'||''||'": {
+      "yes": 1,
+      "no": 0
+    },
+    "t1rY5EdRY4X'; waitfor delay '0:0:15' -- ": {
+      "yes": 1,
+      "no": 0
+    },
+    "t1rtzf0YZ2g' OR 986=(SELECT 986 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t1rajJeUqXw') OR 262=(SELECT 262 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t1rRNgMwhMk')) OR 562=(SELECT 562 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "@@2WknZ": {
+      "yes": 1,
+      "no": 0
+    },
+    "t2rMYqRKkv5": {
+      "yes": 1,
+      "no": 0
+    },
+    "t2r' AND 2*3*8=6*8 AND 'Pd8Z'='Pd8Z": {
+      "yes": 1,
+      "no": 0
+    },
+    "t2r\" AND 2*3*8=6*8 AND \"VdHt\"=\"VdHt": {
+      "yes": 1,
+      "no": 0
+    },
+    "t2r%' AND 2*3*8=6*8 AND 'JyL4'!='JyL4%": {
+      "yes": 1,
+      "no": 0
+    },
+    "-1 OR 2+681-681-1=0+0+0+1": {
+      "yes": 1,
+      "no": 0
+    },
+    "-1 OR 3+681-681-1=0+0+0+1": {
+      "yes": 1,
+      "no": 0
+    },
+    "t2r'|||'": {
+      "yes": 1,
+      "no": 0
+    },
+    "t2r'||''||'": {
+      "yes": 1,
+      "no": 0
+    },
+    "t2rS1HoTUMT'; waitfor delay '0:0:15' -- ": {
+      "yes": 1,
+      "no": 0
+    },
+    "t2r5CWvCtts' OR 590=(SELECT 590 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t2r9CaYc7Va') OR 616=(SELECT 616 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "t2r4nLpc7rX')) OR 556=(SELECT 556 FROM PG_SLEEP(15))--": {
+      "yes": 1,
+      "no": 0
+    },
+    "@@KkdAh": {
+      "yes": 1,
+      "no": 0
+    }
+  },
+  "ips": {
+    "59.24.230.57_t2h": "yes",
+    "59.24.230.57_t1h": "yes",
+    "59.24.230.57_t1r": "no",
+    "59.24.230.57_t2r": "yes",
+    "59.24.230.57_t3r": "yes",
+    "59.24.230.57_t4r": "yes",
+    "59.24.230.57_t4h": "yes",
+    "59.24.230.57_t3h": "yes",
+    "59.24.230.57_t5h": "yes",
+    "59.24.230.57_t6h": "yes",
+    "59.24.230.57_t5r": "no",
+    "122.136.188.132_t1h": "yes",
+    "122.136.188.132_t1r": "yes",
+    "122.136.188.132_t2h": "yes",
+    "122.136.188.132_t2r": "yes",
+    "122.136.188.132_t3h": "yes",
+    "122.136.188.132_t3r": "yes",
+    "122.136.188.132_t4h": "yes",
+    "122.136.188.132_t4r": "yes",
+    "122.136.188.132_t5h": "yes",
+    "122.136.188.132_t5r": "yes",
+    "122.136.188.132_t6h": "yes",
+    "122.136.188.132_t1hI7I3fX37": "yes",
+    "122.136.188.132_t1h' AND 2*3*8=6*8 AND 'NYiF'='NYiF": "yes",
+    "122.136.188.132_t1h\" AND 2*3*8=6*8 AND \"VRs4\"=\"VRs4": "yes",
+    "122.136.188.132_t1h%' AND 2*3*8=6*8 AND 'L15W'!='L15W%": "yes",
+    "122.136.188.132_-1 OR 2+118-118-1=0+0+0+1": "yes",
+    "122.136.188.132_-1 OR 3+118-118-1=0+0+0+1": "yes",
+    "122.136.188.132_t1h'||'": "yes",
+    "122.136.188.132_if(now()=sysdate(),sleep(15),0)": "yes",
+    "122.136.188.132_t1h0'XOR(if(now()=sysdate(),sleep(15),0))XOR'Z": "yes",
+    "122.136.188.132_t1h0\"XOR(if(now()=sysdate(),sleep(15),0))XOR\"Z": "yes",
+    "122.136.188.132_(select(0)from(select(sleep(15)))v)/*'+(select(0)from(select(sleep(15)))v)+'\"+(select(0)from(select(sleep(15)))v)+\"*/": "yes",
+    "122.136.188.132_t1h-1 waitfor delay '0:0:15' -- ": "yes",
+    "122.136.188.132_t1h1YUlm8Tw'; waitfor delay '0:0:15' -- ": "yes",
+    "122.136.188.132_t1h8WjKC2nc' OR 175=(SELECT 175 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t1hhBNafKL0') OR 767=(SELECT 767 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t1hjlhuSCUf')) OR 189=(SELECT 189 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t1h'||DBMS_PIPE.RECEIVE_MESSAGE(CHR(98)||CHR(98)||CHR(98),15)||'": "yes",
+    "122.136.188.132_t1h'\"": "yes",
+    "122.136.188.132_t1h����%2527%2522\\'\\\"": "yes",
+    "122.136.188.132_@@bTyjU": "yes",
+    "122.136.188.132_t1ryryKMwWz": "no",
+    "122.136.188.132_t1r' AND 2*3*8=6*8 AND 'gwyb'='gwyb": "no",
+    "122.136.188.132_t1r\" AND 2*3*8=6*8 AND \"aQwv\"=\"aQwv": "no",
+    "122.136.188.132_t1r%' AND 2*3*8=6*8 AND 'fvwu'!='fvwu%": "no",
+    "122.136.188.132_-1 OR 2+159-159-1=0+0+0+1": "no",
+    "122.136.188.132_-1 OR 3+159-159-1=0+0+0+1": "no",
+    "122.136.188.132_t1r'||'": "no",
+    "122.136.188.132_t1r0'XOR(if(now()=sysdate(),sleep(15),0))XOR'Z": "no",
+    "122.136.188.132_t1r0\"XOR(if(now()=sysdate(),sleep(15),0))XOR\"Z": "no",
+    "122.136.188.132_t1r-1 waitfor delay '0:0:15' -- ": "no",
+    "122.136.188.132_t1rwZJgBzpQ'; waitfor delay '0:0:15' -- ": "no",
+    "122.136.188.132_t1rz26Cqddb' OR 117=(SELECT 117 FROM PG_SLEEP(15))--": "no",
+    "122.136.188.132_t1rAsGTEFJ2') OR 777=(SELECT 777 FROM PG_SLEEP(15))--": "no",
+    "122.136.188.132_t1rjDFfbavC')) OR 956=(SELECT 956 FROM PG_SLEEP(15))--": "no",
+    "122.136.188.132_t1r'||DBMS_PIPE.RECEIVE_MESSAGE(CHR(98)||CHR(98)||CHR(98),15)||'": "no",
+    "122.136.188.132_t1r'\"": "no",
+    "122.136.188.132_t1r����%2527%2522\\'\\\"": "no",
+    "122.136.188.132_@@bzfrv": "no",
+    "122.136.188.132_t2hqG1T15s0": "yes",
+    "122.136.188.132_t2h' AND 2*3*8=6*8 AND 'zZ8y'='zZ8y": "yes",
+    "122.136.188.132_t2h\" AND 2*3*8=6*8 AND \"h60r\"=\"h60r": "yes",
+    "122.136.188.132_t2h%' AND 2*3*8=6*8 AND 'Bj9U'!='Bj9U%": "yes",
+    "122.136.188.132_-1 OR 2+936-936-1=0+0+0+1": "yes",
+    "122.136.188.132_-1 OR 3+936-936-1=0+0+0+1": "yes",
+    "122.136.188.132_t2h'||'": "yes",
+    "122.136.188.132_t2h0'XOR(if(now()=sysdate(),sleep(15),0))XOR'Z": "yes",
+    "122.136.188.132_t2h0\"XOR(if(now()=sysdate(),sleep(15),0))XOR\"Z": "yes",
+    "122.136.188.132_t2h-1 waitfor delay '0:0:15' -- ": "yes",
+    "122.136.188.132_t2h8aMg33NB'; waitfor delay '0:0:15' -- ": "yes",
+    "122.136.188.132_t2hgGEwHrd6' OR 452=(SELECT 452 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t2hABht3rDI') OR 526=(SELECT 526 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t2hVBXZedPd')) OR 950=(SELECT 950 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t2h'||DBMS_PIPE.RECEIVE_MESSAGE(CHR(98)||CHR(98)||CHR(98),15)||'": "yes",
+    "122.136.188.132_t2h'\"": "yes",
+    "122.136.188.132_t2h����%2527%2522\\'\\\"": "yes",
+    "122.136.188.132_@@JoZmn": "yes",
+    "122.136.188.132_t2rfCMvRe1l": "no",
+    "122.136.188.132_t2r' AND 2*3*8=6*8 AND '7M9G'='7M9G": "no",
+    "122.136.188.132_t2r\" AND 2*3*8=6*8 AND \"U229\"=\"U229": "no",
+    "122.136.188.132_t2r%' AND 2*3*8=6*8 AND 'nM3M'!='nM3M%": "no",
+    "122.136.188.132_-1 OR 2+76-76-1=0+0+0+1": "no",
+    "122.136.188.132_-1 OR 3+76-76-1=0+0+0+1": "no",
+    "122.136.188.132_t2r'||'": "no",
+    "122.136.188.132_t2r0'XOR(if(now()=sysdate(),sleep(15),0))XOR'Z": "no",
+    "122.136.188.132_t2r0\"XOR(if(now()=sysdate(),sleep(15),0))XOR\"Z": "no",
+    "122.136.188.132_t2r-1 waitfor delay '0:0:15' -- ": "no",
+    "122.136.188.132_t2r18OHSNSh'; waitfor delay '0:0:15' -- ": "no",
+    "122.136.188.132_t2r59xFiiwD' OR 311=(SELECT 311 FROM PG_SLEEP(15))--": "no",
+    "122.136.188.132_t2roSBeAwDQ') OR 620=(SELECT 620 FROM PG_SLEEP(15))--": "no",
+    "122.136.188.132_t2rY5qXksPQ')) OR 433=(SELECT 433 FROM PG_SLEEP(15))--": "no",
+    "122.136.188.132_t2r'||DBMS_PIPE.RECEIVE_MESSAGE(CHR(98)||CHR(98)||CHR(98),15)||'": "no",
+    "122.136.188.132_t2r'\"": "no",
+    "122.136.188.132_t2r����%2527%2522\\'\\\"": "no",
+    "122.136.188.132_@@V0KeS": "no",
+    "122.136.188.132_t3hLYjewrRk": "yes",
+    "122.136.188.132_t3h' AND 2*3*8=6*8 AND 'RyZL'='RyZL": "yes",
+    "122.136.188.132_t3h\" AND 2*3*8=6*8 AND \"t2AR\"=\"t2AR": "yes",
+    "122.136.188.132_t3h%' AND 2*3*8=6*8 AND 'NWdL'!='NWdL%": "yes",
+    "122.136.188.132_-1 OR 2+845-845-1=0+0+0+1": "yes",
+    "122.136.188.132_-1 OR 3+845-845-1=0+0+0+1": "yes",
+    "122.136.188.132_t3h'||'": "yes",
+    "122.136.188.132_t3h0'XOR(if(now()=sysdate(),sleep(15),0))XOR'Z": "yes",
+    "122.136.188.132_t3h0\"XOR(if(now()=sysdate(),sleep(15),0))XOR\"Z": "yes",
+    "122.136.188.132_t3h-1 waitfor delay '0:0:15' -- ": "yes",
+    "122.136.188.132_t3hosMHeBz2'; waitfor delay '0:0:15' -- ": "yes",
+    "122.136.188.132_t3hGTCOZQdB' OR 661=(SELECT 661 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t3hd5FyBFBz') OR 628=(SELECT 628 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t3hJB9NCcFK')) OR 193=(SELECT 193 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t3h'||DBMS_PIPE.RECEIVE_MESSAGE(CHR(98)||CHR(98)||CHR(98),15)||'": "yes",
+    "122.136.188.132_t3h'\"": "yes",
+    "122.136.188.132_t3h����%2527%2522\\'\\\"": "yes",
+    "122.136.188.132_@@2fEop": "yes",
+    "122.136.188.132_t1hjY0d67bM": "no",
+    "122.136.188.132_t1h' AND 2*3*8=6*8 AND 'J64t'='J64t": "no",
+    "122.136.188.132_t1h\" AND 2*3*8=6*8 AND \"HFx5\"=\"HFx5": "no",
+    "122.136.188.132_t1h%' AND 2*3*8=6*8 AND 'MQ5d'!='MQ5d%": "no",
+    "122.136.188.132_-1 OR 2+758-758-1=0+0+0+1": "no",
+    "122.136.188.132_-1 OR 3+758-758-1=0+0+0+1": "no",
+    "122.136.188.132_t1h'|||'": "no",
+    "122.136.188.132_t1h'||''||'": "no",
+    "122.136.188.132_t1h7s7MKBTY'; waitfor delay '0:0:15' -- ": "no",
+    "122.136.188.132_t1hFmx2VzaS' OR 584=(SELECT 584 FROM PG_SLEEP(15))--": "no",
+    "122.136.188.132_t1hwEDTcxPT') OR 562=(SELECT 562 FROM PG_SLEEP(15))--": "no",
+    "122.136.188.132_t1hfuNz8zRO')) OR 614=(SELECT 614 FROM PG_SLEEP(15))--": "no",
+    "122.136.188.132_@@FsaNC": "no",
+    "122.136.188.132_t3rkO71u8Tp": "yes",
+    "122.136.188.132_t3r' AND 2*3*8=6*8 AND 'PhyR'='PhyR": "yes",
+    "122.136.188.132_t3r\" AND 2*3*8=6*8 AND \"Zphi\"=\"Zphi": "yes",
+    "122.136.188.132_t3r%' AND 2*3*8=6*8 AND 'qhcf'!='qhcf%": "yes",
+    "122.136.188.132_-1 OR 2+493-493-1=0+0+0+1": "yes",
+    "122.136.188.132_-1 OR 3+493-493-1=0+0+0+1": "yes",
+    "122.136.188.132_t3r'||'": "yes",
+    "122.136.188.132_t3r0'XOR(if(now()=sysdate(),sleep(15),0))XOR'Z": "yes",
+    "122.136.188.132_t3r0\"XOR(if(now()=sysdate(),sleep(15),0))XOR\"Z": "yes",
+    "122.136.188.132_t3r-1 waitfor delay '0:0:15' -- ": "yes",
+    "122.136.188.132_t3rk2m6AkVc'; waitfor delay '0:0:15' -- ": "yes",
+    "122.136.188.132_t3rWye0DRn2' OR 25=(SELECT 25 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t3rfBxqztZv') OR 565=(SELECT 565 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t3rOFDBJba5')) OR 167=(SELECT 167 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t3r'||DBMS_PIPE.RECEIVE_MESSAGE(CHR(98)||CHR(98)||CHR(98),15)||'": "yes",
+    "122.136.188.132_t3r'\"": "yes",
+    "122.136.188.132_t3r����%2527%2522\\'\\\"": "yes",
+    "122.136.188.132_@@hLzIc": "yes",
+    "122.136.188.132_t2hcAiYcCr0": "no",
+    "122.136.188.132_t2h' AND 2*3*8=6*8 AND 'DAjX'='DAjX": "no",
+    "122.136.188.132_t2h\" AND 2*3*8=6*8 AND \"uEAN\"=\"uEAN": "no",
+    "122.136.188.132_t2h%' AND 2*3*8=6*8 AND 'lyz7'!='lyz7%": "no",
+    "122.136.188.132_-1 OR 2+660-660-1=0+0+0+1": "no",
+    "122.136.188.132_-1 OR 3+660-660-1=0+0+0+1": "no",
+    "122.136.188.132_t2h'|||'": "no",
+    "122.136.188.132_t2h'||''||'": "no",
+    "122.136.188.132_t2hH54UhKR3'; waitfor delay '0:0:15' -- ": "no",
+    "122.136.188.132_t2hU4PpbqNg' OR 387=(SELECT 387 FROM PG_SLEEP(15))--": "no",
+    "122.136.188.132_t2h75EoastD') OR 201=(SELECT 201 FROM PG_SLEEP(15))--": "no",
+    "122.136.188.132_t2hOF5tchh3')) OR 250=(SELECT 250 FROM PG_SLEEP(15))--": "no",
+    "122.136.188.132_@@syEPK": "no",
+    "122.136.188.132_t4hSGyiKJWJ": "yes",
+    "122.136.188.132_t4h' AND 2*3*8=6*8 AND 'avGY'='avGY": "yes",
+    "122.136.188.132_t4h\" AND 2*3*8=6*8 AND \"7EDs\"=\"7EDs": "yes",
+    "122.136.188.132_t4h%' AND 2*3*8=6*8 AND '6a76'!='6a76%": "yes",
+    "122.136.188.132_-1 OR 2+837-837-1=0+0+0+1": "yes",
+    "122.136.188.132_-1 OR 3+837-837-1=0+0+0+1": "yes",
+    "122.136.188.132_t4h'||'": "yes",
+    "122.136.188.132_t4h0'XOR(if(now()=sysdate(),sleep(15),0))XOR'Z": "yes",
+    "122.136.188.132_t4h0\"XOR(if(now()=sysdate(),sleep(15),0))XOR\"Z": "yes",
+    "122.136.188.132_t4h-1 waitfor delay '0:0:15' -- ": "yes",
+    "122.136.188.132_t4hSIQVTzxG'; waitfor delay '0:0:15' -- ": "yes",
+    "122.136.188.132_t4hmFACwRcZ' OR 340=(SELECT 340 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t4hxHVNWFUD') OR 219=(SELECT 219 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t4hv2CfIdLK')) OR 949=(SELECT 949 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t4h'||DBMS_PIPE.RECEIVE_MESSAGE(CHR(98)||CHR(98)||CHR(98),15)||'": "yes",
+    "122.136.188.132_t4h'\"": "yes",
+    "122.136.188.132_t4h����%2527%2522\\'\\\"": "yes",
+    "122.136.188.132_@@kuoxh": "yes",
+    "122.136.188.132_t3hTLzF5AwK": "no",
+    "122.136.188.132_t3h' AND 2*3*8=6*8 AND '6PlD'='6PlD": "no",
+    "122.136.188.132_t3h\" AND 2*3*8=6*8 AND \"YU2t\"=\"YU2t": "no",
+    "122.136.188.132_t3h%' AND 2*3*8=6*8 AND 'w5Pn'!='w5Pn%": "no",
+    "122.136.188.132_-1 OR 2+321-321-1=0+0+0+1": "no",
+    "122.136.188.132_-1 OR 3+321-321-1=0+0+0+1": "no",
+    "122.136.188.132_t3h'|||'": "no",
+    "122.136.188.132_t3h'||''||'": "no",
+    "122.136.188.132_t3hZWQ45BOd'; waitfor delay '0:0:15' -- ": "no",
+    "122.136.188.132_t3hiK9aoTmN' OR 294=(SELECT 294 FROM PG_SLEEP(15))--": "no",
+    "122.136.188.132_t3hdWPYuF1C') OR 839=(SELECT 839 FROM PG_SLEEP(15))--": "no",
+    "122.136.188.132_t3hfjmobRZJ')) OR 94=(SELECT 94 FROM PG_SLEEP(15))--": "no",
+    "122.136.188.132_@@MteMX": "no",
+    "122.136.188.132_t4rOcJdJ9zd": "yes",
+    "122.136.188.132_t4r' AND 2*3*8=6*8 AND 'Yhdj'='Yhdj": "yes",
+    "122.136.188.132_t4r\" AND 2*3*8=6*8 AND \"K1De\"=\"K1De": "yes",
+    "122.136.188.132_t4r%' AND 2*3*8=6*8 AND 'rYJb'!='rYJb%": "yes",
+    "122.136.188.132_-1 OR 2+235-235-1=0+0+0+1": "yes",
+    "122.136.188.132_-1 OR 3+235-235-1=0+0+0+1": "yes",
+    "122.136.188.132_t4r'||'": "yes",
+    "122.136.188.132_t4r0'XOR(if(now()=sysdate(),sleep(15),0))XOR'Z": "yes",
+    "122.136.188.132_t4r0\"XOR(if(now()=sysdate(),sleep(15),0))XOR\"Z": "yes",
+    "122.136.188.132_t4r-1 waitfor delay '0:0:15' -- ": "yes",
+    "122.136.188.132_t4rSkNiiH1b'; waitfor delay '0:0:15' -- ": "yes",
+    "122.136.188.132_t4rAlmWWmbc' OR 274=(SELECT 274 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t4rlWeuipwe') OR 582=(SELECT 582 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t4rTRqJexDy')) OR 359=(SELECT 359 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t4r'||DBMS_PIPE.RECEIVE_MESSAGE(CHR(98)||CHR(98)||CHR(98),15)||'": "yes",
+    "122.136.188.132_t4r'\"": "yes",
+    "122.136.188.132_t4r����%2527%2522\\'\\\"": "yes",
+    "122.136.188.132_@@2s22e": "yes",
+    "122.136.188.132_t5hYH7JrNWS": "yes",
+    "122.136.188.132_t5h' AND 2*3*8=6*8 AND '8QRA'='8QRA": "yes",
+    "122.136.188.132_t5h\" AND 2*3*8=6*8 AND \"bZoe\"=\"bZoe": "yes",
+    "122.136.188.132_t5h%' AND 2*3*8=6*8 AND '1C2W'!='1C2W%": "yes",
+    "122.136.188.132_-1 OR 2+805-805-1=0+0+0+1": "yes",
+    "122.136.188.132_-1 OR 3+805-805-1=0+0+0+1": "yes",
+    "122.136.188.132_t5h'||'": "yes",
+    "122.136.188.132_t5h0'XOR(if(now()=sysdate(),sleep(15),0))XOR'Z": "yes",
+    "122.136.188.132_t5h0\"XOR(if(now()=sysdate(),sleep(15),0))XOR\"Z": "yes",
+    "122.136.188.132_t5h-1 waitfor delay '0:0:15' -- ": "yes",
+    "122.136.188.132_t5hWUBsFwYf'; waitfor delay '0:0:15' -- ": "yes",
+    "122.136.188.132_t5hPvTizPFc' OR 310=(SELECT 310 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t5h4kBjraom') OR 631=(SELECT 631 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t5h9CxuAaI9')) OR 439=(SELECT 439 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t5h'||DBMS_PIPE.RECEIVE_MESSAGE(CHR(98)||CHR(98)||CHR(98),15)||'": "yes",
+    "122.136.188.132_t5h'\"": "yes",
+    "122.136.188.132_t5h����%2527%2522\\'\\\"": "yes",
+    "122.136.188.132_@@pucA2": "yes",
+    "122.136.188.132_t5rmN23gnCZ": "yes",
+    "122.136.188.132_t5r' AND 2*3*8=6*8 AND 'QKha'='QKha": "yes",
+    "122.136.188.132_t5r\" AND 2*3*8=6*8 AND \"zBJ7\"=\"zBJ7": "yes",
+    "122.136.188.132_t5r%' AND 2*3*8=6*8 AND 'Jx3Y'!='Jx3Y%": "yes",
+    "122.136.188.132_-1 OR 2+117-117-1=0+0+0+1": "yes",
+    "122.136.188.132_-1 OR 3+117-117-1=0+0+0+1": "yes",
+    "122.136.188.132_t5r'||'": "yes",
+    "122.136.188.132_t5r0'XOR(if(now()=sysdate(),sleep(15),0))XOR'Z": "yes",
+    "122.136.188.132_t5r0\"XOR(if(now()=sysdate(),sleep(15),0))XOR\"Z": "yes",
+    "122.136.188.132_t5r-1 waitfor delay '0:0:15' -- ": "yes",
+    "122.136.188.132_t5rbXOLtQWh'; waitfor delay '0:0:15' -- ": "yes",
+    "122.136.188.132_t5rHDmQ7BT7' OR 580=(SELECT 580 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t5r2ISOBHet') OR 610=(SELECT 610 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t5rTPLl8yZM')) OR 600=(SELECT 600 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t5r'||DBMS_PIPE.RECEIVE_MESSAGE(CHR(98)||CHR(98)||CHR(98),15)||'": "yes",
+    "122.136.188.132_t5r'\"": "yes",
+    "122.136.188.132_t5r����%2527%2522\\'\\\"": "yes",
+    "122.136.188.132_@@nQtng": "yes",
+    "122.136.188.132_t1rxdfgwZea": "yes",
+    "122.136.188.132_t1r' AND 2*3*8=6*8 AND 'iqSi'='iqSi": "yes",
+    "122.136.188.132_t1r\" AND 2*3*8=6*8 AND \"RBlo\"=\"RBlo": "yes",
+    "122.136.188.132_t1r%' AND 2*3*8=6*8 AND '7d0q'!='7d0q%": "yes",
+    "122.136.188.132_-1 OR 2+343-343-1=0+0+0+1": "yes",
+    "122.136.188.132_-1 OR 3+343-343-1=0+0+0+1": "yes",
+    "122.136.188.132_t1r'|||'": "yes",
+    "122.136.188.132_t1r'||''||'": "yes",
+    "122.136.188.132_t1rY5EdRY4X'; waitfor delay '0:0:15' -- ": "yes",
+    "122.136.188.132_t1rtzf0YZ2g' OR 986=(SELECT 986 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t1rajJeUqXw') OR 262=(SELECT 262 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t1rRNgMwhMk')) OR 562=(SELECT 562 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_@@2WknZ": "yes",
+    "122.136.188.132_t2rMYqRKkv5": "yes",
+    "122.136.188.132_t2r' AND 2*3*8=6*8 AND 'Pd8Z'='Pd8Z": "yes",
+    "122.136.188.132_t2r\" AND 2*3*8=6*8 AND \"VdHt\"=\"VdHt": "yes",
+    "122.136.188.132_t2r%' AND 2*3*8=6*8 AND 'JyL4'!='JyL4%": "yes",
+    "122.136.188.132_-1 OR 2+681-681-1=0+0+0+1": "yes",
+    "122.136.188.132_-1 OR 3+681-681-1=0+0+0+1": "yes",
+    "122.136.188.132_t2r'|||'": "yes",
+    "122.136.188.132_t2r'||''||'": "yes",
+    "122.136.188.132_t2rS1HoTUMT'; waitfor delay '0:0:15' -- ": "yes",
+    "122.136.188.132_t2r5CWvCtts' OR 590=(SELECT 590 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t2r9CaYc7Va') OR 616=(SELECT 616 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_t2r4nLpc7rX')) OR 556=(SELECT 556 FROM PG_SLEEP(15))--": "yes",
+    "122.136.188.132_@@KkdAh": "yes"
+  }
+}

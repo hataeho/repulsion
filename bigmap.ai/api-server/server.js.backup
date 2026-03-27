@@ -1,0 +1,514 @@
+const http = require('http');
+const https = require('https');
+const fs = require('fs');
+const path = require('path');
+
+const PORT = 3333;
+const APPS_DIR = path.join(__dirname, 'apps');
+
+const server = http.createServer((req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET');
+
+    const reqUrl = new URL(req.url, 'http://localhost:' + PORT);
+
+    // ── About 페이지 API ──
+    if (reqUrl.pathname === '/api/about/view') {
+        const id = reqUrl.searchParams.get('id');
+        if (!id) { res.writeHead(400); res.end('{}'); return; }
+        const stats = readAboutStats();
+        if (!stats.chapters[id]) stats.chapters[id] = { views: 0, likes: 0 };
+        stats.chapters[id].views++;
+        writeAboutStats(stats);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(stats.chapters[id]));
+        return;
+    }
+    if (reqUrl.pathname === '/api/about/like') {
+        const id = reqUrl.searchParams.get('id');
+        if (!id) { res.writeHead(400); res.end('{}'); return; }
+        const stats = readAboutStats();
+        if (!stats.chapters[id]) stats.chapters[id] = { views: 0, likes: 0 };
+        stats.chapters[id].likes++;
+        writeAboutStats(stats);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(stats.chapters[id]));
+        return;
+    }
+    if (reqUrl.pathname === '/api/about/stats') {
+        const key = reqUrl.searchParams.get('key');
+        if (key !== 'bigmap2026') { res.writeHead(403); res.end('{}'); return; }
+        const stats = readAboutStats();
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(stats));
+        return;
+    }
+
+    if (reqUrl.pathname === '/api/search') {
+        const query = reqUrl.searchParams.get('q') || '';
+        handleSearch(query, res);
+        return;
+    }
+
+    // 정적 파일 서빙
+    let filePath = reqUrl.pathname === '/' ? '/singer_search.html' : reqUrl.pathname;
+    filePath = path.join(APPS_DIR, filePath);
+
+    const ext = path.extname(filePath);
+    const mimeTypes = {
+        '.html': 'text/html; charset=utf-8',
+        '.css': 'text/css',
+        '.js': 'application/javascript',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+    };
+
+    fs.readFile(filePath, (err, content) => {
+        if (err) {
+            res.writeHead(404);
+            res.end('Not Found');
+            return;
+        }
+        res.writeHead(200, { 'Content-Type': mimeTypes[ext] || 'text/plain' });
+        res.end(content);
+    });
+});
+
+function handleSearch(query, res) {
+    // 1단계: 먼저 일반 검색 (채널+영상 포함)
+    fetchYouTubePage('/results?search_query=' + encodeURIComponent(query), (err, html) => {
+        if (err) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Request failed' }));
+            return;
+        }
+
+        try {
+            const data = parseYouTubeData(html);
+            const channelInfo = findChannelInfo(data, query);
+
+            if (channelInfo) {
+                // 채널을 찾았으면 → YouTube 검색에서 채널명으로 조회수순 검색
+                console.log('채널 발견:', channelInfo.name, '- 조회수순 검색 중...');
+                searchChannelByViewCount(channelInfo.name, channelInfo.id, res);
+            } else {
+                // 채널 못 찾으면 → @핸들로 직접 접근 → 채널명 확인 → 검색
+                console.log('검색에서 채널 미발견 - @핸들 직접 접근 시도:', query);
+                tryChannelHandle(query, data, res);
+            }
+        } catch (e) {
+            console.error('Parse error:', e.message);
+            fetchViewCountSearch(query, res);
+        }
+    });
+}
+
+function tryChannelHandle(query, searchData, res) {
+    // @핸들로 채널 페이지 직접 접근 (언더스코어 제거 버전도 시도)
+    // @핸들 여러 변형 시도: 원본, 언더스코어 제거, 특수문자 제거
+    const handles = [
+        query.replace(/\s+/g, ''),
+        query.replace(/[\s_\-\.]+/g, ''),
+    ];
+    // 중복 제거
+    const uniqueHandles = [...new Set(handles)];
+
+    tryHandles(uniqueHandles, 0, searchData, res);
+}
+
+function tryHandles(handles, index, searchData, res) {
+    if (index >= handles.length) {
+        // 모든 핸들 시도 실패 → 일반 검색 결과 반환
+        console.log('모든 핸들 시도 실패 - 일반 검색 결과 반환');
+        const videos = extractVideos(searchData);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(videos));
+        return;
+    }
+
+    const handle = handles[index];
+    const channelPath = '/@' + handle + '/videos?view=0&sort=p';
+    console.log('핸들 시도:', '@' + handle);
+
+    fetchYouTubePage(channelPath, (err, html) => {
+        if (err) {
+            tryHandles(handles, index + 1, searchData, res);
+            return;
+        }
+
+        try {
+            const data = parseYouTubeData(html);
+            // 채널 페이지에서 채널명 + 채널ID 추출
+            const channelName = extractChannelName(data);
+            const chanId = extractChannelId(data);
+
+            if (channelName) {
+                console.log('@' + handle + ' → 채널명:', channelName, 'ID:', chanId);
+                searchChannelByViewCount(channelName, chanId, res);
+            } else {
+                // 채널명 추출 실패 → 다음 핸들
+                tryHandles(handles, index + 1, searchData, res);
+            }
+        } catch (e) {
+            tryHandles(handles, index + 1, searchData, res);
+        }
+    });
+}
+
+function searchChannelByViewCount(channelName, channelId, res) {
+    // 전략: 채널 페이지 + YouTube 검색 결과를 합쳐서 완전한 인기 영상 목록 생성
+    console.log('채널 조회수순 검색 (2단계 병합):', channelName);
+
+    // 1단계: YouTube 검색에서 채널명으로 조회수순 검색
+    const searchPath = '/results?search_query=' + encodeURIComponent('"' + channelName + '"') +
+        '&sp=CAMSAhAB';
+
+    fetchYouTubePage(searchPath, (err, html) => {
+        if (err) {
+            fetchViewCountSearch(channelName, res);
+            return;
+        }
+
+        try {
+            const data = parseYouTubeData(html);
+            const searchVideos = extractVideos(data);
+
+            // 해당 채널 영상만 필터링
+            const channelNameLower = channelName.toLowerCase().replace(/[\s_\-]+/g, '');
+            const filtered = searchVideos.filter(v => {
+                const authorLower = (v.author || '').toLowerCase().replace(/[\s_\-]+/g, '');
+                return authorLower.indexOf(channelNameLower) !== -1 ||
+                    channelNameLower.indexOf(authorLower) !== -1;
+            });
+
+            // 2단계: 채널 페이지에서도 영상 가져오기 (채널ID 또는 핸들 사용)
+            const channelPagePath = channelId
+                ? '/channel/' + channelId + '/videos?view=0&sort=p&flow=grid'
+                : null;
+
+            if (channelPagePath) {
+                fetchAndMerge(channelPagePath, filtered, channelNameLower, res);
+            } else {
+                // 채널 페이지 없이 검색 결과만
+                finishWithResults(filtered, searchVideos, res);
+            }
+        } catch (e) {
+            console.error('Channel search parse error:', e.message);
+            fetchViewCountSearch(channelName, res);
+        }
+    });
+}
+
+function fetchAndMerge(channelPagePath, searchResults, channelNameLower, res) {
+    fetchYouTubePage(channelPagePath, (err, html) => {
+        if (err) {
+            finishWithResults(searchResults, [], res);
+            return;
+        }
+
+        try {
+            const data = parseYouTubeData(html);
+            const pageVideos = extractChannelVideos(data);
+
+            // 두 결과 합치기 (중복 제거)
+            const merged = mergeVideos(searchResults, pageVideos);
+            console.log('검색:', searchResults.length, '+ 채널페이지:', pageVideos.length, '= 병합:', merged.length);
+
+            merged.sort((a, b) => b.viewCount - a.viewCount);
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(merged.slice(0, 20)));
+        } catch (e) {
+            finishWithResults(searchResults, [], res);
+        }
+    });
+}
+
+function finishWithResults(filtered, allVideos, res) {
+    if (filtered.length > 0) {
+        filtered.sort((a, b) => b.viewCount - a.viewCount);
+        console.log('채널 영상', filtered.length, '개 (조회수순)');
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(filtered));
+    } else {
+        console.log('채널 필터 매칭 없음 - 전체 검색 결과 반환');
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(allVideos));
+    }
+}
+
+function mergeVideos(list1, list2) {
+    const map = new Map();
+    for (const v of list1) {
+        map.set(v.videoId, v);
+    }
+    for (const v of list2) {
+        if (!map.has(v.videoId)) {
+            map.set(v.videoId, v);
+        } else {
+            // 이미 있으면 조회수가 더 정확한 쪽 사용 (더 큰 값)
+            const existing = map.get(v.videoId);
+            if (v.viewCount > existing.viewCount) {
+                map.set(v.videoId, v);
+            }
+        }
+    }
+    return Array.from(map.values());
+}
+
+function fetchViewCountSearch(query, res) {
+    // 폴백: 조회수순 영상 검색
+    const searchPath = '/results?search_query=' + encodeURIComponent(query) + '&sp=CAMSAhAB';
+
+    fetchYouTubePage(searchPath, (err, html) => {
+        if (err) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Request failed' }));
+            return;
+        }
+
+        try {
+            const data = parseYouTubeData(html);
+            const videos = extractVideos(data);
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(videos));
+        } catch (e) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Parse failed' }));
+        }
+    });
+}
+
+function fetchYouTubePage(urlPath, callback) {
+    const options = {
+        hostname: 'www.youtube.com',
+        path: urlPath,
+        headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept-Language': 'ko-KR,ko;q=0.9,en;q=0.8',
+            'Accept': 'text/html,application/xhtml+xml'
+        }
+    };
+
+    https.get(options, (ytRes) => {
+        let data = '';
+        ytRes.on('data', (chunk) => { data += chunk; });
+        ytRes.on('end', () => callback(null, data));
+    }).on('error', (e) => {
+        console.error('Fetch error:', e.message);
+        callback(e, null);
+    });
+}
+
+function parseYouTubeData(html) {
+    const match = html.match(/var ytInitialData = ({.*?});<\/script>/s);
+    if (match) return JSON.parse(match[1]);
+
+    const match2 = html.match(/ytInitialData\s*=\s*({.*?});\s*<\/script>/s);
+    if (match2) return JSON.parse(match2[1]);
+
+    throw new Error('Could not find ytInitialData');
+}
+
+function findChannelInfo(data, query) {
+    // 검색 결과에서 채널 찾기 (채널명 + ID)
+    try {
+        const contents = data.contents.twoColumnSearchResultsRenderer.primaryContents
+            .sectionListRenderer.contents;
+
+        for (const section of contents) {
+            const items = section.itemSectionRenderer ? section.itemSectionRenderer.contents : [];
+            for (const item of items) {
+                if (item.channelRenderer) {
+                    const cr = item.channelRenderer;
+                    const channelTitle = cr.title && cr.title.simpleText ? cr.title.simpleText : '';
+                    if (channelTitle.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                        return { id: cr.channelId, name: channelTitle };
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        console.error('findChannelInfo error:', e.message);
+    }
+    return null;
+}
+
+function extractChannelName(data) {
+    // 채널 페이지에서 채널명 추출
+    try {
+        const metadata = data.metadata;
+        if (metadata && metadata.channelMetadataRenderer) {
+            return metadata.channelMetadataRenderer.title || null;
+        }
+        // 대체: header에서 추출
+        const header = data.header;
+        if (header && header.c4TabbedHeaderRenderer) {
+            return header.c4TabbedHeaderRenderer.title || null;
+        }
+        if (header && header.pageHeaderRenderer) {
+            const title = header.pageHeaderRenderer.pageTitle;
+            if (title) return title;
+        }
+    } catch (e) {
+        console.error('extractChannelName error:', e.message);
+    }
+    return null;
+}
+
+function extractChannelId(data) {
+    // 채널 페이지에서 채널 ID 추출
+    try {
+        const metadata = data.metadata;
+        if (metadata && metadata.channelMetadataRenderer) {
+            return metadata.channelMetadataRenderer.externalId || null;
+        }
+    } catch (e) { }
+    return null;
+}
+
+function extractChannelVideos(data) {
+    const results = [];
+    try {
+        // 채널 페이지 구조 탐색
+        const tabs = data.contents.twoColumnBrowseResultsRenderer.tabs;
+        let videosTab = null;
+
+        for (const tab of tabs) {
+            if (tab.tabRenderer && tab.tabRenderer.selected) {
+                videosTab = tab.tabRenderer;
+                break;
+            }
+        }
+
+        if (!videosTab || !videosTab.content) return results;
+
+        // richGridRenderer 또는 sectionListRenderer에서 영상 추출
+        const content = videosTab.content;
+        let items = [];
+
+        if (content.richGridRenderer) {
+            items = content.richGridRenderer.contents || [];
+            for (const item of items) {
+                if (item.richItemRenderer && item.richItemRenderer.content && item.richItemRenderer.content.videoRenderer) {
+                    const vr = item.richItemRenderer.content.videoRenderer;
+                    const video = extractVideoData(vr);
+                    if (video) results.push(video);
+                    if (results.length >= 20) break;
+                }
+            }
+        }
+
+        if (content.sectionListRenderer) {
+            const sections = content.sectionListRenderer.contents || [];
+            for (const section of sections) {
+                if (section.itemSectionRenderer) {
+                    const gridItems = section.itemSectionRenderer.contents || [];
+                    for (const gi of gridItems) {
+                        if (gi.gridRenderer) {
+                            for (const gridItem of gi.gridRenderer.items || []) {
+                                if (gridItem.gridVideoRenderer) {
+                                    const video = extractVideoData(gridItem.gridVideoRenderer);
+                                    if (video) results.push(video);
+                                    if (results.length >= 20) break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        console.error('extractChannelVideos error:', e.message);
+    }
+    // YouTube sort=p가 서버 요청에서 무시될 수 있으므로 조회수 내림차순 정렬
+    results.sort((a, b) => b.viewCount - a.viewCount);
+    return results;
+}
+
+function extractVideoData(vr) {
+    if (!vr.videoId) return null;
+
+    const title = vr.title && vr.title.runs ? vr.title.runs.map(r => r.text).join('') :
+        (vr.title && vr.title.simpleText ? vr.title.simpleText : '');
+    const channel = vr.ownerText && vr.ownerText.runs ? vr.ownerText.runs[0].text :
+        (vr.shortBylineText && vr.shortBylineText.runs ? vr.shortBylineText.runs[0].text : '');
+    const viewCountText = vr.viewCountText ? (vr.viewCountText.simpleText || '') : '';
+    const thumbnail = vr.thumbnail && vr.thumbnail.thumbnails
+        ? vr.thumbnail.thumbnails[vr.thumbnail.thumbnails.length - 1].url
+        : '';
+
+    // 조회수 숫자 파싱 (예: "조회수 283,778,424회" → 283778424)
+    const viewCount = parseViewCount(viewCountText);
+
+    return { videoId: vr.videoId, title, author: channel, viewCountText, viewCount, thumbnail };
+}
+
+function parseViewCount(text) {
+    if (!text) return 0;
+
+    // 한국어 약식: "1.7만", "5.4만회", "1억", "23억회" 등
+    const manMatch = text.match(/([\d.]+)\s*만/);
+    if (manMatch) return Math.round(parseFloat(manMatch[1]) * 10000);
+
+    const eokMatch = text.match(/([\d.]+)\s*억/);
+    if (eokMatch) return Math.round(parseFloat(eokMatch[1]) * 100000000);
+
+    // 영어 약식: "1.7K", "5.4M" 등
+    const kMatch = text.match(/([\d.]+)\s*K/i);
+    if (kMatch) return Math.round(parseFloat(kMatch[1]) * 1000);
+
+    const mMatch = text.match(/([\d.]+)\s*M/i);
+    if (mMatch) return Math.round(parseFloat(mMatch[1]) * 1000000);
+
+    // 전체 숫자: "283,778,424" 또는 "조회수 283,778,424회"
+    const nums = text.replace(/[^0-9]/g, '');
+    return nums ? parseInt(nums, 10) : 0;
+}
+
+function extractVideos(data) {
+    const results = [];
+    try {
+        const contents = data.contents.twoColumnSearchResultsRenderer.primaryContents
+            .sectionListRenderer.contents;
+
+        for (const section of contents) {
+            const items = section.itemSectionRenderer ? section.itemSectionRenderer.contents : [];
+            for (const item of items) {
+                if (!item.videoRenderer) continue;
+                const video = extractVideoData(item.videoRenderer);
+                if (video) results.push(video);
+                if (results.length >= 20) break;
+            }
+            if (results.length >= 20) break;
+        }
+    } catch (e) {
+        console.error('Extract error:', e.message);
+    }
+    // 조회수 내림차순 정렬
+    results.sort((a, b) => b.viewCount - a.viewCount);
+    return results;
+}
+
+// ── About 통계 파일 관리 ──
+const ABOUT_STATS_FILE = path.join(APPS_DIR, 'about_stats.json');
+
+function readAboutStats() {
+    try {
+        const data = fs.readFileSync(ABOUT_STATS_FILE, 'utf-8');
+        return JSON.parse(data);
+    } catch (e) {
+        return { chapters: {} };
+    }
+}
+
+function writeAboutStats(stats) {
+    fs.writeFileSync(ABOUT_STATS_FILE, JSON.stringify(stats, null, 2), 'utf-8');
+}
+
+server.listen(PORT, () => {
+    console.log('');
+    console.log('  🎤 영상 검색기 서버');
+    console.log('  ─────────────────────');
+    console.log('  http://localhost:' + PORT);
+    console.log('');
+});

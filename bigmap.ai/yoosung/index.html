@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>유성농장 AI</title>
+<meta name="description" content="유성농장 스마트 계사 관제 - AI 사양관리">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0e17;--card:#131927;--border:#1e2a3a;--primary:#00d4aa;--text:#e4e8f1;--muted:#6b7a90;--danger:#ff4757;--warn:#ffa502}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+.header{background:linear-gradient(135deg,#0f1923 0%,#1a2744 100%);padding:12px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.header .logo{width:36px;height:36px;background:linear-gradient(135deg,var(--primary),#00a885);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.header .info h1{font-size:15px;font-weight:700;letter-spacing:-0.3px}
+.header .info p{font-size:11px;color:var(--muted);margin-top:1px}
+.status-bar{background:var(--card);padding:8px 16px;display:flex;gap:8px;overflow-x:auto;border-bottom:1px solid var(--border);flex-shrink:0;-webkit-overflow-scrolling:touch}
+.status-bar::-webkit-scrollbar{display:none}
+.chip{background:#1a2744;border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11px;white-space:nowrap;color:var(--muted);cursor:pointer;transition:all .2s}
+.chip:active{background:var(--primary);color:var(--bg);border-color:var(--primary)}
+.chip.live{border-color:var(--primary);color:var(--primary)}
+.chat{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
+.msg{max-width:88%;padding:10px 14px;border-radius:16px;font-size:13px;line-height:1.6;animation:fadeUp .3s ease}
+.msg.ai{background:var(--card);border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:4px}
+.msg.user{background:linear-gradient(135deg,#0066ff,#0044cc);align-self:flex-end;border-bottom-right-radius:4px;color:#fff}
+.msg .label{font-size:10px;color:var(--muted);margin-bottom:4px}
+.msg table{width:100%;border-collapse:collapse;margin:6px 0;font-size:11px}
+.msg th,.msg td{padding:3px 6px;border:1px solid var(--border);text-align:right}
+.msg th{background:#1a2744;text-align:left;font-weight:500}
+.msg .warn{color:var(--warn)}
+.msg .danger{color:var(--danger)}
+.msg .ok{color:var(--primary)}
+.input-area{background:var(--card);padding:8px 12px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;flex-shrink:0;padding-bottom:max(8px,env(safe-area-inset-bottom))}
+.input-area input{flex:1;background:#1a2744;border:1px solid var(--border);border-radius:20px;padding:10px 16px;color:var(--text);font-size:14px;outline:none;font-family:inherit}
+.input-area input:focus{border-color:var(--primary)}
+.input-area button{width:40px;height:40px;border-radius:50%;background:var(--primary);border:none;color:var(--bg);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .1s}
+.input-area button:active{transform:scale(.9)}
+.typing{display:flex;gap:4px;padding:8px 14px;align-self:flex-start}
+.typing span{width:6px;height:6px;background:var(--muted);border-radius:50%;animation:bounce .6s infinite alternate}
+.typing span:nth-child(2){animation-delay:.2s}
+.typing span:nth-child(3){animation-delay:.4s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bounce{to{opacity:.3;transform:translateY(-4px)}}
+.connection{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;width:min(320px,90vw);text-align:center;z-index:100}
+.connection h2{font-size:16px;margin-bottom:12px}
+.connection input{width:100%;background:#1a2744;border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-size:14px;margin-bottom:8px;text-align:center;font-family:inherit}
+.connection button{width:100%;padding:12px;background:var(--primary);color:var(--bg);border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.connection .hint{font-size:11px;color:var(--muted);margin-top:8px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+
+<!-- 연결 설정 -->
+<div class="connection" id="connDialog">
+<h2>🐔 유성농장 AI 연결</h2>
+<p style="font-size:12px;color:var(--muted);margin-bottom:12px">농장 서버 주소를 입력하세요</p>
+<input id="serverUrl" type="url" placeholder="http://172.30.1.x:8888" value="">
+<button onclick="connect()">연결</button>
+<p class="hint">⚠️ 같은 네트워크 또는 VPN 필요</p>
+</div>
+
+<!-- 메인 UI -->
+<div id="mainUI" class="hidden">
+<div class="header">
+<div class="logo">🐔</div>
+<div class="info">
+<h1>유성농장 AI</h1>
+<p id="headerStatus">연결 중...</p>
+</div>
+</div>
+
+<div class="status-bar" id="statusBar">
+<div class="chip live" onclick="send('현황')">📊 현황</div>
+<div class="chip" onclick="send('환기 온도 맞나?')">🌡️ 환기</div>
+<div class="chip" onclick="send('휀 몇대 돌아가?')">💨 휀</div>
+<div class="chip" onclick="send('물 먹는 양은?')">💧 급수</div>
+<div class="chip" onclick="send('오늘 폐사?')">🏥 도폐</div>
+<div class="chip" onclick="send('HMI 봐줘')">🖥️ HMI</div>
+</div>
+
+<div class="chat" id="chat"></div>
+
+<div class="input-area">
+<input id="msgInput" type="text" placeholder="메시지 입력..." autocomplete="off"
+  onkeydown="if(event.key==='Enter')sendMsg()">
+<button onclick="sendMsg()">▶</button>
+</div>
+</div>
+
+<script>
+let SERVER = '';
+let farmData = null;
+
+// 저장된 서버 URL 로드
+const saved = localStorage.getItem('yoosung_server');
+if (saved) document.getElementById('serverUrl').value = saved;
+
+function connect() {
+  SERVER = document.getElementById('serverUrl').value.replace(/\/+$/, '');
+  if (!SERVER) return;
+  localStorage.setItem('yoosung_server', SERVER);
+  document.getElementById('connDialog').classList.add('hidden');
+  document.getElementById('mainUI').classList.remove('hidden');
+  addMsg('ai', '🐔 유성농장 AI에 연결되었습니다.\n원하시는 것을 물어보세요!');
+  fetchStatus();
+}
+
+function addMsg(type, text) {
+  const chat = document.getElementById('chat');
+  const div = document.createElement('div');
+  div.className = 'msg ' + type;
+  if (type === 'ai') {
+    div.innerHTML = '<div class="label">🤖 AI</div>' + formatText(text);
+  } else {
+    div.textContent = text;
+  }
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function formatText(text) {
+  // 간단한 마크다운 처리
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/⚠️/g, '<span class="warn">⚠️</span>')
+    .replace(/\n/g, '<br>');
+}
+
+function showTyping() {
+  const chat = document.getElementById('chat');
+  const div = document.createElement('div');
+  div.className = 'typing';
+  div.id = 'typingIndicator';
+  div.innerHTML = '<span></span><span></span><span></span>';
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function hideTyping() {
+  const el = document.getElementById('typingIndicator');
+  if (el) el.remove();
+}
+
+function send(text) {
+  addMsg('user', text);
+  processCommand(text);
+}
+
+function sendMsg() {
+  const input = document.getElementById('msgInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  send(text);
+}
+
+async function fetchStatus() {
+  try {
+    const [s1, s2] = await Promise.all([
+      fetch(SERVER + '/api/sensors?station=1%EB%8F%99').then(r => r.json()),
+      fetch(SERVER + '/api/sensors?station=2%EB%8F%99').then(r => r.json())
+    ]);
+    farmData = { s1, s2 };
+    document.getElementById('headerStatus').textContent =
+      `1동 ${s1.avg_temp}℃ / 2동 ${s2.avg_temp}℃ | 외기 ${s1.ext_temp}℃`;
+    document.getElementById('headerStatus').style.color = '#00d4aa';
+  } catch (e) {
+    document.getElementById('headerStatus').textContent = '⚠️ 연결 실패';
+    document.getElementById('headerStatus').style.color = '#ff4757';
+  }
+}
+
+async function processCommand(text) {
+  showTyping();
+  const lower = text.toLowerCase();
+
+  try {
+    if (lower.includes('현황') || lower.includes('상태')) {
+      const [s1, s2] = await Promise.all([
+        fetch(SERVER + '/api/sensors?station=1%EB%8F%99').then(r => r.json()),
+        fetch(SERVER + '/api/sensors?station=2%EB%8F%99').then(r => r.json())
+      ]);
+      farmData = { s1, s2 };
+      hideTyping();
+      addMsg('ai',
+        `📊 **현재 농장 현황**\n\n` +
+        `🌡️ **1동**: 평균 ${s1.avg_temp}℃ (설정 ${s1.set_temp}℃) 환기 ${s1.stage}단계\n` +
+        `🌡️ **2동**: 평균 ${s2.avg_temp}℃ (설정 ${s2.set_temp}℃) 환기 ${s2.stage}단계\n` +
+        `🌊 급수: 1동 ${s1.water}L / 2동 ${s2.water}L\n` +
+        `🌤️ 외기: ${s1.ext_temp}℃`
+      );
+    }
+    else if (lower.includes('환기') || lower.includes('온도')) {
+      const w = await fetch(SERVER + '/api/weather?day_age=32').then(r => r.json());
+      const now = w.rows.find(r => r.is_now);
+      hideTyping();
+      addMsg('ai',
+        `🌡️ **환기온도 분석**\n\n` +
+        `현재 외기: ${now?.tmp ?? '-'}℃, 습도: ${now?.reh ?? '-'}%\n` +
+        `THI: ${now?.thi ?? '-'} | 기준: ${now?.std ?? '-'}℃\n` +
+        `THI 보정: ${now?.thi_corr ?? 0} | VTI 보정: ${now?.vti_corr ?? 0}\n` +
+        `**AI 제안: ${now?.final ?? '-'}℃**`
+      );
+    }
+    else if (lower.includes('휀') || lower.includes('팬')) {
+      const [s1, s2] = await Promise.all([
+        fetch(SERVER + '/api/sensors?station=1%EB%8F%99').then(r => r.json()),
+        fetch(SERVER + '/api/sensors?station=2%EB%8F%99').then(r => r.json())
+      ]);
+      hideTyping();
+      addMsg('ai',
+        `💨 **휀 가동 현황**\n\n` +
+        `1동: 환기 ${s1.stage}단계\n` +
+        `2동: 환기 ${s2.stage}단계\n\n` +
+        `상세는 farm_snapshot.md에서 확인 가능합니다.`
+      );
+    }
+    else if (lower.includes('급수') || lower.includes('물')) {
+      const [s1, s2] = await Promise.all([
+        fetch(SERVER + '/api/sensors?station=1%EB%8F%99').then(r => r.json()),
+        fetch(SERVER + '/api/sensors?station=2%EB%8F%99').then(r => r.json())
+      ]);
+      hideTyping();
+      addMsg('ai',
+        `💧 **급수 현황**\n\n` +
+        `1동: ${s1.water}L\n` +
+        `2동: ${s2.water}L`
+      );
+    }
+    else if (lower.includes('폐사') || lower.includes('도폐') || lower.includes('죽')) {
+      hideTyping();
+      addMsg('ai',
+        `🏥 **도폐사 현황**\n\n` +
+        `farm_snapshot.md에서 일별 데이터를 확인합니다.\n` +
+        `현재 1동 폐사 진정 추세 (62→안정화), 2동 정상(3마리/일)`
+      );
+    }
+    else {
+      hideTyping();
+      addMsg('ai', `"${text}" — 이 기능은 커맨드 센터 채팅에서 더 상세하게 확인 가능합니다.\n\n빠른 명령: 현황, 환기, 휀, 급수, 도폐`);
+    }
+  } catch (e) {
+    hideTyping();
+    addMsg('ai', `⚠️ 서버 연결 오류: ${e.message}\n서버 주소를 확인해주세요.`);
+  }
+
+  fetchStatus(); // 헤더 갱신
+}
+
+// 5분마다 자동 갱신
+setInterval(fetchStatus, 300000);
+</script>
+</body>
+</html>
