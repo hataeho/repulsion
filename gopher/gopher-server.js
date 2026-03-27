@@ -80,7 +80,7 @@ app.post('/api/drop/message', (req, res) => {
   }
 
   // --- Ghostnet Bridge ---
-  if (to === 'gabia-vps') {
+  if (to === 'gabia-bigmap-linux') {
     if (!fs.existsSync(GHOSTNET_DIR)) fs.mkdirSync(GHOSTNET_DIR, { recursive: true });
     
     // 워처가 감지할 task_ 파일 생성
@@ -158,7 +158,7 @@ app.get('/api/pickup/:device', (req, res) => {
   }));
 
   // --- Ghostnet Bridge ---
-  if (device === 'gabia-vps' && fs.existsSync(GHOSTNET_DIR)) {
+  if (device === 'gabia-bigmap-linux' && fs.existsSync(GHOSTNET_DIR)) {
     const files = fs.readdirSync(GHOSTNET_DIR);
     files.forEach(f => {
       // result_ 결과물 또는 진행 중인 processing_ 파일 읽어오기
