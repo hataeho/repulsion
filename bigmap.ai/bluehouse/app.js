@@ -14,6 +14,12 @@ function buildTree(items, depth = 0) {
         html += `<div class="tree-node" data-folder-id="${item.id}" title="${item.desc}">`;
         html += `${indent}${toggle}<span class="icon">${item.icon}</span>`;
         html += `<span class="name ${depth === 0 ? 'bold' : ''}">${item.name}</span>`;
+        if (item.person) {
+            html += `<span class="person-tag">${item.person}</span>`;
+        }
+        if (item.url) {
+            html += `<a href="${item.url}" target="_blank" class="url-link" onclick="event.stopPropagation()" title="홈페이지 방문">🔗</a>`;
+        }
         html += count;
         html += `<span class="rel-dot"></span>`;
         html += `</div>`;
