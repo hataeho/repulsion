@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pactroid Salon</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="chat-container">
+        <header class="chat-header">
+            <div class="header-info">
+                <div class="avatar">
+                    <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Pactroid" alt="AI Avatar">
+                </div>
+                <div class="status">
+                    <h2>Ghostnet Oracle (Jimin)</h2>
+                    <span class="online-dot"></span>
+                    <span class="online-text">Online</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button id="clear-btn" title="대화 초기화">⟲ 리셋</button>
+            </div>
+        </header>
+
+        <main id="chat-box" class="chat-box">
+            <div class="message ai">
+                <div class="bubble">안녕하세요. Pactroid Salon 백엔드 노드와 연결되었습니다. 당신을 완벽히 보조할 준비가 끝났습니다.</div>
+            </div>
+        </main>
+
+        <footer class="chat-footer">
+            <div class="chip-bar">
+                <button class="chip" data-msg="CPU랑 메모리 상태 보고해">💻 시스템 상태</button>
+                <button class="chip" data-msg="리소스 많이 먹는 프로세스 Top 랭킹 뽑아줘">📊 Top 프로세스</button>
+                <button class="chip" data-msg="git pull 때려서 최신 코드로 동기화해">🔄 Git Pull</button>
+            </div>
+            <div class="input-wrapper">
+                <input type="text" id="userInput" placeholder="메시지 전송..." autocomplete="off">
+                <button id="sendBtn" class="send-btn">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
+                </button>
+            </div>
+        </footer>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pactroid Salon — 원탁회의</title>
+    <link rel="stylesheet" href="salon.css">
+</head>
+<body>
+    <div class="chat-container">
+        <header class="chat-header">
+            <div class="header-info">
+                <h2>🏛️ Pactroid Salon</h2>
+                <span class="online-dot"></span>
+                <span class="online-text">청송 · 유성 — 원탁 대기 중</span>
+            </div>
+            <div class="header-actions">
+                <button id="clear-btn" title="대화 초기화">⟲ 리셋</button>
+            </div>
+        </header>
+
+        <main id="chat-box" class="chat-box">
+            <div class="message system">
+                <div class="bubble">원탁회의가 소집되었습니다. 청송 대표와 유성 대표가 대기 중입니다.</div>
+            </div>
+        </main>
+
+        <footer class="chat-footer">
+            <div class="chip-bar">
+                <button class="chip" data-msg="각 농장 현재 상태 보고해">📋 전체 상태</button>
+                <button class="chip" data-msg="두 농장 온도랑 환기 상태 비교해줘">🌡️ 온도 비교</button>
+                <button class="chip" data-msg="오늘 폐사 현황 보고해">⚠️ 폐사 현황</button>
+                <button class="chip" data-msg="사료 재고 어떻게 돼?">🌾 사료 재고</button>
+            </div>
+            <div class="input-wrapper">
+                <input type="text" id="userInput" placeholder="사장님의 지시를 입력하세요..." autocomplete="off">
+                <button id="sendBtn" class="send-btn">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
+                </button>
+            </div>
+        </footer>
+    </div>
+    <script src="salon.js"></script>
+</body>
+</html>

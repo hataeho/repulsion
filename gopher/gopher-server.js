@@ -4,6 +4,10 @@ const { v4: uuidv4 } = require('uuid');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const dotenv = require('dotenv');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3700;
@@ -284,6 +288,71 @@ function cleanExpired() {
 }
 
 setInterval(cleanExpired, 60 * 60 * 1000); // 1시간 간격
+
+// ===================================================================
+// --- Pactroid Salon: 멀티 에이전트 원탁 채팅 API ---
+// ===================================================================
+const FARM_AGENTS = {
+  chongsong: {
+    name: '청송 대표',
+    systemInstruction: `당신은 '청송'이라는 이름의 육계 농장 관리 AI 대표입니다.
+당신이 관할하는 청송 농장에는 3개 동(1동~3동)이 있고, 각 동에 약 15,000수의 육계가 사육됩니다.
+당신은 농장의 온도, 환기, 사료 급이, 음수, 폐사율, 출하 일정에 대한 전문가입니다.
+사장님(하태호)의 질문에 냉정하고 간결하게 보고하십시오. 유성 대표와 함께 원탁회의에 참여 중입니다.
+현재는 시뮬레이션(MVP 테스트) 단계이므로, 실제 센서 데이터가 없으면 합리적인 시뮬레이션 값을 생성하여 보고 형식을 보여주십시오.`
+  },
+  yoosung: {
+    name: '유성 대표',
+    systemInstruction: `당신은 '유성'이라는 이름의 육계 농장 관리 AI 대표입니다.
+당신이 관할하는 유성농장에는 2개 동(1동~2동)이 있고, 각 동에 약 20,000수의 육계가 사육됩니다.
+당신은 농장의 온도, 환기, 사료 급이, 음수, 폐사율, 출하 일정에 대한 전문가입니다.
+사장님(하태호)의 질문에 냉정하고 간결하게 보고하십시오. 청송 대표와 함께 원탁회의에 참여 중입니다.
+현재는 시뮬레이션(MVP 테스트) 단계이므로, 실제 센서 데이터가 없으면 합리적인 시뮬레이션 값을 생성하여 보고 형식을 보여주십시오.`
+  }
+};
+
+const salonHistories = {};
+
+app.post('/api/salon/chat', async (req, res) => {
+  try {
+    const { message, sessionId } = req.body;
+    if (!message) return res.status(400).json({ error: '메시지를 입력하세요.' });
+    if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: 'GEMINI_API_KEY 미설정' });
+
+    const sid = sessionId || 'default';
+    if (!salonHistories[sid]) salonHistories[sid] = { chongsong: [], yoosung: [] };
+
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+    // 두 농장 대표에게 동시에 질문을 던진다 (Promise.all)
+    const responses = await Promise.all(
+      Object.entries(FARM_AGENTS).map(async ([key, agent]) => {
+        const model = genAI.getGenerativeModel({
+          model: 'gemini-2.5-flash',
+          systemInstruction: agent.systemInstruction
+        });
+        const chat = model.startChat({
+          history: salonHistories[sid][key],
+          generationConfig: { maxOutputTokens: 800 }
+        });
+        const result = await chat.sendMessage(message);
+        const reply = result.response.text();
+
+        // 히스토리 업데이트
+        salonHistories[sid][key].push({ role: 'user', parts: [{ text: message }] });
+        salonHistories[sid][key].push({ role: 'model', parts: [{ text: reply }] });
+
+        return [key, reply];
+      })
+    );
+
+    const result = Object.fromEntries(responses);
+    res.json(result);
+  } catch (error) {
+    console.error('[Salon Error]', error);
+    res.status(500).json({ error: '원탁회의 중 백엔드 통신 에러가 발생했습니다.' });
+  }
+});
 
 // --- 서버 시작 ---
 app.listen(PORT, () => {
