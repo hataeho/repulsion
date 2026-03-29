@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gopher — bigmap.ai</title>
+  <meta name="description" content="Gopher 파일/메시지 배달 서비스. 기기 간 실시간 전달.">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0e14;
+      --bg-card: #111921;
+      --bg-hover: #1a2332;
+      --border: #1e2d3d;
+      --green: #00ff9d;
+      --green-dim: #00cc7d;
+      --green-glow: rgba(0,255,157,0.15);
+      --amber: #ffb347;
+      --amber-dim: #cc8f39;
+      --red: #ff4757;
+      --cyan: #00d4ff;
+      --text: #c5d0dc;
+      --text-dim: #5c6e7e;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Inter', sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* --- 스캔라인 효과 --- */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        transparent 0px,
+        transparent 2px,
+        rgba(0,0,0,0.03) 2px,
+        rgba(0,0,0,0.03) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* --- 헤더 --- */
+    .header {
+      padding: 24px 32px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(180deg, rgba(0,255,157,0.03) 0%, transparent 100%);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--green);
+      text-shadow: 0 0 20px var(--green-glow);
+      letter-spacing: -1px;
+    }
+
+    .logo-sub {
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: rgba(0,255,157,0.08);
+      border: 1px solid rgba(0,255,157,0.2);
+      font-size: 12px;
+      color: var(--green);
+    }
+
+    .status-dot {
+      width: 8px; height: 8px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 4px var(--green); }
+      50% { opacity: 0.4; box-shadow: none; }
+    }
+
+    /* --- 탭 --- */
+    .tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 32px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab {
+      padding: 14px 28px;
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-dim);
+      background: none;
+      border: none;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .tab:hover { color: var(--text); background: var(--bg-hover); }
+    .tab.active {
+      color: var(--green);
+      border-bottom-color: var(--green);
+      background: rgba(0,255,157,0.04);
+    }
+
+    .tab .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px; height: 20px;
+      padding: 0 6px;
+      margin-left: 8px;
+      border-radius: 10px;
+      background: var(--red);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    /* --- 메인 --- */
+    .main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* --- DROP 패널 --- */
+    .device-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .device-card {
+      padding: 14px 18px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .device-card:hover {
+      border-color: var(--green);
+      background: var(--bg-hover);
+      box-shadow: 0 0 20px rgba(0,255,157,0.05);
+    }
+
+    .device-card.selected {
+      border-color: var(--green);
+      background: rgba(0,255,157,0.06);
+      box-shadow: 0 0 20px rgba(0,255,157,0.1);
+    }
+
+    .device-icon {
+      font-size: 24px;
+      width: 40px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .device-info { flex: 1; }
+    .device-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .device-meta { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+    .drop-form {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 24px;
+      margin-top: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .form-input, .form-textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 16px;
+    }
+
+    .form-input:focus, .form-textarea:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 10px rgba(0,255,157,0.1);
+    }
+
+    .form-textarea { resize: vertical; min-height: 120px; }
+
+    .drop-type-toggle {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .type-btn {
+      padding: 8px 20px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-dim);
+      font-family: var(--mono);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .type-btn.active {
+      border-color: var(--green);
+      color: var(--green);
+      background: rgba(0,255,157,0.06);
+    }
+
+    .file-drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 16px;
+    }
+
+    .file-drop-zone:hover, .file-drop-zone.dragover {
+      border-color: var(--green);
+      background: rgba(0,255,157,0.04);
+    }
+
+    .file-drop-zone .icon { font-size: 32px; margin-bottom: 8px; }
+    .file-drop-zone .text { font-size: 13px; color: var(--text-dim); }
+    .file-drop-zone .filename {
+      font-size: 14px;
+      color: var(--green);
+      margin-top: 8px;
+      font-weight: 600;
+    }
+
+    .btn-send {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--green-dim), var(--green));
+      border: none;
+      border-radius: 8px;
+      color: var(--bg);
+      font-family: var(--mono);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+
+    .btn-send:hover {
+      box-shadow: 0 4px 20px rgba(0,255,157,0.3);
+      transform: translateY(-1px);
+    }
+
+    .btn-send:disabled {
+      background: var(--border);
+      color: var(--text-dim);
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    /* --- PICKUP 패널 --- */
+    .pickup-header {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .pickup-header .form-input { margin-bottom: 0; flex: 1; }
+
+    .btn-check {
+      padding: 12px 24px;
+      background: rgba(0,212,255,0.1);
+      border: 1px solid var(--cyan);
+      border-radius: 6px;
+      color: var(--cyan);
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-check:hover {
+      background: rgba(0,212,255,0.15);
+      box-shadow: 0 0 15px rgba(0,212,255,0.15);
+    }
+
+    .drop-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 12px;
+      transition: all 0.2s;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .drop-item:hover { border-color: rgba(0,212,255,0.3); }
+
+    .drop-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .drop-item-type {
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .drop-item-type.message {
+      background: rgba(255,179,71,0.1);
+      color: var(--amber);
+      border: 1px solid rgba(255,179,71,0.2);
+    }
+
+    .drop-item-type.file {
+      background: rgba(0,212,255,0.1);
+      color: var(--cyan);
+      border: 1px solid rgba(0,212,255,0.2);
+    }
+
+    .drop-item-from { font-size: 12px; color: var(--text-dim); }
+    .drop-item-subject { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+
+    .drop-item-content {
+      background: var(--bg);
+      border-radius: 6px;
+      padding: 14px;
+      font-size: 13px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .drop-item-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .btn-action {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid;
+      transition: all 0.2s;
+    }
+
+    .btn-download {
+      background: rgba(0,212,255,0.1);
+      border-color: var(--cyan);
+      color: var(--cyan);
+    }
+
+    .btn-download:hover { background: rgba(0,212,255,0.2); }
+
+    .btn-claim {
+      background: rgba(255,71,87,0.1);
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    .btn-claim:hover { background: rgba(255,71,87,0.2); }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-dim);
+    }
+
+    .empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+    .empty-state .text { font-size: 14px; }
+
+    /* --- 토스트 --- */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast {
+      padding: 14px 20px;
+      border-radius: 8px;
+      font-family: var(--mono);
+      font-size: 13px;
+      animation: toastIn 0.3s ease, toastOut 0.3s ease 3s forwards;
+      max-width: 400px;
+    }
+
+    .toast.success {
+      background: rgba(0,255,157,0.1);
+      border: 1px solid var(--green);
+      color: var(--green);
+    }
+
+    .toast.error {
+      background: rgba(255,71,87,0.1);
+      border: 1px solid var(--red);
+      color: var(--red);
+    }
+
+    @keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes toastOut { to { opacity: 0; transform: translateX(20px); } }
+
+    /* --- 반응형 --- */
+    @media (max-width: 600px) {
+      .header { padding: 16px; }
+      .main { padding: 16px; }
+      .tabs { padding: 0 16px; }
+      .device-grid { grid-template-columns: 1fr; }
+      .pickup-header { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <!-- 헤더 -->
+  <div class="header">
+    <div class="header-left">
+      <div>
+        <div class="logo">🐿️ GOPHER</div>
+        <div class="logo-sub">file & message delivery</div>
+      </div>
+    </div>
+    <div class="status-pill">
+      <div class="status-dot"></div>
+      <span id="statusText">ONLINE</span>
+    </div>
+  </div>
+
+  <!-- 탭 -->
+  <div class="tabs">
+    <button class="tab active" data-panel="drop">📦 Drop</button>
+    <button class="tab" data-panel="pickup">📬 Pickup <span class="badge" id="pickupBadge" style="display:none">0</span></button>
+  </div>
+
+  <!-- 메인 컨텐츠 -->
+  <div class="main">
+    <!-- DROP 패널 -->
+    <div class="panel active" id="panel-drop">
+      <label class="form-label">수신 기기 선택</label>
+      <div class="device-grid" id="deviceGrid"></div>
+
+      <div class="drop-form" id="dropForm" style="display:none">
+        <div class="drop-type-toggle">
+          <button class="type-btn active" data-type="message">💬 메시지</button>
+          <button class="type-btn" data-type="file">📎 파일</button>
+        </div>
+
+        <div id="messageForm">
+          <label class="form-label">보내는 사람</label>
+          <input class="form-input" id="fromInput" placeholder="예: chongsong-imac-macos" value="">
+
+          <label class="form-label">제목</label>
+          <input class="form-input" id="subjectInput" placeholder="제목 입력">
+
+          <label class="form-label">내용</label>
+          <textarea class="form-textarea" id="contentInput" placeholder="메시지 내용을 입력하세요..."></textarea>
+        </div>
+
+        <div id="fileForm" style="display:none">
+          <label class="form-label">보내는 사람</label>
+          <input class="form-input" id="fileFromInput" placeholder="예: chongsong-imac-macos">
+
+          <label class="form-label">제목 (선택)</label>
+          <input class="form-input" id="fileSubjectInput" placeholder="파일 설명">
+
+          <div class="file-drop-zone" id="fileDropZone">
+            <div class="icon">📁</div>
+            <div class="text">클릭하거나 파일을 드래그해서 놓으세요</div>
+            <div class="filename" id="selectedFileName" style="display:none"></div>
+          </div>
+          <input type="file" id="fileInput" style="display:none">
+        </div>
+
+        <button class="btn-send" id="btnSend" disabled>전송</button>
+      </div>
+    </div>
+
+    <!-- PICKUP 패널 -->
+    <div class="panel" id="panel-pickup">
+      <div class="pickup-header">
+        <select class="form-input" id="pickupDevice">
+          <option value="">기기를 선택하세요...</option>
+        </select>
+        <button class="btn-check" id="btnCheck">확인</button>
+      </div>
+      <div id="pickupList">
+        <div class="empty-state">
+          <div class="icon">📭</div>
+          <div class="text">기기를 선택하고 [확인]을 누르세요</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    // --- API 베이스 URL ---
+    const API_BASE = window.location.pathname.includes('/gopher')
+      ? '/gopher/api'
+      : '/api';
+
+    let selectedDevice = null;
+    let selectedFile = null;
+    let dropType = 'message';
+
+    // --- 유틸리티 ---
+    function toast(msg, type = 'success') {
+      const el = document.createElement('div');
+      el.className = `toast ${type}`;
+      el.textContent = msg;
+      document.getElementById('toastContainer').appendChild(el);
+      setTimeout(() => el.remove(), 3500);
+    }
+
+    function getDeviceIcon(os) {
+      const icons = { macOS: '🖥️', Windows: '💻', Linux: '🐧', iOS: '📱' };
+      return icons[os] || '📟';
+    }
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function timeAgo(ts) {
+      const diff = Date.now() - new Date(ts).getTime();
+      const min = Math.floor(diff / 60000);
+      if (min < 1) return '방금 전';
+      if (min < 60) return `${min}분 전`;
+      const hr = Math.floor(min / 60);
+      if (hr < 24) return `${hr}시간 전`;
+      return `${Math.floor(hr / 24)}일 전`;
+    }
+
+    // --- 기기 목록 로드 ---
+    async function loadDevices() {
+      try {
+        const res = await fetch(`${API_BASE}/devices`);
+        const data = await res.json();
+        renderDeviceGrid(data.devices);
+        renderPickupSelect(data.devices);
+      } catch (e) {
+        console.error('기기 목록 로드 실패:', e);
+        toast('서버 연결 실패', 'error');
+      }
+    }
+
+    function renderDeviceGrid(devices) {
+      const grid = document.getElementById('deviceGrid');
+      grid.innerHTML = devices.map(d => `
+        <div class="device-card" data-device="${d.id}" onclick="selectDevice('${d.id}')">
+          <div class="device-icon">${getDeviceIcon(d.os)}</div>
+          <div class="device-info">
+            <div class="device-name">${d.id}</div>
+            <div class="device-meta">${d.location} · ${d.os}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderPickupSelect(devices) {
+      const sel = document.getElementById('pickupDevice');
+      sel.innerHTML = '<option value="">기기를 선택하세요...</option>' +
+        devices.map(d => `<option value="${d.id}">${getDeviceIcon(d.os)} ${d.id} (${d.location})</option>`).join('');
+    }
+
+    function selectDevice(id) {
+      selectedDevice = id;
+      document.querySelectorAll('.device-card').forEach(c => {
+        c.classList.toggle('selected', c.dataset.device === id);
+      });
+      document.getElementById('dropForm').style.display = 'block';
+      updateSendBtn();
+    }
+
+    // --- 탭 전환 ---
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(`panel-${tab.dataset.panel}`).classList.add('active');
+      });
+    });
+
+    // --- 드롭 타입 전환 ---
+    document.querySelectorAll('.type-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        dropType = btn.dataset.type;
+        document.getElementById('messageForm').style.display = dropType === 'message' ? 'block' : 'none';
+        document.getElementById('fileForm').style.display = dropType === 'file' ? 'block' : 'none';
+        updateSendBtn();
+      });
+    });
+
+    // --- 파일 선택 ---
+    const fileDropZone = document.getElementById('fileDropZone');
+    const fileInput = document.getElementById('fileInput');
+
+    fileDropZone.addEventListener('click', () => fileInput.click());
+    fileDropZone.addEventListener('dragover', e => { e.preventDefault(); fileDropZone.classList.add('dragover'); });
+    fileDropZone.addEventListener('dragleave', () => fileDropZone.classList.remove('dragover'));
+    fileDropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      fileDropZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) {
+        selectedFile = e.dataTransfer.files[0];
+        showSelectedFile();
+      }
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length) {
+        selectedFile = fileInput.files[0];
+        showSelectedFile();
+      }
+    });
+
+    function showSelectedFile() {
+      const el = document.getElementById('selectedFileName');
+      el.textContent = `${selectedFile.name} (${formatSize(selectedFile.size)})`;
+      el.style.display = 'block';
+      updateSendBtn();
+    }
+
+    // --- 전송 버튼 활성화 ---
+    function updateSendBtn() {
+      const btn = document.getElementById('btnSend');
+      if (!selectedDevice) { btn.disabled = true; return; }
+      if (dropType === 'message') {
+        btn.disabled = !document.getElementById('contentInput').value.trim();
+      } else {
+        btn.disabled = !selectedFile;
+      }
+    }
+
+    document.getElementById('contentInput').addEventListener('input', updateSendBtn);
+
+    // --- 전송 ---
+    document.getElementById('btnSend').addEventListener('click', async () => {
+      const btn = document.getElementById('btnSend');
+      btn.disabled = true;
+      btn.textContent = '전송 중...';
+
+      try {
+        if (dropType === 'message') {
+          const res = await fetch(`${API_BASE}/drop/message`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              to: selectedDevice,
+              from: document.getElementById('fromInput').value || 'anonymous',
+              subject: document.getElementById('subjectInput').value,
+              content: document.getElementById('contentInput').value
+            })
+          });
+          const data = await res.json();
+          if (data.ok) {
+            toast(data.message);
+            document.getElementById('subjectInput').value = '';
+            document.getElementById('contentInput').value = '';
+          } else {
+            toast(data.error, 'error');
+          }
+        } else {
+          const formData = new FormData();
+          formData.append('file', selectedFile);
+          formData.append('to', selectedDevice);
+          formData.append('from', document.getElementById('fileFromInput').value || 'anonymous');
+          formData.append('subject', document.getElementById('fileSubjectInput').value);
+
+          const res = await fetch(`${API_BASE}/drop/file`, {
+            method: 'POST',
+            body: formData
+          });
+          const data = await res.json();
+          if (data.ok) {
+            toast(data.message);
+            selectedFile = null;
+            document.getElementById('selectedFileName').style.display = 'none';
+            document.getElementById('fileSubjectInput').value = '';
+            fileInput.value = '';
+          } else {
+            toast(data.error, 'error');
+          }
+        }
+      } catch (e) {
+        toast('전송 실패: ' + e.message, 'error');
+      }
+
+      btn.textContent = '전송';
+      updateSendBtn();
+    });
+
+    // --- PICKUP ---
+    document.getElementById('btnCheck').addEventListener('click', checkPickup);
+
+    async function checkPickup() {
+      const device = document.getElementById('pickupDevice').value;
+      if (!device) { toast('기기를 선택하세요', 'error'); return; }
+
+      try {
+        const res = await fetch(`${API_BASE}/pickup/${device}`);
+        const data = await res.json();
+        renderPickupList(data);
+      } catch (e) {
+        toast('조회 실패: ' + e.message, 'error');
+      }
+    }
+
+    function renderPickupList(data) {
+      const list = document.getElementById('pickupList');
+      const badge = document.getElementById('pickupBadge');
+
+      if (data.count === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">📭</div>
+            <div class="text">${data.device}에 대기 중인 항목이 없습니다</div>
+          </div>`;
+        badge.style.display = 'none';
+        return;
+      }
+
+      badge.textContent = data.count;
+      badge.style.display = 'inline-flex';
+
+      list.innerHTML = data.drops.map(d => `
+        <div class="drop-item" id="drop-${d.id}">
+          <div class="drop-item-header">
+            <span class="drop-item-type ${d.type}">${d.type === 'message' ? '💬 메시지' : '📎 파일'}</span>
+            <span class="drop-item-from">${d.from} · ${timeAgo(d.timestamp)}</span>
+          </div>
+          <div class="drop-item-subject">${escapeHtml(d.subject)}</div>
+          ${d.type === 'message' ? `<div class="drop-item-content">${escapeHtml(d.content)}</div>` : ''}
+          ${d.type === 'file' ? `<div class="drop-item-content">${escapeHtml(d.originalname)} (${formatSize(d.size)})</div>` : ''}
+          <div class="drop-item-actions">
+            ${d.type === 'file' ? `<button class="btn-action btn-download" onclick="downloadFile('${d.id}')">다운로드</button>` : ''}
+            <button class="btn-action btn-claim" onclick="claimDrop('${d.id}')">수신 확인 (삭제)</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function escapeHtml(s) {
+      if (!s) return '';
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function downloadFile(id) {
+      window.open(`${API_BASE}/download/${id}`, '_blank');
+    }
+
+    async function claimDrop(id) {
+      if (!confirm('이 항목을 삭제하시겠습니까?')) return;
+      try {
+        const res = await fetch(`${API_BASE}/claim/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.ok) {
+          toast(data.message);
+          document.getElementById(`drop-${id}`)?.remove();
+          // 배지 업데이트
+          const badge = document.getElementById('pickupBadge');
+          const current = parseInt(badge.textContent) - 1;
+          if (current <= 0) {
+            badge.style.display = 'none';
+            checkPickup();
+          } else {
+            badge.textContent = current;
+          }
+        }
+      } catch (e) {
+        toast('삭제 실패', 'error');
+      }
+    }
+
+    // --- 초기화 ---
+    loadDevices();
+
+    // 서버 상태 확인
+    async function checkStatus() {
+      try {
+        const res = await fetch(`${API_BASE}/status`);
+        const data = await res.json();
+        document.getElementById('statusText').textContent = `ONLINE · ${data.total_pending} pending`;
+      } catch {
+        document.getElementById('statusText').textContent = 'OFFLINE';
+        document.querySelector('.status-dot').style.background = 'var(--red)';
+      }
+    }
+    checkStatus();
+    setInterval(checkStatus, 30000);
+  </script>
+</body>
+</html>

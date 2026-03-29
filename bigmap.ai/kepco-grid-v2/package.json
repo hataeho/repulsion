@@ -1,0 +1,14 @@
+{
+  "name": "kepco-transmission-map",
+  "version": "1.0.0",
+  "description": "한전 송전선로 여유용량 지도 - 실제 API 연동",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "node-fetch": "^2.7.0"
+  }
+}

@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InfoU SCADA 현대화 제안 | bigmap.ai</title>
+    <meta name="description" content="InfoU SCADA AI 기반 현대화 전략 제안서 – 하태호 × Antigravity">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-slide: #1a1a2e;
+            --accent-blue: #0096D6;
+            --accent-green: #00C98D;
+            --accent-purple: #7c3aed;
+            --text-primary: #e0e0ff;
+            --text-secondary: #8888aa;
+            --text-highlight: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--bg-slide) 0%, #0d0d2b 100%);
+            border-bottom: 1px solid rgba(0,150,214,0.2);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header a { color: var(--accent-blue); text-decoration: none; font-size: 0.9rem; }
+        .header a:hover { color: var(--accent-green); }
+        .logo { font-size: 1.2rem; font-weight: 700; color: var(--text-highlight); }
+        .logo span { color: var(--accent-blue); }
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            padding: 3rem 2rem 2rem;
+            background: radial-gradient(ellipse at center top, rgba(0,150,214,0.08) 0%, transparent 70%);
+        }
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.8rem;
+        }
+        .hero p { color: var(--text-secondary); font-size: 1.1rem; max-width: 700px; margin: 0 auto; }
+        .badge {
+            display: inline-block;
+            background: rgba(0,150,214,0.15);
+            border: 1px solid rgba(0,150,214,0.3);
+            color: var(--accent-blue);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-top: 1rem;
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem 3rem;
+        }
+
+        /* Slide Area */
+        .slide-area { position: relative; }
+        .slide-wrapper {
+            background: var(--bg-slide);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+            overflow: hidden;
+            aspect-ratio: 16/9;
+            position: relative;
+        }
+        .slide {
+            display: none;
+            width: 100%;
+            height: 100%;
+            padding: 3rem;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .slide.active { display: flex; }
+        .slide-number {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        .slide h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin-bottom: 1rem;
+        }
+        .slide h3 {
+            font-size: 1.2rem;
+            font-weight: 400;
+            color: var(--accent-green);
+            margin-bottom: 1.5rem;
+            font-style: italic;
+        }
+        .slide ul { list-style: none; }
+        .slide ul li {
+            padding: 0.5rem 0;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        .slide ul li::before {
+            content: '▸';
+            color: var(--accent-green);
+            position: absolute;
+            left: 0;
+        }
+
+        /* Title slide special */
+        .slide.title-slide { text-align: center; justify-content: center; }
+        .slide.title-slide h2 {
+            font-size: 2.8rem;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .slide.title-slide h3 { font-size: 1.4rem; color: var(--text-primary); font-style: normal; }
+        .slide.title-slide .subtitle { color: var(--text-secondary); font-size: 0.95rem; margin-top: 1.5rem; }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .controls button {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-primary);
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .controls button:hover {
+            background: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+        }
+        .controls .progress {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        /* Script Area */
+        .script-area {
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 1.5rem;
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
+            position: sticky;
+            top: 1.5rem;
+        }
+        .script-area h3 {
+            font-size: 0.9rem;
+            color: var(--accent-green);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .script-text {
+            display: none;
+            font-size: 0.95rem;
+            line-height: 1.8;
+            color: var(--text-primary);
+        }
+        .script-text.active { display: block; }
+        .script-text em { color: var(--accent-blue); font-style: normal; font-weight: 500; }
+
+        /* Download Section */
+        .downloads {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .download-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 1.2rem;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
+        }
+        .download-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,150,214,0.1);
+        }
+        .download-card .icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .download-card h4 { color: var(--text-highlight); font-size: 0.95rem; margin-bottom: 0.3rem; }
+        .download-card p { color: var(--text-secondary); font-size: 0.8rem; }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .footer a { color: var(--accent-blue); text-decoration: none; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .main-container { grid-template-columns: 1fr; }
+            .slide-wrapper { aspect-ratio: 4/3; }
+            .hero h1 { font-size: 1.8rem; }
+            .slide h2 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo"><span>bigmap</span>.ai / infou</div>
+        <a href="https://bigmap.ai">← 메인으로 돌아가기</a>
+    </header>
+
+    <section class="hero">
+        <h1>InfoU SCADA 현대화 제안</h1>
+        <p>2,899개 바이너리 정밀 분석 기반 — AI 에이전트와 함께하는 차세대 지능형 브릿지 아키텍처</p>
+        <div class="badge">🤖 Antigravity × 하태호 — 순수 기술 기여</div>
+    </section>
+
+    <div class="main-container">
+        <!-- Slide Area -->
+        <div class="slide-area">
+            <div class="slide-wrapper">
+                <!-- Slide 1: Title -->
+                <div class="slide title-slide active" data-index="0">
+                    <span class="slide-number">1 / 8</span>
+                    <h2>InfoU SCADA</h2>
+                    <h3>AI 에이전트와 함께하는<br>차세대 지능형 현대화 전략</h3>
+                    <p class="subtitle">기존 자산의 보존과 최첨단 기술의 융합<br>발표자: 하태호 (bigmap@bigmap.ai)</p>
+                </div>
+                <!-- Slide 2 -->
+                <div class="slide" data-index="1">
+                    <span class="slide-number">2 / 8</span>
+                    <h2>문제 제기</h2>
+                    <h3>"검증된 신뢰성은 유지하되, 개발 경험은 진화해야 합니다."</h3>
+                    <ul>
+                        <li>고전적 스크립트 방식의 생산성 저하</li>
+                        <li>현대적 언어(Python, C# 등)와의 연동성 부족</li>
+                        <li>강화되는 OS 보안 정책에 따른 배포의 어려움</li>
+                    </ul>
+                </div>
+                <!-- Slide 3 -->
+                <div class="slide" data-index="2">
+                    <span class="slide-number">3 / 8</span>
+                    <h2>시스템 정밀 분석</h2>
+                    <h3>"2,899개의 바이너리를 관통하는 일관된 설계"</h3>
+                    <ul>
+                        <li>2,899개 바이너리 및 60여 종 드라이버 전수 조사</li>
+                        <li>발견된 핵심 가치: 철저하게 분리된 고도의 모듈화 구조</li>
+                        <li>프레임워크 / 드라이버 / GUI / DB 등 독립된 아키텍처</li>
+                    </ul>
+                </div>
+                <!-- Slide 4 -->
+                <div class="slide" data-index="3">
+                    <span class="slide-number">4 / 8</span>
+                    <h2>해결책: 브릿지 아키텍처</h2>
+                    <h3>"다시 만드는 것이 아니라, 연결하는 것입니다."</h3>
+                    <ul>
+                        <li>기존 드라이버(Legacy DLL/OCX) 100% 보존</li>
+                        <li>AI 자동 생성 브릿지 + 현대적 언어 래퍼</li>
+                        <li>Time-to-Market 단축: 6개월 → 2주</li>
+                    </ul>
+                </div>
+                <!-- Slide 5 -->
+                <div class="slide" data-index="4">
+                    <span class="slide-number">5 / 8</span>
+                    <h2>생산성 혁명</h2>
+                    <h3>"개발 기간 6개월을 2주로, 적응 시간은 단 3일로"</h3>
+                    <ul>
+                        <li>개발 기간: 6개월(전체 리빌드) → 2주(AI 기반 브릿지)</li>
+                        <li>자동화: 태그 DB 대량 편집, 설정 최적화, 지능형 로그 분석</li>
+                        <li>개발자 적응 시간 단 3일, 생산성 10배 향상</li>
+                    </ul>
+                </div>
+                <!-- Slide 6 -->
+                <div class="slide" data-index="5">
+                    <span class="slide-number">6 / 8</span>
+                    <h2>사용자 경험(UX) 현대화</h2>
+                    <h3>"익숙함을 파괴하지 않는 진화"</h3>
+                    <ul>
+                        <li>시각적 유전자(Visual DNA)는 보존하고 레이아웃만 현대화</li>
+                        <li>클래식/모던 듀얼 인터페이스 선택형 제공</li>
+                        <li>모든 사용자가 공부 없이도 즉시 적응하는 지능형 GUI</li>
+                    </ul>
+                </div>
+                <!-- Slide 7 -->
+                <div class="slide" data-index="6">
+                    <span class="slide-number">7 / 8</span>
+                    <h2>제안의 진정성</h2>
+                    <h3>"모든 소비자에게 혁신의 혜택이 돌아가기를 바랍니다."</h3>
+                    <ul>
+                        <li>어떠한 반대 급부나 프로젝트 참여 의사 없음</li>
+                        <li>모든 InfoU 사용자와 소비자의 편의성 증대가 유일한 목적</li>
+                        <li>LS ELECTRIC의 글로벌 SCADA 시장 지배력 강화 기원</li>
+                    </ul>
+                </div>
+                <!-- Slide 8 -->
+                <div class="slide" data-index="7">
+                    <span class="slide-number">8 / 8</span>
+                    <h2>결론</h2>
+                    <h3>"InfoU의 유산 위에 미래를 설계하십시오."</h3>
+                    <ul>
+                        <li>최종 제언: 내부 PoC 실행 및 표준 가이드라인 정립</li>
+                        <li>동봉된 분석 보고서와 PoC 코드를 검토해 주십시오</li>
+                        <li>연락처: bigmap@bigmap.ai / 010-9011-8576</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="controls">
+                <button onclick="prevSlide()">◀ 이전</button>
+                <span class="progress" id="progress">1 / 8</span>
+                <button onclick="nextSlide()">다음 ▶</button>
+                <button onclick="toggleAuto()" id="autoBtn">▶ 자동 시연</button>
+            </div>
+        </div>
+
+        <!-- Script Area -->
+        <div class="script-area">
+            <h3>📝 발표 스크립트</h3>
+            <div class="script-text active" data-index="0">
+                안녕하십니까. 저는 전국의 수많은 InfoU 사용자 중 한 사람입니다. 오늘 제가 여러분께 드리고자 하는 이야기는, LS ELECTRIC의 소중한 자산인 InfoU가 어떻게 인공지능 기술과 만나 <em>'차세대 지능형 SCADA'</em>로 혁신할 수 있는지에 대한 짧지만 강력한 제안입니다.
+            </div>
+            <div class="script-text" data-index="1">
+                현장에서 느끼는 InfoU는 매우 견고합니다. 하지만 시간이 흐르며 한계도 보이고 있습니다. 고전적인 스크립트 방식은 생산성에 한계가 있고, 최신 언어들과의 연동은 까다롭습니다. 특히 마이크로소프트의 강화된 보안 정책은 배포를 더욱 어렵게 만듭니다. 우리는 <em>'익숙한 것과 편리한 것'</em> 사이의 갈림길에 서 있습니다.
+            </div>
+            <div class="script-text" data-index="2">
+                저는 최근 안티그래비티라는 고효율 AI 에이전트와 함께 InfoU의 <em>2,899개 파일과 60여 개의 드라이버 모듈</em>을 정밀 분석했습니다. 그 결과, InfoU가 가진 진정한 가치는 바로 '철저하게 분리된 모듈화 구조'에 있다는 것을 발견했습니다. 이는 우리가 시스템 전체를 허물지 않고도 혁신할 수 있는 완벽한 토대입니다.
+            </div>
+            <div class="script-text" data-index="3">
+                그래서 저는 '완전한 리빌드'가 아닌 <em>'지능형 브릿지 아키텍처'</em>를 제안합니다. 검증된 통신 드라이버는 그대로 유지하되, 그 위에 AI가 생성한 브릿지 코드를 얹어 Python이나 C# 같은 현대적 언어로 제어하는 방식입니다. 이를 통해 현장의 안정성은 100% 보장하면서, 개발 환경은 최신 트렌드로 즉시 전환할 수 있습니다.
+            </div>
+            <div class="script-text" data-index="4">
+                이 방식의 가장 큰 장점은 압도적인 생산성입니다. 수개월이 걸릴 리뉴얼 작업을 안티그래비티와 함께라면 <em>단 2주 만에</em> 끝낼 수 있습니다. 수만 개의 태그 DB 편집, 복잡한 로그 기반 장애 진단까지 AI가 보조하므로, 개발자의 업무 효율은 <em>10배 이상</em> 높아집니다.
+            </div>
+            <div class="script-text" data-index="5">
+                GUI 역시 마찬가지입니다. 기존 사용자들이 수십 년간 익혀온 '근육 기억'을 파괴하지 않으면서도, 클래식 모드와 모던 모드를 통합한 <em>지능형 GUI</em>를 제공할 수 있습니다. 이는 신규 사용자뿐만 아니라 기존 숙련자들에게도 더 높은 가시성을 제공할 것입니다.
+            </div>
+            <div class="script-text" data-index="6">
+                여기서 제가 한 가지 명확히 말씀드리고 싶은 점이 있습니다. 저는 이 제안으로 <em>어떠한 보상이나 프로젝트 참여를 바라지 않습니다</em>. 한 명의 소비자로서, 제가 누리는 이 편리함이 모든 InfoU 사용자에게 공유되기를 바라는 마음뿐입니다. 이것이 LS ELECTRIC이 추구하는 상생의 가치라고 믿습니다.
+            </div>
+            <div class="script-text" data-index="7">
+                결론입니다. InfoU의 역사는 이미 훌륭합니다. 이제 필요한 것은 그 유산 위에 <em>'지능의 옷'</em>을 입히는 것입니다. 동봉된 기술 분석 보고서와 PoC 샘플 코드를 검토해 주십시오. InfoU가 글로벌 시장에서 압도적인 초격차를 만드는 데 이 제안이 작은 밀알이 되기를 희망합니다. 경청해 주셔서 감사합니다.
+            </div>
+        </div>
+
+        <!-- Downloads -->
+        <div class="downloads">
+            <div class="download-card" onclick="window.open('InfoU_Modernization_Proposal.pptx')">
+                <div class="icon">📊</div>
+                <h4>PPT 다운로드</h4>
+                <p>InfoU_Modernization_Proposal.pptx</p>
+            </div>
+            <div class="download-card" onclick="window.open('InfoU_Proposal_Package.zip')">
+                <div class="icon">📦</div>
+                <h4>전체 패키지 (ZIP)</h4>
+                <p>분석 보고서 + PPT + PoC 코드</p>
+            </div>
+            <div class="download-card" onclick="window.open('analysis_report.md')">
+                <div class="icon">🔍</div>
+                <h4>시스템 분석 보고서</h4>
+                <p>2,899개 바이너리 전수 조사</p>
+            </div>
+            <div class="download-card" onclick="window.open('modernization_strategy_comparison.md')">
+                <div class="icon">🏗️</div>
+                <h4>현대화 전략 비교</h4>
+                <p>브릿지 vs 리빌드 분석</p>
+            </div>
+            <div class="download-card" onclick="window.open('graph_api_analysis.md')">
+                <div class="icon">📈</div>
+                <h4>그래프 API 분석</h4>
+                <p>iuGraphPro.ocx 심층 분석</p>
+            </div>
+            <div class="download-card" onclick="window.open('poc_gapi_bridge.py')">
+                <div class="icon">🐍</div>
+                <h4>PoC 코드 (Python)</h4>
+                <p>GAPI32.DLL 브릿지 프로토타입</p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        © 2026 <a href="https://bigmap.ai">bigmap.ai</a> · 하태호 · bigmap@bigmap.ai · 순수 기술 기여 프로젝트<br>
+        Powered by Antigravity (Google DeepMind)
+    </footer>
+
+    <script>
+        let current = 0;
+        const total = 8;
+        let autoTimer = null;
+
+        function showSlide(idx) {
+            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.script-text').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll(`.slide[data-index="${idx}"]`).forEach(s => s.classList.add('active'));
+            document.querySelectorAll(`.script-text[data-index="${idx}"]`).forEach(s => s.classList.add('active'));
+            document.getElementById('progress').textContent = `${idx + 1} / ${total}`;
+            current = idx;
+        }
+
+        function nextSlide() { showSlide((current + 1) % total); }
+        function prevSlide() { showSlide((current - 1 + total) % total); }
+
+        function toggleAuto() {
+            const btn = document.getElementById('autoBtn');
+            if (autoTimer) {
+                clearInterval(autoTimer);
+                autoTimer = null;
+                btn.textContent = '▶ 자동 시연';
+            } else {
+                autoTimer = setInterval(nextSlide, 8000);
+                btn.textContent = '⏸ 정지';
+            }
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+            if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+        });
+    </script>
+</body>
+</html>

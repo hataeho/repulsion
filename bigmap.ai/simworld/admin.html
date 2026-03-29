@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SimWorld Analytics — 관리자 대시보드</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans KR', sans-serif;
+            background: #f5f5f7;
+            color: #1d1d1f;
+            min-height: 100vh;
+        }
+
+        .admin-header {
+            background: #1d1d1f;
+            color: #fff;
+            padding: 20px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .admin-header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .admin-header .refresh-info {
+            font-size: 12px;
+            color: #86868b;
+        }
+
+        .admin-body {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        /* Summary Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .summary-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+
+        .summary-card .label {
+            font-size: 13px;
+            color: #86868b;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .summary-card .value {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+
+        .summary-card .sub {
+            font-size: 12px;
+            color: #86868b;
+            margin-top: 4px;
+        }
+
+        /* Chart sections */
+        .chart-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .chart-panel {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+
+        .chart-panel h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .chart-canvas-wrap {
+            position: relative;
+            height: 280px;
+        }
+
+        /* Role detail */
+        .role-detail-section {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            margin-bottom: 32px;
+        }
+
+        .role-detail-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .role-detail-header h3 {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .role-detail-header select {
+            padding: 8px 12px;
+            border: 1px solid #d2d2d7;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            background: #fff;
+        }
+
+        .role-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .role-stat-card {
+            background: #f5f5f7;
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .role-stat-card .stat-label {
+            font-size: 12px;
+            color: #86868b;
+            margin-bottom: 4px;
+        }
+
+        .role-stat-card .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        /* Recommendations */
+        .recommendations {
+            margin-top: 16px;
+        }
+
+        .rec-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            background: #f5f5f7;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .rec-item.high {
+            border-left: 3px solid #ff3b30;
+        }
+
+        .rec-item.medium {
+            border-left: 3px solid #ff9500;
+        }
+
+        .rec-item.low {
+            border-left: 3px solid #34c759;
+        }
+
+        /* Feed */
+        .feed-section {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+
+        .feed-section h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .feed-item {
+            display: grid;
+            grid-template-columns: 90px 90px 100px 1fr 140px;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f5;
+            font-size: 13px;
+            align-items: center;
+        }
+
+        .feed-item:last-child {
+            border-bottom: none;
+        }
+
+        .feed-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .feed-badge.module_click {
+            background: #e8f4fd;
+            color: #0071e3;
+        }
+
+        .feed-badge.event_choice {
+            background: #ededff;
+            color: #5856d6;
+        }
+
+        .feed-badge.device_info {
+            background: #e8f8ed;
+            color: #34c759;
+        }
+
+        .feed-badge.module_dwell {
+            background: #fff8e0;
+            color: #ff9500;
+        }
+
+        .feed-badge.scroll_depth {
+            background: #f0e8ff;
+            color: #af52de;
+        }
+
+        .feed-badge.choice_latency {
+            background: #ffe5e3;
+            color: #ff3b30;
+        }
+
+        .feed-badge.detail_view {
+            background: #e8f8ed;
+            color: #34c759;
+        }
+
+        .feed-badge.session_start,
+        .feed-badge.session_end {
+            background: #f0f0f5;
+            color: #86868b;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: #86868b;
+            font-size: 16px;
+        }
+
+        .loading {
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .chart-row {
+                grid-template-columns: 1fr;
+            }
+
+            .role-stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .feed-item {
+                grid-template-columns: 80px 80px 1fr;
+            }
+
+            .feed-item> :nth-child(4),
+            .feed-item> :nth-child(5) {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-header">
+        <h1>📊 SimWorld Analytics</h1>
+        <span class="refresh-info" id="refresh-info">로딩 중...</span>
+    </div>
+
+    <div class="admin-body" id="admin-body">
+        <div class="empty-state loading">데이터를 불러오는 중...</div>
+    </div>
+
+    <script>
+        const API_BASE = location.hostname === 'bigmap.ai'
+            ? 'https://bigmap.ai/api/simworld'
+            : 'http://localhost:3456';
+
+        const ROLE_NAMES = {
+            president: '🏛 대통령', business: '💼 기업인', doctor: '🩺 의사',
+            teacher: '📚 교사', police: '🚔 경찰', military: '🎖 군인',
+            artist: '🎨 예술가', programmer: '💻 프로그래머', journalist: '📰 기자',
+            farmer: '🌾 농부', lawyer: '⚖️ 변호사', scientist: '🔬 과학자',
+        };
+
+        const MODULE_COLORS = {
+            folder: '#0071e3',
+            bluehouse: '#5856d6',
+            scheduler: '#ff9500',
+            prison: '#ff3b30',
+        };
+
+        const MODULE_NAMES = {
+            folder: '인접 폴더', bluehouse: '블루하우스',
+            scheduler: '스케줄러', prison: '청송',
+        };
+
+        let roleChart = null, moduleChart = null;
+        let currentRoleDetail = null;
+
+        async function fetchData() {
+            try {
+                const [dashRes, rolesRes] = await Promise.all([
+                    fetch(`${API_BASE}/admin/dashboard`),
+                    fetch(`${API_BASE}/admin/roles`),
+                ]);
+                const dashboard = await dashRes.json();
+                const roles = await rolesRes.json();
+                render(dashboard, roles);
+                document.getElementById('refresh-info').textContent =
+                    `최종 갱신: ${new Date().toLocaleTimeString('ko-KR')} — 10초마다 자동 갱신`;
+            } catch (err) {
+                document.getElementById('admin-body').innerHTML =
+                    `<div class="empty-state">서버 연결 실패: ${err.message}</div>`;
+            }
+        }
+
+        function render(dashboard, roles) {
+            const { overview, roleUsage, recentEvents, modulePopularity, dashboardConfigs } = dashboard;
+
+            const body = document.getElementById('admin-body');
+            body.innerHTML = `
+        <!-- Summary Cards -->
+        <div class="summary-grid">
+          <div class="summary-card">
+            <div class="label">총 사용자</div>
+            <div class="value">${overview.totalUsers.toLocaleString()}</div>
+            <div class="sub">고유 사용자 수</div>
+          </div>
+          <div class="summary-card">
+            <div class="label">총 세션</div>
+            <div class="value">${overview.totalSessions.toLocaleString()}</div>
+            <div class="sub">접속 횟수</div>
+          </div>
+          <div class="summary-card">
+            <div class="label">총 이벤트</div>
+            <div class="value">${overview.totalEvents.toLocaleString()}</div>
+            <div class="sub">추적된 행동 수</div>
+          </div>
+          <div class="summary-card">
+            <div class="label">최적화 적용</div>
+            <div class="value">${dashboardConfigs.length}</div>
+            <div class="sub">역할 수</div>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="chart-row">
+          <div class="chart-panel">
+            <h3>📈 역할별 활동량</h3>
+            <div class="chart-canvas-wrap">
+              <canvas id="chart-roles"></canvas>
+            </div>
+          </div>
+          <div class="chart-panel">
+            <h3>🎯 모듈 인기도</h3>
+            <div class="chart-canvas-wrap">
+              <canvas id="chart-modules"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Role Detail -->
+        <div class="role-detail-section">
+          <div class="role-detail-header">
+            <h3>🔍 역할별 상세 분석</h3>
+            <select id="role-select">
+              <option value="">역할 선택...</option>
+              ${roles.roles.map(r => `<option value="${r.role_id}">${ROLE_NAMES[r.role_id] || r.role_id}</option>`).join('')}
+            </select>
+          </div>
+          <div id="role-detail-content">
+            <div class="empty-state" style="padding:30px;">역할을 선택하면 상세 분석이 여기에 표시됩니다.</div>
+          </div>
+        </div>
+
+        <!-- Recent Feed -->
+        <div class="feed-section">
+          <h3>📡 실시간 이벤트 피드</h3>
+          <div id="feed-list">
+            ${recentEvents.length === 0
+                    ? '<div class="empty-state" style="padding:20px;">아직 이벤트가 없습니다.</div>'
+                    : recentEvents.map(e => `
+                <div class="feed-item">
+                  <span class="feed-badge ${e.event_type}">${e.event_type}</span>
+                  <span>${ROLE_NAMES[e.role_id] || e.role_id}</span>
+                  <span style="font-weight:500">${e.user_id}</span>
+                  <span style="color:#86868b">${e.target || '—'}</span>
+                  <span style="color:#86868b;font-size:11px">${new Date(e.created_at + 'Z').toLocaleString('ko-KR')}</span>
+                </div>`).join('')
+                }
+          </div>
+        </div>
+      `;
+
+            // Role usage chart
+            if (roleChart) roleChart.destroy();
+            const roleCtx = document.getElementById('chart-roles').getContext('2d');
+            roleChart = new Chart(roleCtx, {
+                type: 'bar',
+                data: {
+                    labels: roleUsage.map(r => ROLE_NAMES[r.role_id] || r.role_id),
+                    datasets: [
+                        { label: '이벤트 수', data: roleUsage.map(r => r.events), backgroundColor: '#0071e3cc' },
+                        { label: '사용자 수', data: roleUsage.map(r => r.users), backgroundColor: '#34c759cc' },
+                    ],
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: { y: { beginAtZero: true } },
+                },
+            });
+
+            // Module popularity chart
+            if (moduleChart) moduleChart.destroy();
+            const modCtx = document.getElementById('chart-modules').getContext('2d');
+            moduleChart = new Chart(modCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: modulePopularity.map(m => MODULE_NAMES[m.target] || m.target),
+                    datasets: [{
+                        data: modulePopularity.map(m => m.clicks),
+                        backgroundColor: modulePopularity.map(m => MODULE_COLORS[m.target] || '#86868b'),
+                    }],
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                },
+            });
+
+            // Role select handler
+            document.getElementById('role-select').addEventListener('change', async (e) => {
+                const roleId = e.target.value;
+                if (!roleId) return;
+                await loadRoleDetail(roleId);
+            });
+
+            // Auto-select first role if already selected
+            if (currentRoleDetail && roles.roles.some(r => r.role_id === currentRoleDetail)) {
+                document.getElementById('role-select').value = currentRoleDetail;
+                loadRoleDetail(currentRoleDetail);
+            }
+        }
+
+        async function loadRoleDetail(roleId) {
+            currentRoleDetail = roleId;
+            const container = document.getElementById('role-detail-content');
+            container.innerHTML = '<div class="empty-state" style="padding:20px;">로딩 중...</div>';
+
+            try {
+                const [roleRes, optRes] = await Promise.all([
+                    fetch(`${API_BASE}/analytics/role/${roleId}`),
+                    fetch(`${API_BASE}/analytics/optimize/${roleId}`),
+                ]);
+                const roleData = await roleRes.json();
+                const optData = await optRes.json();
+
+                container.innerHTML = `
+          <div class="role-stats-grid">
+            <div class="role-stat-card">
+              <div class="stat-label">고유 사용자</div>
+              <div class="stat-value">${roleData.uniqueUsers}</div>
+            </div>
+            <div class="role-stat-card">
+              <div class="stat-label">총 세션</div>
+              <div class="stat-value">${roleData.totalSessions}</div>
+            </div>
+            <div class="role-stat-card">
+              <div class="stat-label">평균 세션 시간</div>
+              <div class="stat-value">${roleData.avgSessionDurationSec}초</div>
+            </div>
+          </div>
+
+          <h4 style="margin-top:20px;margin-bottom:12px;font-size:14px;font-weight:600;">📦 모듈 클릭 순위</h4>
+          ${roleData.moduleClicks.length > 0
+                        ? roleData.moduleClicks.map((m, i) => `
+              <div style="display:flex;align-items:center;gap:12px;padding:8px 0;">
+                <span style="font-weight:700;color:${MODULE_COLORS[m.target] || '#86868b'};width:24px;">#${i + 1}</span>
+                <span style="font-weight:500;flex:1;">${MODULE_NAMES[m.target] || m.target}</span>
+                <span style="font-weight:700;">${m.clicks}회</span>
+              </div>`).join('')
+                        : '<div style="color:#86868b;padding:8px 0;">데이터 없음</div>'
+                    }
+
+          <h4 style="margin-top:20px;margin-bottom:12px;font-size:14px;font-weight:600;">🎯 최적화 설정</h4>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            ${optData.moduleOrder.map((m, i) => `
+              <span style="background:${MODULE_COLORS[m] || '#f0f0f5'};color:#fff;padding:6px 14px;border-radius:8px;font-size:13px;font-weight:600;">
+                ${i + 1}. ${MODULE_NAMES[m] || m}
+              </span>`).join('')}
+          </div>
+          <div style="margin-top:8px;font-size:12px;color:#86868b;">
+            샘플 사이즈: ${optData.sampleSize}개 이벤트 | 최종 갱신: ${new Date(optData.lastUpdated).toLocaleString('ko-KR')}
+          </div>
+
+          ${optData.recommendations && optData.recommendations.length > 0 ? `
+            <h4 style="margin-top:20px;margin-bottom:12px;font-size:14px;font-weight:600;">💡 추천 사항</h4>
+            <div class="recommendations">
+              ${optData.recommendations.map(r => `
+                <div class="rec-item ${r.priority}">
+                  <span>${r.priority === 'high' ? '🔴' : r.priority === 'medium' ? '🟡' : '🟢'}</span>
+                  <span>${r.text}</span>
+                </div>`).join('')}
+            </div>
+          ` : ''}
+        `;
+            } catch (err) {
+                container.innerHTML = `<div class="empty-state" style="padding:20px;">로드 실패: ${err.message}</div>`;
+            }
+        }
+
+        // Initial load and auto-refresh
+        fetchData();
+        setInterval(fetchData, 10000);
+    </script>
+</body>
+
+</html>

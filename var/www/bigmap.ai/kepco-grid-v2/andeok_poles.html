@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>청송군 안덕면 — 전주·배전선로 예측 지도</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Noto Sans KR', 'Inter', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0
+        }
+
+        #map {
+            width: 100%;
+            height: 100vh
+        }
+
+        .panel {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            z-index: 1000;
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 14px;
+            padding: 16px 18px;
+            width: 310px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4)
+        }
+
+        .panel h2 {
+            font-size: 1.05rem;
+            color: #a5b4fc;
+            margin-bottom: 6px
+        }
+
+        .panel h3 {
+            font-size: 0.82rem;
+            color: #818cf8;
+            margin: 10px 0 4px
+        }
+
+        .panel p,
+        .panel li {
+            font-size: 0.76rem;
+            color: #94a3b8;
+            line-height: 1.5
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            font-size: 0.76rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05)
+        }
+
+        .stat-label {
+            color: #94a3b8
+        }
+
+        .stat-value {
+            color: #22d3ee;
+            font-weight: 600
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+            flex-wrap: wrap
+        }
+
+        .btn {
+            padding: 5px 10px;
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            background: rgba(99, 102, 241, 0.15);
+            color: #a5b4fc;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            cursor: pointer;
+            transition: all 0.2s
+        }
+
+        .btn:hover,
+        .btn.active {
+            background: rgba(99, 102, 241, 0.4);
+            color: #fff
+        }
+
+        .legend {
+            margin-top: 10px
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.7rem;
+            margin: 3px 0
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0
+        }
+
+        .tooltip-pole {
+            background: rgba(15, 23, 42, 0.9) !important;
+            border: 1px solid #6366f1 !important;
+            color: #e2e8f0 !important;
+            font-family: monospace;
+            font-size: 11px;
+            padding: 3px 6px !important;
+            border-radius: 4px !important
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <div class="panel">
+        <h2>⚡ 청송군 안덕면 전주·선로 예측</h2>
+        <p>TM좌표 기반 전주번호 + 도로 기반 배전선로 예측<br>📍 안덕면사무소 (안덕로 82, 명당리)</p>
+        <h3>📊 정보</h3>
+        <div class="stat-row"><span class="stat-label">w3w</span><span class="stat-value">///고인다.돌려주는.암기</span></div>
+        <div class="stat-row"><span class="stat-label">좌표</span><span class="stat-value">36.3056, 128.9512</span></div>
+        <div class="stat-row"><span class="stat-label">예측 전주</span><span class="stat-value" id="pole-count">—</span>
+        </div>
+        <div class="stat-row"><span class="stat-label">예측 선로</span><span class="stat-value" id="line-length">—</span>
+        </div>
+        <h3>🔧 레이어</h3>
+        <div class="btn-group">
+            <button class="btn active" onclick="toggleLayer('poles')">🔩 전주</button>
+            <button class="btn active" onclick="toggleLayer('lines')">⚡ 선로</button>
+            <button class="btn active" onclick="toggleLayer('grid')">🔲 관리구</button>
+            <button class="btn" onclick="toggleLayer('solar')">🌞 최적지</button>
+        </div>
+        <div class="legend">
+            <h3>범례</h3>
+            <div class="legend-item">
+                <div class="legend-dot" style="background:#22c55e"></div> 간선 (주도로)
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background:#3b82f6"></div> 분기 (마을 진입)
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background:#f59e0b"></div> 말단 (농지·산림)
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background:#ef4444"></div> 분기점
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background:rgba(34,197,94,0.3)"></div> 태양광 추천 영역
+            </div>
+        </div>
+    </div>
+    <script>
+        // ── 안덕면사무소 실제 좌표 (안덕로 82, 명당리 433-6) ──
+        // what3words: ///고인다.돌려주는.암기
+        const ANDEOK_CENTER = [36.3010, 128.9560];
+
+        const map = L.map('map', { center: ANDEOK_CENTER, zoom: 14, zoomControl: false });
+        L.control.zoom({ position: 'topright' }).addTo(map);
+
+        const osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM', maxZoom: 19 });
+        const satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: '&copy; Esri', maxZoom: 18 });
+        const labelsLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', { subdomains: 'abcd', maxZoom: 19, pane: 'overlayPane' });
+        osmLayer.addTo(map);
+        L.control.layers({ '🗺️ 지도': osmLayer, '🛰️ 위성': L.layerGroup([satLayer, labelsLayer]) }, null, { position: 'topright' }).addTo(map);
+
+        // ── TM 좌표 변환 ──
+        function latLngToTM(lat, lng) {
+            const a = 6378137, f = 1 / 298.257222101, b = a * (1 - f), e2 = (a * a - b * b) / (a * a), ep2 = (a * a - b * b) / (b * b);
+            // 안덕면은 동경 128.95° → 중부원점(127°) 사용
+            const lng0 = 127, p = lat * Math.PI / 180, l = lng * Math.PI / 180, l0 = lng0 * Math.PI / 180, p0 = 38 * Math.PI / 180;
+            const N = a / Math.sqrt(1 - e2 * Math.sin(p) ** 2), T = Math.tan(p) ** 2, C = ep2 * Math.cos(p) ** 2, A = Math.cos(p) * (l - l0);
+            const e4 = e2 ** 2, e6 = e4 * e2;
+            const M = a * ((1 - e2 / 4 - 3 * e4 / 64 - 5 * e6 / 256) * p - (3 * e2 / 8 + 3 * e4 / 32 + 45 * e6 / 1024) * Math.sin(2 * p) + (15 * e4 / 256 + 45 * e6 / 1024) * Math.sin(4 * p) - (35 * e6 / 3072) * Math.sin(6 * p));
+            const M0 = a * ((1 - e2 / 4 - 3 * e4 / 64 - 5 * e6 / 256) * p0 - (3 * e2 / 8 + 3 * e4 / 32 + 45 * e6 / 1024) * Math.sin(2 * p0) + (15 * e4 / 256 + 45 * e6 / 1024) * Math.sin(4 * p0) - (35 * e6 / 3072) * Math.sin(6 * p0));
+            const tmX = N * (A + (1 - T + C) * A ** 3 / 6 + (5 - 18 * T + T ** 2 + 72 * C - 58 * ep2) * A ** 5 / 120) + 200000;
+            const tmY = (M - M0 + N * Math.tan(p) * (A ** 2 / 2 + (5 - T + 9 * C + 4 * C ** 2) * A ** 4 / 24 + (61 - 58 * T + T ** 2 + 600 * C - 330 * ep2) * A ** 6 / 720)) + 500000;
+            return { x: tmX, y: tmY };
+        }
+        function getPoleCode(lat, lng) {
+            const tm = latLngToTM(lat, lng);
+            return `${String(Math.floor(tm.x / 2000) % 100).padStart(2, '0')}${String(Math.floor(tm.y / 2000) % 100).padStart(2, '0')}`;
+        }
+
+        // ── 안덕면 마을·도로 기반 배전선로 (36.3056, 128.9512 중심) ──
+        // 안덕면 주요 리: 명당리(면사무소), 고와리, 장전리, 신성리, 감은리, 노래리, 복리, 자봉리, 덕산리
+        const cLat = 36.3010, cLng = 128.9560;
+        const ROUTES = [
+            // 간선: 안덕로 남북 주도로 (청송읍↔안덕면↔진보면)
+            {
+                type: 'trunk', color: '#22c55e', weight: 3, name: '안덕로 간선', points: [
+                    [cLat - 0.030, cLng - 0.003], [cLat - 0.025, cLng - 0.002], [cLat - 0.020, cLng - 0.001],
+                    [cLat - 0.015, cLng], [cLat - 0.010, cLng], [cLat - 0.005, cLng + 0.001],
+                    [cLat, cLng], [cLat + 0.005, cLng + 0.001], [cLat + 0.010, cLng + 0.002],
+                    [cLat + 0.015, cLng + 0.003], [cLat + 0.020, cLng + 0.004], [cLat + 0.025, cLng + 0.005],
+                ]
+            },
+            // 간선: 동서 도로 (안덕면 → 현서면 방면)
+            {
+                type: 'trunk', color: '#22c55e', weight: 3, name: '동서 도로', points: [
+                    [cLat, cLng - 0.030], [cLat, cLng - 0.023], [cLat, cLng - 0.016],
+                    [cLat, cLng - 0.008], [cLat, cLng], [cLat, cLng + 0.008],
+                    [cLat, cLng + 0.016], [cLat, cLng + 0.024], [cLat - 0.001, cLng + 0.032],
+                ]
+            },
+            // 분기: 명당리 마을 내부 (면사무소 주변)
+            {
+                type: 'branch', color: '#3b82f6', weight: 2, name: '명당리', points: [
+                    [cLat, cLng], [cLat + 0.002, cLng + 0.003], [cLat + 0.004, cLng + 0.005],
+                    [cLat + 0.005, cLng + 0.008], [cLat + 0.006, cLng + 0.011],
+                ]
+            },
+            // 분기: 고와리 방면 (남쪽)
+            {
+                type: 'branch', color: '#3b82f6', weight: 2, name: '고와리', points: [
+                    [cLat - 0.005, cLng + 0.001], [cLat - 0.007, cLng - 0.003], [cLat - 0.009, cLng - 0.006],
+                    [cLat - 0.011, cLng - 0.008], [cLat - 0.013, cLng - 0.010],
+                ]
+            },
+            // 분기: 장전리 방면 (동쪽)
+            {
+                type: 'branch', color: '#3b82f6', weight: 2, name: '장전리', points: [
+                    [cLat, cLng + 0.016], [cLat + 0.002, cLng + 0.019], [cLat + 0.004, cLng + 0.022],
+                    [cLat + 0.005, cLng + 0.025],
+                ]
+            },
+            // 분기: 신성리 방면 (북동)
+            {
+                type: 'branch', color: '#3b82f6', weight: 2, name: '신성리', points: [
+                    [cLat + 0.010, cLng + 0.002], [cLat + 0.012, cLng + 0.006], [cLat + 0.014, cLng + 0.010],
+                    [cLat + 0.015, cLng + 0.014],
+                ]
+            },
+            // 분기: 감은리 방면 (북서)
+            {
+                type: 'branch', color: '#3b82f6', weight: 2, name: '감은리', points: [
+                    [cLat + 0.010, cLng + 0.002], [cLat + 0.012, cLng - 0.003], [cLat + 0.014, cLng - 0.007],
+                    [cLat + 0.015, cLng - 0.011],
+                ]
+            },
+            // 분기: 노래리 방면 (남동)
+            {
+                type: 'branch', color: '#3b82f6', weight: 2, name: '노래리', points: [
+                    [cLat - 0.015, cLng], [cLat - 0.017, cLng + 0.005], [cLat - 0.019, cLng + 0.009],
+                    [cLat - 0.020, cLng + 0.013],
+                ]
+            },
+            // 분기: 덕산리 방면 (서쪽 산간)
+            {
+                type: 'branch', color: '#3b82f6', weight: 2, name: '덕산리', points: [
+                    [cLat, cLng - 0.016], [cLat + 0.002, cLng - 0.020], [cLat + 0.004, cLng - 0.023],
+                ]
+            },
+            // 분기: 자봉리 방면 (남서)
+            {
+                type: 'branch', color: '#3b82f6', weight: 2, name: '자봉리', points: [
+                    [cLat - 0.010, cLng], [cLat - 0.012, cLng - 0.005], [cLat - 0.014, cLng - 0.009],
+                    [cLat - 0.016, cLng - 0.013],
+                ]
+            },
+            // 말단: 명당리 농지
+            {
+                type: 'end', color: '#f59e0b', weight: 1.5, name: '명당리 농지', points: [
+                    [cLat + 0.006, cLng + 0.011], [cLat + 0.008, cLng + 0.014], [cLat + 0.009, cLng + 0.017],
+                ]
+            },
+            // 말단: 장전리 농지
+            {
+                type: 'end', color: '#f59e0b', weight: 1.5, name: '장전리 농지', points: [
+                    [cLat + 0.005, cLng + 0.025], [cLat + 0.007, cLng + 0.028], [cLat + 0.008, cLng + 0.031],
+                ]
+            },
+            // 말단: 고와리 산간
+            {
+                type: 'end', color: '#f59e0b', weight: 1.5, name: '고와리 산간', points: [
+                    [cLat - 0.013, cLng - 0.010], [cLat - 0.015, cLng - 0.014], [cLat - 0.017, cLng - 0.017],
+                ]
+            },
+            // 말단: 감은리 산림
+            {
+                type: 'end', color: '#f59e0b', weight: 1.5, name: '감은리 산림', points: [
+                    [cLat + 0.015, cLng - 0.011], [cLat + 0.017, cLng - 0.015], [cLat + 0.018, cLng - 0.018],
+                ]
+            },
+            // 말단: 자봉리 계곡
+            {
+                type: 'end', color: '#f59e0b', weight: 1.5, name: '자봉리 계곡', points: [
+                    [cLat - 0.016, cLng - 0.013], [cLat - 0.018, cLng - 0.016],
+                ]
+            },
+        ];
+
+        // ── 레이어 ──
+        const layers = { poles: L.layerGroup(), lines: L.layerGroup(), grid: L.layerGroup(), solar: L.layerGroup() };
+        let poleCount = 0, totalLength = 0;
+        const poleLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+        ROUTES.forEach((route, ri) => {
+            const pts = route.points;
+            layers.lines.addLayer(L.polyline(pts, { color: route.color, weight: route.weight, opacity: 0.75, dashArray: route.type === 'end' ? '6,4' : null }));
+            for (let i = 0; i < pts.length - 1; i++) totalLength += Math.sqrt((pts[i][0] - pts[i + 1][0]) ** 2 + (pts[i][1] - pts[i + 1][1]) ** 2) * 111.32;
+            pts.forEach((pt, pi) => {
+                const code = getPoleCode(pt[0], pt[1]);
+                const letter = poleLetters[ri % 26];
+                const poleNo = `${code}${letter}${String(pi * 50 + 100).padStart(3, '0')}`;
+                const tm = latLngToTM(pt[0], pt[1]);
+                const isJunction = route.type === 'trunk' && ROUTES.some(r => r !== route && r.points.some(p => Math.abs(p[0] - pt[0]) < 0.002 && Math.abs(p[1] - pt[1]) < 0.002));
+                const dotColor = isJunction ? '#ef4444' : route.color;
+                const dotSize = isJunction ? 8 : route.type === 'trunk' ? 6 : 5;
+                const m = L.circleMarker(pt, { radius: dotSize, fillColor: dotColor, fillOpacity: 0.8, color: '#fff', weight: 1, opacity: 0.6 });
+                m.bindTooltip(`⚡${poleNo}`, { className: 'tooltip-pole', direction: 'top', offset: [0, -6] });
+                m.bindPopup(`<div style="font-family:monospace;min-width:200px;">
+      <div style="font-size:1rem;font-weight:700;color:#6366f1;">⚡ ${poleNo}</div>
+      <hr style="border:none;border-top:1px solid #e2e8f0;margin:6px 0;">
+      <div style="font-size:0.8rem;">
+        <b>선로:</b> ${route.name}<br>
+        <b>유형:</b> ${route.type === 'trunk' ? '간선' : route.type === 'branch' ? '분기' : '말단'} ${isJunction ? '🔴분기점' : ''}<br>
+        <b>좌표:</b> ${pt[0].toFixed(5)}, ${pt[1].toFixed(5)}<br>
+        <b>TM(중부):</b> X=${Math.round(tm.x).toLocaleString()}, Y=${Math.round(tm.y).toLocaleString()}<br>
+        <b>관리구:</b> ${code}<br>
+        <b>마을:</b> 안덕면 ${route.name}
+      </div></div>`, { maxWidth: 260 });
+                layers.poles.addLayer(m);
+                poleCount++;
+            });
+        });
+
+        // ── 관리구 격자 ──
+        const gs = 0.018;
+        for (let lat = cLat - 0.04; lat <= cLat + 0.04; lat += gs)
+            for (let lng = cLng - 0.04; lng <= cLng + 0.04; lng += gs) {
+                const code = getPoleCode(lat, lng);
+                const r = L.rectangle([[lat, lng], [lat + gs, lng + gs]], { color: '#6366f1', weight: 1, opacity: 0.25, fillOpacity: 0.02, dashArray: '4,4' });
+                r.bindTooltip(`관리구 ${code}`, { className: 'tooltip-pole', direction: 'center' });
+                layers.grid.addLayer(r);
+            }
+
+        // ── 태양광 추천 영역 ──
+        [
+            { c: [cLat + 0.003, cLng + 0.008], r: 350, lb: '명당리 농지(면사무소 동)', sc: 93 },
+            { c: [cLat + 0.005, cLng + 0.025], r: 300, lb: '장전리 평야', sc: 90 },
+            { c: [cLat - 0.010, cLng - 0.007], r: 280, lb: '고와리 남향 사면', sc: 85 },
+            { c: [cLat + 0.013, cLng + 0.008], r: 250, lb: '신성리 유휴농지', sc: 82 },
+            { c: [cLat - 0.018, cLng + 0.010], r: 250, lb: '노래리 평지', sc: 80 },
+        ].forEach(a => {
+            layers.solar.addLayer(L.circle(a.c, { radius: a.r, color: '#22c55e', weight: 2, opacity: 0.6, fillColor: '#22c55e', fillOpacity: 0.12, dashArray: '6,4' })
+                .bindPopup(`<div style="text-align:center;"><div style="font-size:1rem;font-weight:700;color:#22c55e;">🌞 ${a.lb}</div><div style="margin-top:4px;font-size:0.85rem;">적합도 <b style="color:#22c55e;">${a.sc}점</b></div><div style="font-size:0.72rem;color:#888;">반경 ${a.r}m · DL 접근 용이</div></div>`, { maxWidth: 220 }));
+        });
+
+        // ── 면사무소 마커 ──
+        L.marker(ANDEOK_CENTER, { icon: L.divIcon({ className: '', html: '<div style="background:#8b5cf6;color:#fff;padding:4px 8px;border-radius:6px;font-size:0.75rem;font-weight:700;white-space:nowrap;box-shadow:0 2px 8px rgba(139,92,246,0.4);">🏛 안덕면사무소</div>', iconAnchor: [50, 20] }) }).addTo(map);
+
+        // ── w3w 좌표 표시 ──
+        L.marker(ANDEOK_CENTER, { icon: L.divIcon({ className: '', html: '<div style="background:rgba(239,68,68,0.9);color:#fff;padding:2px 6px;border-radius:4px;font-size:0.65rem;font-weight:600;white-space:nowrap;margin-top:22px;">///고인다.돌려주는.암기</div>', iconAnchor: [60, 0] }) }).addTo(map);
+
+        layers.poles.addTo(map); layers.lines.addTo(map); layers.grid.addTo(map);
+        document.getElementById('pole-count').textContent = poleCount + '개';
+        document.getElementById('line-length').textContent = totalLength.toFixed(1) + 'km';
+        function toggleLayer(n) { const b = event.target; if (map.hasLayer(layers[n])) { map.removeLayer(layers[n]); b.classList.remove('active'); } else { layers[n].addTo(map); b.classList.add('active'); } }
+    </script>
+</body>
+
+</html>

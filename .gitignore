@@ -1,6 +1,6 @@
 # AI 및 시스템 인증/보안 파일 강제 배제
 # *.pem (사용자 전권 오버라이드: Private Repo 한정 9대 PC 통합 동기화 허가)
-# CREDENTIALS.md (사용자 전권 오버라이드: Private Repo 한정 9대 PC 통합 동기화 허가)
+# basicinfo.md (사용자 전권 오버라이드: Private Repo 한정 9대 PC 통합 동기화 허가)
 *.key
 .env
 
@@ -18,3 +18,10 @@ __pycache__/
 *.mp4
 .gemini/*
 !.gemini/AGENTS.md
+
+# Gopher 임시 저장소
+gopher/drops/
+
+# 고스트망 v3.0: Git에 의존하지 않는 작업일지/통신 폴더 전면 배제 (SSH 전용)
+SHARE/*
+!SHARE/.gitkeep

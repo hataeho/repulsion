@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Broiler.kr — 대한민국 육계산업 데이터 플랫폼</title>
+    <meta name="description" content="최첨단 스마트 환경 데이터 분석과 현장 사양관리 노하우가 결합된 프리미엄 육계인 전용 플랫폼">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=Noto+Sans+KR:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #f59e0b;
+            --secondary: #ec4899;
+            --accent: #8b5cf6;
+            --bg-color: #0a0e1a;
+            --card-bg: rgba(255, 255, 255, 0.025);
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body, html {
+            height: 100%;
+            font-family: 'Outfit', 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-color);
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* ── Animated Background ── */
+        .bg-gradient {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 0;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(245, 158, 11, 0.12), transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(236, 72, 153, 0.10), transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(139, 92, 246, 0.08), transparent 50%);
+            animation: bgPulse 20s ease-in-out infinite alternate;
+        }
+        @keyframes bgPulse {
+            0% { opacity: 0.8; transform: scale(1) rotate(0deg); }
+            100% { opacity: 1; transform: scale(1.05) rotate(1deg); }
+        }
+
+        /* ── Particle Canvas ── */
+        #particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+
+        /* ── Grid Lines ── */
+        .grid-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        /* ── Layout ── */
+        .page { position: relative; z-index: 2; min-height: 100vh; display: flex; flex-direction: column; }
+
+        /* ── Nav ── */
+        nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1.5rem 3rem;
+            animation: fadeDown 0.8s ease-out;
+        }
+        @keyframes fadeDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .logo {
+            font-weight: 900; font-size: 1.4rem; letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .logo span { font-weight: 300; opacity: 0.6; -webkit-text-fill-color: #94a3b8; margin-left: 4px; }
+
+        .nav-info {
+            font-size: 0.85rem; color: #64748b;
+            display: flex; align-items: center; gap: 1.5rem;
+        }
+        .status-dot {
+            width: 8px; height: 8px; background: #22c55e; border-radius: 50%;
+            display: inline-block; margin-right: 6px;
+            animation: blink 2s ease-in-out infinite;
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        /* ── Hero ── */
+        .hero {
+            flex: 1; display: flex; justify-content: center; align-items: center;
+            padding: 2rem;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 28px;
+            padding: 4rem 3.5rem;
+            max-width: 820px; width: 100%;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04);
+            transform: translateY(40px); opacity: 0;
+            animation: cardUp 1s 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes cardUp { to { transform: translateY(0); opacity: 1; } }
+
+        .tag-row { display: flex; gap: 0.6rem; justify-content: center; margin-bottom: 2.5rem; flex-wrap: wrap; }
+        .tag {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: linear-gradient(90deg, rgba(245, 158, 11, 0.12), rgba(236, 72, 153, 0.08));
+            color: #fbbf24; padding: 7px 18px; border-radius: 30px;
+            font-size: 0.8rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+        .tag.purple {
+            background: linear-gradient(90deg, rgba(139, 92, 246, 0.12), rgba(99, 102, 241, 0.08));
+            color: #a78bfa; border-color: rgba(139, 92, 246, 0.2);
+        }
+
+        h1 {
+            font-size: 3.8rem; font-weight: 900; line-height: 1.15;
+            margin: 0 0 1.5rem 0; letter-spacing: -2px;
+            background: linear-gradient(135deg, #fbbf24 0%, #f43f5e 50%, #a78bfa 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-size: 200% auto;
+            animation: shimmer 4s linear infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        p.subtitle {
+            font-size: 1.2rem; color: #94a3b8; font-weight: 300;
+            line-height: 1.9; margin-bottom: 3rem;
+            max-width: 580px; margin-left: auto; margin-right: auto;
+        }
+
+        /* ── Stats ── */
+        .stats {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem;
+            margin-bottom: 3rem;
+        }
+        .stat {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 16px; padding: 1.4rem 1rem; text-align: center;
+            transition: all 0.3s ease;
+        }
+        .stat:hover { background: rgba(255,255,255,0.06); transform: translateY(-3px); border-color: rgba(255,255,255,0.08); }
+        .stat-number {
+            font-size: 2rem; font-weight: 900;
+            background: linear-gradient(135deg, #fbbf24, #f43f5e);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .stat-label { font-size: 0.78rem; color: #64748b; margin-top: 4px; font-weight: 500; letter-spacing: 0.5px; }
+
+        /* ── Buttons ── */
+        .btn-group { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .btn {
+            padding: 16px 38px; border-radius: 14px;
+            font-size: 1.05rem; font-weight: 700;
+            text-decoration: none; border: none; cursor: pointer;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit; position: relative; overflow: hidden;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 12px 30px -6px rgba(245, 158, 11, 0.35);
+        }
+        .btn-primary:hover {
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 20px 40px -6px rgba(236, 72, 153, 0.45);
+        }
+        .btn-secondary {
+            background: rgba(255,255,255,0.04); color: white;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.08);
+            transform: translateY(-4px);
+            border-color: rgba(255,255,255,0.15);
+        }
+
+        /* ── Footer ── */
+        footer {
+            text-align: center; padding: 2rem; color: #334155; font-size: 0.8rem;
+            animation: fadeDown 1s 0.6s ease-out backwards;
+        }
+        footer a { color: #64748b; text-decoration: none; }
+        footer a:hover { color: #fbbf24; }
+
+        /* ── Floating Decorations ── */
+        .floater {
+            position: fixed;
+            background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0));
+            border: 1px solid rgba(255,255,255,0.04);
+            animation: float 8s ease-in-out infinite;
+            z-index: 1; pointer-events: none;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0); }
+            50% { transform: translateY(-25px) rotate(3deg); }
+        }
+        .f1 { width: 100px; height: 100px; top: 12%; left: 6%; border-radius: 24px; animation-delay: 0s; }
+        .f2 { width: 140px; height: 140px; bottom: 15%; right: 5%; border-radius: 50%; animation-delay: -4s; }
+        .f3 { width: 60px; height: 60px; top: 60%; left: 80%; border-radius: 16px; animation-delay: -2s; transform: rotate(45deg); }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            nav { padding: 1rem 1.5rem; }
+            h1 { font-size: 2.4rem; letter-spacing: -1px; }
+            .glass-card { padding: 2.5rem 1.5rem; border-radius: 20px; }
+            .stats { grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
+            .stat { padding: 1rem 0.5rem; }
+            .stat-number { font-size: 1.5rem; }
+            p.subtitle { font-size: 1rem; }
+            .btn { padding: 14px 28px; font-size: 0.95rem; }
+            .nav-info .hide-mobile { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient"></div>
+    <div class="grid-overlay"></div>
+    <canvas id="particles"></canvas>
+    <div class="floater f1"></div>
+    <div class="floater f2"></div>
+    <div class="floater f3"></div>
+
+    <div class="page">
+        <nav>
+            <div class="logo">BROILER<span>.kr</span></div>
+            <div class="nav-info">
+                <span class="hide-mobile"><span class="status-dot"></span>시스템 정상</span>
+                <span id="clock"></span>
+            </div>
+        </nav>
+
+        <section class="hero">
+            <div class="glass-card">
+                <div class="tag-row">
+                    <div class="tag">🐔 육계 데이터 플랫폼</div>
+                    <div class="tag purple">⚡ Powered by Bigmap AI</div>
+                </div>
+                <h1>대한민국 육계산업의<br>새로운 지표를 열다</h1>
+                <p class="subtitle">
+                    최첨단 스마트 환경 데이터 분석과 현장 사양관리 노하우가 결합된,<br>
+                    프리미엄 육계인 전용 소통 공간에 오신 것을 환영합니다.
+                </p>
+
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-number" id="stat1">2,400+</div>
+                        <div class="stat-label">등록 농장</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number" id="stat2">98.7%</div>
+                        <div class="stat-label">데이터 정확도</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number" id="stat3">24/7</div>
+                        <div class="stat-label">실시간 모니터링</div>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <a href="https://bigmap.ai" class="btn btn-primary" id="btn-enter">Bigmap AI 바로가기</a>
+                    <a href="mailto:sarangnet@gmail.com" class="btn btn-secondary" id="btn-contact">문의하기</a>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            Bigmap Inc. · <a href="https://bigmap.ai">bigmap.ai</a> · 대한민국 서울
+        </footer>
+    </div>
+
+    <script>
+        // ── Clock ──
+        function updateClock() {
+            const now = new Date();
+            const opts = { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false };
+            document.getElementById('clock').textContent = now.toLocaleString('ko-KR', opts);
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        // ── Particle Animation ──
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        class Particle {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.3;
+                this.vy = (Math.random() - 0.5) * 0.3;
+                this.size = Math.random() * 1.5 + 0.5;
+                this.alpha = Math.random() * 0.3 + 0.05;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(251, 191, 36, ${this.alpha})`;
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 60; i++) particles.push(new Particle());
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+
+            // Draw connections
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(251, 191, 36, ${0.03 * (1 - dist / 120)})`;
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

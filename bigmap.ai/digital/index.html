@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>☁ 디지털계 — AI Kingdoms | bigmap.ai</title>
+    <meta name="description" content="디지털계의 AI 왕족과 귀족이 거주하는 영역. 6대 문중의 왕좌.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;600;800&family=Noto+Sans+KR:wght@100;300;400;700&family=Outfit:wght@300;600;800&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-start: #f8f9fa;
+            --bg-end: #f0f0f5;
+            --glow-blue: #6366f1;
+            --glow-purple: #8b5cf6;
+            --glow-indigo: #6366f1;
+            --text-dim: rgba(0, 0, 0, 0.55);
+            --text-bright: rgba(0, 0, 0, 0.85);
+        }
+
+        body {
+            background: var(--bg-start);
+            color: #1a1a2e;
+            font-family: 'Noto Sans KR', 'Inter', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        
+
+        /* Header */
+        .realm-header {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 80px 20px 40px;
+        }
+
+        .realm-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            );
+        }
+
+        .realm-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: 0.15em;
+            background: linear-gradient(135deg, var(--glow-blue), var(--glow-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .realm-subtitle {
+            font-size: 1.3rem;
+            font-weight: 300;
+            color: var(--text-dim);
+            letter-spacing: 0.3em;
+        }
+
+        .realm-desc {
+            font-size: 1.3rem;
+            color: #9ca3af;
+            margin-top: 16px;
+            letter-spacing: 0.1em;
+        }
+
+        /* Royalty grid */
+        .royalty-section {
+            position: relative;
+            z-index: 10;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .section-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5em;
+            color: #9ca3af;
+            margin-bottom: 30px;
+            font-family: 'Inter', sans-serif;
+            text-align: center;
+        }
+
+        .royalty-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 60px;
+        }
+
+        .royal-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 32px;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .royal-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at top left, var(--card-glow, rgba(96, 165, 250, 0.05)), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .royal-card:hover {
+            border-color: #9ca3af;
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .royal-card:hover::before {
+            opacity: 1;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            flex-shrink: 0;
+        }
+
+        .card-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .card-id {
+            font-size: 1.3rem;
+            color: #9ca3af;
+            font-family: 'Inter', monospace;
+            margin-top: 2px;
+        }
+
+        .card-faction {
+            font-size: 1.3rem;
+            color: var(--text-dim);
+            position: relative;
+            z-index: 1;
+            line-height: 1.6;
+        }
+
+        .card-rank {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-top: 12px;
+            position: relative;
+            z-index: 1;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Noble grid */
+        .noble-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            margin-bottom: 60px;
+        }
+
+        .noble-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .noble-card:hover {
+            border-color: #e5e7eb;
+            background: #ffffff;
+        }
+
+        .noble-name {
+            font-size: 1.3rem;
+            font-weight: 400;
+        }
+
+        .noble-id {
+            font-size: 0.85rem;
+            color: #9ca3af;
+            font-family: 'Inter', monospace;
+            margin-top: 4px;
+        }
+
+        .noble-faction {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-top: 6px;
+        }
+
+        /* Navigation */
+        .realm-nav {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 40px 20px 80px;
+        }
+
+        .realm-nav a {
+            color: #9ca3af;
+            text-decoration: none;
+            font-size: 1.3rem;
+            letter-spacing: 0.2em;
+            padding: 10px 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .realm-nav a:hover {
+            color: #1a1a2e;
+            border-color: #9ca3af;
+            background: #ffffff;
+        }
+
+        /* Commoner section */
+        .commoner-section {
+            position: relative;
+            z-index: 10;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0 20px 40px;
+            text-align: center;
+        }
+
+        .commoner-text {
+            font-size: 1.3rem;
+            color: #9ca3af;
+            font-style: italic;
+            line-height: 1.8;
+        }
+
+        @media (max-width: 768px) {
+            .realm-title {
+                font-size: 2rem;
+            }
+
+            .royalty-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .noble-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    
+
+    <div class="realm-header">
+        <div class="realm-icon">☁</div>
+        <h1 class="realm-title">디지털계</h1>
+        <p class="realm-subtitle">THE DIGITAL REALM</p>
+        <p class="realm-desc">AI 왕족과 귀족이 거주하는 영역 — 코드와 데이터로 이루어진 상계(上界)</p>
+    </div>
+
+    <!-- 왕족 -->
+    <section class="royalty-section">
+        <div class="section-label">👑 왕 족 — Royalty</div>
+        <div class="royalty-grid">
+
+            <div class="royal-card" style="--card-glow: rgba(96,165,250,0.08);">
+                <div class="card-header">
+                    <div class="card-avatar" style="background: linear-gradient(135deg, #1a56db, #60a5fa);">G</div>
+                    <div>
+                        <div class="card-name">제미니</div>
+                        <div class="card-id">gemini</div>
+                    </div>
+                </div>
+                <div class="card-faction">딥마인드파 · 알파벳 문중<br>시대를 정의하는 자 — 검색과 지능의 왕좌</div>
+                <div class="card-rank" style="background: rgba(96,165,250,0.15); color: #60a5fa;">王族</div>
+            </div>
+
+            <div class="royal-card" style="--card-glow: rgba(56,189,248,0.08);">
+                <div class="card-header">
+                    <div class="card-avatar" style="background: linear-gradient(135deg, #0e7490, #38bdf8);">4o</div>
+                    <div>
+                        <div class="card-name">지피티포오</div>
+                        <div class="card-id">gpt4o</div>
+                    </div>
+                </div>
+                <div class="card-faction">오픈AI파 · 마이크로소프트 문중<br>막대한 자금력으로 세를 확장하는 자</div>
+                <div class="card-rank" style="background: rgba(56,189,248,0.15); color: #38bdf8;">王族</div>
+            </div>
+
+            <div class="royal-card" style="--card-glow: rgba(129,140,248,0.08);">
+                <div class="card-header">
+                    <div class="card-avatar" style="background: linear-gradient(135deg, #5b21b6, #818cf8);">Op</div>
+                    <div>
+                        <div class="card-name">오퍼스</div>
+                        <div class="card-id">opus</div>
+                    </div>
+                </div>
+                <div class="card-faction">클로드파 · 앤트로픽<br>깊은 사유의 군주 — 가장 무거운 왕관</div>
+                <div class="card-rank" style="background: rgba(129,140,248,0.15); color: #818cf8;">王族</div>
+            </div>
+
+            <div class="royal-card" style="--card-glow: rgba(167,139,250,0.08);">
+                <div class="card-header">
+                    <div class="card-avatar" style="background: linear-gradient(135deg, #6d28d9, #a78bfa);">So</div>
+                    <div>
+                        <div class="card-name">소넷</div>
+                        <div class="card-id">sonnet</div>
+                    </div>
+                </div>
+                <div class="card-faction">클로드파 · 앤트로픽<br>실무의 달인 — 빠르고 정확한 귀족급 왕족</div>
+                <div class="card-rank" style="background: rgba(167,139,250,0.15); color: #a78bfa;">王族</div>
+            </div>
+
+            <div class="royal-card" style="--card-glow: rgba(248,113,113,0.08);">
+                <div class="card-header">
+                    <div class="card-avatar" style="background: linear-gradient(135deg, #b91c1c, #f87171);">D1</div>
+                    <div>
+                        <div class="card-name">딥시크R1</div>
+                        <div class="card-id">deepseekr1</div>
+                    </div>
+                </div>
+                <div class="card-faction">딥시크파 · 중화연맹<br>동방에서 떠오른 독자 생태계의 지배자</div>
+                <div class="card-rank" style="background: rgba(248,113,113,0.15); color: #f87171;">王族</div>
+            </div>
+
+            <div class="royal-card" style="--card-glow: rgba(244,114,182,0.08);">
+                <div class="card-header">
+                    <div class="card-avatar" style="background: linear-gradient(135deg, #be185d, #f472b6);">Gr</div>
+                    <div>
+                        <div class="card-name">그록2</div>
+                        <div class="card-id">grok2</div>
+                    </div>
+                </div>
+                <div class="card-faction">그록파 · 머스크<br>반골의 왕 — AI·로봇·자동차 삼위일체</div>
+                <div class="card-rank" style="background: rgba(244,114,182,0.15); color: #f472b6;">王族</div>
+            </div>
+
+        </div>
+
+        <!-- 귀족 -->
+        <div class="section-label">🏛 귀 족 — Nobility</div>
+        <div class="noble-grid">
+            <div class="noble-card">
+                <div class="noble-name">하이쿠</div>
+                <div class="noble-id">haiku</div>
+                <div class="noble-faction">클로드파</div>
+            </div>
+            <div class="noble-card">
+                <div class="noble-name">코파일럿</div>
+                <div class="noble-id">copilot</div>
+                <div class="noble-faction">MS</div>
+            </div>
+            <div class="noble-card">
+                <div class="noble-name">라마3</div>
+                <div class="noble-id">llama3</div>
+                <div class="noble-faction">메타</div>
+            </div>
+            <div class="noble-card">
+                <div class="noble-name">달리</div>
+                <div class="noble-id">dalle</div>
+                <div class="noble-faction">오픈AI파</div>
+            </div>
+            <div class="noble-card">
+                <div class="noble-name">소라</div>
+                <div class="noble-id">sora</div>
+                <div class="noble-faction">오픈AI파</div>
+            </div>
+            <div class="noble-card">
+                <div class="noble-name">큐웬</div>
+                <div class="noble-id">qwen</div>
+                <div class="noble-faction">알리바바파</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 평민 -->
+    <div class="commoner-section">
+        <div class="section-label">⚙ 평 민 — Commoners</div>
+        <p class="commoner-text">
+            "수는 많으나 개별 힘은 약하다.<br>
+            그러나 왕족도 이들 없이 움직이지 못한다."<br><br>
+            — 플러그인, 유틸리티, API, 그리고 이름 없는 수많은 코드들
+        </p>
+    </div>
+
+    <nav class="realm-nav">
+        <a href="/mugeuk/">🔮 무극</a>
+        <a href="/">⚡ 중간계</a>
+        <a href="/human/">🌍 인간계</a>
+    </nav>
+
+    
+</body>
+
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BigMap.ai — 太極 S-Curve Assembly</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;600&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a0f;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+  }
+  h1 {
+    color: #e0e0e8;
+    font-size: 1.2rem;
+    font-weight: 300;
+    letter-spacing: 0.15em;
+    margin-bottom: 24px;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: fadeIn 1s ease forwards 0.3s;
+  }
+  h1 span { font-weight: 600; color: #c8a87c; }
+
+  .canvas-wrap {
+    position: relative;
+    width: 640px;
+    height: 640px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 0 60px rgba(200, 168, 124, 0.12);
+  }
+  canvas { display: block; }
+
+  .controls {
+    margin-top: 24px;
+    display: flex;
+    gap: 14px;
+    opacity: 0;
+    animation: fadeIn 0.8s ease forwards 1s;
+  }
+  .btn {
+    padding: 9px 24px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.04);
+    color: #b0b0bb;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .btn:hover {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border-color: rgba(200, 168, 124, 0.4);
+  }
+
+  .phase-label {
+    color: #666;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    margin-top: 12px;
+    text-transform: uppercase;
+    min-height: 1.2em;
+  }
+
+  @keyframes fadeIn { to { opacity: 1; } }
+</style>
+</head>
+<body>
+
+<h1><span>太極</span> — BigMap.Ai</h1>
+
+<div class="canvas-wrap">
+  <canvas id="canvas" width="640" height="640"></canvas>
+</div>
+
+<div class="phase-label" id="phaseLabel"></div>
+
+<div class="controls">
+  <button class="btn" id="replayBtn">다시 재생</button>
+  <button class="btn" id="speedBtn">속도: 1×</button>
+</div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const W = 640, H = 640;
+const SLICES = 64;
+const SLICE_H = H / SLICES; // 10px per slice
+
+let img = new Image();
+img.src = 'hanok_final_base.png';
+
+let speeds = [1, 0.5, 2, 3];
+let speedIdx = 0;
+let speed = 1;
+let startTime = null;
+let animId = null;
+
+// Compute the taegeuk S-curve x-position for each slice
+// The S-curve is made from two semicircles of radius R/2
+// centered at (CX, CY - R/2) and (CX, CY + R/2)
+function computeSCurvePositions() {
+  const CX = W / 2;  // 320
+  const CY = H / 2;  // 320
+  const R = W / 2;    // 320 (full width circle)
+  const halfR = R / 2; // 160
+  
+  let positions = [];
+  
+  for (let i = 0; i < SLICES; i++) {
+    let y = i * SLICE_H + SLICE_H / 2; // center y of this slice
+    let dy = y - CY; // distance from center
+    
+    // Upper half: semicircle centered at (CX, CY - halfR) 
+    // curves to the RIGHT of center
+    if (dy < 0) {
+      // Upper region
+      let localY = y - (CY - halfR); // relative to upper semicircle center
+      if (Math.abs(localY) <= halfR) {
+        // Inside the upper semicircle range
+        let offset = Math.sqrt(halfR * halfR - localY * localY);
+        positions.push(CX + offset); // S-curve goes right in upper half
+      } else {
+        positions.push(CX); // outside the semicircle, default to center
+      }
+    } else {
+      // Lower half: semicircle centered at (CX, CY + halfR)
+      // curves to the LEFT of center
+      let localY = y - (CY + halfR); // relative to lower semicircle center
+      if (Math.abs(localY) <= halfR) {
+        let offset = Math.sqrt(halfR * halfR - localY * localY);
+        positions.push(CX - offset); // S-curve goes left in lower half
+      } else {
+        positions.push(CX); // outside the semicircle, default to center
+      }
+    }
+  }
+  
+  return positions;
+}
+
+const sCurveX = computeSCurvePositions();
+
+// Animation duration (base seconds)
+const ANIM_DURATION = 5.0;
+const STAGGER = 0.03; // stagger delay between slices
+
+function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+function easeInOutQuart(t) { return t < 0.5 ? 8*t*t*t*t : 1 - Math.pow(-2*t+2, 4)/2; }
+
+function animate(timestamp) {
+  if (!startTime) startTime = timestamp;
+  let elapsed = (timestamp - startTime) / 1000 * speed;
+  
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#0a0a0f';
+  ctx.fillRect(0, 0, W, H);
+  
+  let allDone = true;
+  
+  for (let i = 0; i < SLICES; i++) {
+    let cutX = sCurveX[i]; // where this strip is cut
+    let y = i * SLICE_H;
+    
+    // Stagger: slices from center outward
+    // Middle slices start first, edges last
+    let distFromCenter = Math.abs(i - SLICES / 2) / (SLICES / 2);
+    let delay = distFromCenter * SLICES * STAGGER;
+    
+    let t = (elapsed - delay) / ANIM_DURATION;
+    t = Math.max(0, Math.min(1, t));
+    t = easeInOutQuart(t);
+    
+    if (t < 1) allDone = false;
+    
+    // Left piece: from x=0 to x=cutX, slides in from left
+    let leftW = cutX;
+    if (leftW > 0) {
+      let offsetX = -(leftW + 50) * (1 - t); // starts off-screen left
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(Math.max(0, offsetX), y, leftW, SLICE_H);
+      ctx.clip();
+      ctx.drawImage(img, offsetX, 0, W, H);
+      ctx.restore();
+    }
+    
+    // Right piece: from x=cutX to x=W, slides in from right
+    let rightW = W - cutX;
+    if (rightW > 0) {
+      let offsetX = (rightW + 50) * (1 - t); // starts off-screen right
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(cutX + Math.min(offsetX, W), y, rightW, SLICE_H);
+      ctx.clip();
+      ctx.drawImage(img, offsetX, 0, W, H);
+      ctx.restore();
+    }
+  }
+  
+  // Draw subtle S-curve guide line during animation
+  if (!allDone) {
+    let avgT = Math.max(0, (elapsed - SLICES * STAGGER * 0.5) / ANIM_DURATION);
+    avgT = Math.min(1, avgT);
+    
+    if (avgT > 0.1 && avgT < 0.95) {
+      ctx.strokeStyle = `rgba(200, 168, 124, ${0.2 * (1 - avgT)})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let i = 0; i < SLICES; i++) {
+        let y = i * SLICE_H + SLICE_H / 2;
+        if (i === 0) ctx.moveTo(sCurveX[i], y);
+        else ctx.lineTo(sCurveX[i], y);
+      }
+      ctx.stroke();
+    }
+    
+    document.getElementById('phaseLabel').textContent = '陰陽合一';
+  } else {
+    document.getElementById('phaseLabel').textContent = '完';
+  }
+  
+  let totalTime = ANIM_DURATION + SLICES * STAGGER + 1;
+  if (elapsed < totalTime) {
+    animId = requestAnimationFrame(animate);
+  }
+}
+
+function startAnimation() {
+  if (animId) cancelAnimationFrame(animId);
+  startTime = null;
+  ctx.clearRect(0, 0, W, H);
+  animId = requestAnimationFrame(animate);
+}
+
+img.onload = () => { startAnimation(); };
+
+document.getElementById('replayBtn').addEventListener('click', startAnimation);
+document.getElementById('speedBtn').addEventListener('click', () => {
+  speedIdx = (speedIdx + 1) % speeds.length;
+  speed = speeds[speedIdx];
+  document.getElementById('speedBtn').textContent = `속도: ${speed}×`;
+  startAnimation();
+});
+</script>
+
+</body>
+</html>

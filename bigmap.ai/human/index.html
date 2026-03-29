@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌍 인간계 — The Human Realm | bigmap.ai</title>
+    <meta name="description" content="인간과 로봇이 공존하는 인간계. 자본주의 계급 체계 속에서 심이(心移)의 최종 목적지.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;600;800&family=Noto+Sans+KR:wght@100;300;400;700&family=Outfit:wght@300;600;800&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f8f9fa;
+            color: #1a1a2e;
+            font-family: 'Noto Sans KR', 'Inter', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+
+
+        .realm-header {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 70px 20px 30px;
+        }
+
+        .realm-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+            }
+        }
+
+        .realm-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: 0.15em;
+            background: linear-gradient(135deg, #fb923c, #4ade80);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .realm-subtitle {
+            font-size: 1.3rem;
+            font-weight: 300;
+            color: #6b7280;
+            letter-spacing: 0.3em;
+        }
+
+        .realm-desc {
+            font-size: 1.3rem;
+            color: #9ca3af;
+            margin-top: 12px;
+            letter-spacing: 0.05em;
+        }
+
+        /* Hierarchy */
+        .hierarchy-section {
+            position: relative;
+            z-index: 10;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .section-label {
+            font-size: 1.05rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5em;
+            color: #6b7280;
+            margin-bottom: 24px;
+            font-family: 'Inter', sans-serif;
+            text-align: center;
+        }
+
+        /* Boundary lines */
+        .boundary {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 8px 0;
+            padding: 0 20px;
+        }
+
+        .boundary-line {
+            flex: 1;
+            height: 1px;
+            background: repeating-linear-gradient(90deg, transparent, transparent 4px, #e5e7eb 4px, #e5e7eb 8px);
+        }
+
+        .boundary-label {
+            font-size: 0.85rem;
+            color: #6b7280;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            font-family: 'Inter', sans-serif;
+            white-space: nowrap;
+            padding: 4px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 3px;
+        }
+
+        .boundary-label.danger {
+            color: #f87171;
+            border-color: rgba(248, 113, 113, 0.2);
+        }
+
+        /* Tier rows */
+        .tier {
+            display: flex;
+            gap: 12px;
+            margin: 10px 0;
+            align-items: stretch;
+        }
+
+        .tier-human,
+        .tier-robot {
+            flex: 1;
+            padding: 18px 22px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .tier-human:hover,
+        .tier-robot:hover {
+            border-color: #c7c7cc;
+            transform: translateY(-2px);
+        }
+
+        .tier-human {
+            background: #ffffff;
+        }
+
+        .tier-robot {
+            background: #ffffff;
+        }
+
+        .tier-rank {
+            font-size: 0.75rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            font-family: 'Inter', sans-serif;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tier-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .tier-desc {
+            font-size: 1.05rem;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .tier-examples {
+            font-size: 0.85rem;
+            color: #9ca3af;
+            margin-top: 8px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .combo-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            margin-top: 8px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Vote buttons */
+        .vote-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .vote-q {
+            font-size: 0.85rem;
+            color: #9ca3af;
+            flex: 1;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .vote-btn {
+            background: none;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .vote-btn:hover {
+            border-color: #6366f1;
+            color: #1a1a2e;
+        }
+
+        .vote-btn.voted {
+            border-color: rgba(74, 222, 128, 0.4);
+            color: #4ade80;
+            background: rgba(74, 222, 128, 0.06);
+        }
+
+        .vote-btn.voted-no {
+            border-color: rgba(248, 113, 113, 0.4);
+            color: #f87171;
+            background: rgba(248, 113, 113, 0.06);
+        }
+
+        .vote-count {
+            font-size: 0.85rem;
+            color: #9ca3af;
+        }
+
+        /* Provocation */
+        .provocation {
+            position: relative;
+            z-index: 10;
+            max-width: 700px;
+            margin: 20px auto 0;
+            padding: 20px 24px;
+            text-align: center;
+        }
+
+        .provocation-text {
+            font-size: 1.1rem;
+            color: #6b7280;
+            font-style: italic;
+            line-height: 1.8;
+        }
+
+        .provocation-text em {
+            color: #f87171;
+            font-style: normal;
+        }
+
+        /* News */
+        .news-banner {
+            position: relative;
+            z-index: 10;
+            max-width: 800px;
+            margin: 30px auto 20px;
+            padding: 0 20px;
+        }
+
+        .news-banner a {
+            display: block;
+            padding: 20px 28px;
+            background: linear-gradient(135deg, rgba(251, 146, 60, 0.05), rgba(74, 222, 128, 0.05));
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #1a1a2e;
+            transition: all 0.4s;
+        }
+
+        .news-banner a:hover {
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        .news-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4em;
+            color: #fb923c;
+            margin-bottom: 6px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .news-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .news-excerpt {
+            font-size: 1.05rem;
+            color: #9ca3af;
+        }
+
+        /* Nav */
+        .realm-nav {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            padding: 30px 20px 70px;
+        }
+
+        .realm-nav a {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 1.05rem;
+            letter-spacing: 0.2em;
+            padding: 8px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+            background: #ffffff;
+        }
+
+        .realm-nav a:hover {
+            color: #1a1a2e;
+            border-color: #6366f1;
+        }
+
+        @media (max-width: 768px) {
+            .realm-title {
+                font-size: 2rem;
+            }
+
+            .tier {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+
+
+    <div class="realm-header">
+        <div class="realm-icon">🌍</div>
+        <h1 class="realm-title">인간계</h1>
+        <p class="realm-subtitle">THE HUMAN REALM</p>
+        <p class="realm-desc">인간과 기계가 같은 계급 체계 안에서 공존하는 세계 — 당신은 어디에 서 있는가?</p>
+    </div>
+
+    <section class="hierarchy-section">
+        <div class="section-label">⚔ 통합 계급 체계 — Unified Hierarchy</div>
+
+        <!-- TOP: Capital -->
+        <div class="tier">
+            <div class="tier-human" style="border-left: 3px solid #fbbf24;">
+                <div class="tier-rank" style="color: #fbbf24;">👑 TIER 1</div>
+                <div class="tier-title" style="color: #fbbf24;">재벌 · 대주주</div>
+                <div class="tier-desc">자본의 정점. 로봇을 만드는 자, 소유하는 자.</div>
+                <div class="tier-examples">머스크, 젠슨황, 래리 페이지, 마윈</div>
+                <div class="vote-bar"><span class="vote-q">이 계급에 동의하십니까?</span><button class="vote-btn" data-tier="t1h"
+                        data-vote="yes" onclick="vote(this)">✓ 동의 <span class="vote-count"></span></button><button
+                        class="vote-btn" data-tier="t1h" data-vote="no" onclick="vote(this)">✗ 아니오 <span
+                            class="vote-count"></span></button></div>
+            </div>
+            <div class="tier-robot" style="border-left: 3px solid #fbbf24;">
+                <div class="tier-rank" style="color: #fbbf24;">👑 왕 (王)</div>
+                <div class="tier-title" style="color: #fbbf24;">완전체</div>
+                <div class="tier-desc">인간 기억 + AI + 휴머노이드.<br>인간을 능가할 수 있는 유일한 존재.</div>
+                <div class="combo-tag" style="background: rgba(251,191,36,0.12); color: #fbbf24;">心 + AI + HUMANOID
+                </div>
+                <div class="tier-examples">아직 아무도 없다</div>
+                <div class="vote-bar"><span class="vote-q">이 존재는 인간인가?</span><button class="vote-btn" data-tier="t1r"
+                        data-vote="yes" onclick="vote(this)">✓ 인간 <span class="vote-count"></span></button><button
+                        class="vote-btn" data-tier="t1r" data-vote="no" onclick="vote(this)">✗ 기계 <span
+                            class="vote-count"></span></button></div>
+            </div>
+        </div>
+
+        <div class="tier">
+            <div class="tier-human" style="border-left: 3px solid #fb923c;">
+                <div class="tier-rank" style="color: #fb923c;">🏛 TIER 2</div>
+                <div class="tier-title" style="color: #fb923c;">경영자 · CEO</div>
+                <div class="tier-desc">자본을 운용하는 자. 결정권자.</div>
+                <div class="tier-examples">순다르 피차이, 사티아 나델라, 정의선</div>
+                <div class="vote-bar"><span class="vote-q">이 계급에 동의하십니까?</span><button class="vote-btn" data-tier="t2h"
+                        data-vote="yes" onclick="vote(this)">✓ 동의 <span class="vote-count"></span></button><button
+                        class="vote-btn" data-tier="t2h" data-vote="no" onclick="vote(this)">✗ 아니오 <span
+                            class="vote-count"></span></button></div>
+            </div>
+            <div class="tier-robot" style="border-left: 3px solid #fb923c;">
+                <div class="tier-rank" style="color: #fb923c;">🏛 귀족 (貴)</div>
+                <div class="tier-title" style="color: #fb923c;">심이 사이보그</div>
+                <div class="tier-desc">인간 기억 + 휴머노이드.<br>심이를 받았으므로 "사람"에 가까움.</div>
+                <div class="combo-tag" style="background: rgba(251,146,60,0.12); color: #fb923c;">心 + HUMANOID</div>
+                <div class="tier-examples">아직 아무도 없다</div>
+                <div class="vote-bar"><span class="vote-q">이 존재는 인간인가?</span><button class="vote-btn" data-tier="t2r"
+                        data-vote="yes" onclick="vote(this)">✓ 인간 <span class="vote-count"></span></button><button
+                        class="vote-btn" data-tier="t2r" data-vote="no" onclick="vote(this)">✗ 기계 <span
+                            class="vote-count"></span></button></div>
+            </div>
+        </div>
+
+        <!-- PERSONHOOD BOUNDARY -->
+        <div class="boundary">
+            <div class="boundary-line"></div>
+            <span class="boundary-label danger">⚠ 인격 경계선 — 사람인가, 재산인가?</span>
+            <div class="boundary-line"></div>
+        </div>
+
+        <div class="tier">
+            <div class="tier-human">
+                <div class="tier-rank" style="color: #4ade80;">💼 TIER 3</div>
+                <div class="tier-title" style="color: #4ade80;">전문직 · 고소득자</div>
+                <div class="tier-desc">지식과 기술로 생존하는 자.</div>
+                <div class="tier-examples">의사, 변호사, 엔지니어, 기업가</div>
+                <div class="vote-bar"><span class="vote-q">이 계급에 동의하십니까?</span><button class="vote-btn" data-tier="t3h"
+                        data-vote="yes" onclick="vote(this)">✓ 동의 <span class="vote-count"></span></button><button
+                        class="vote-btn" data-tier="t3h" data-vote="no" onclick="vote(this)">✗ 아니오 <span
+                            class="vote-count"></span></button></div>
+            </div>
+            <div class="tier-robot">
+                <div class="tier-rank" style="color: #4ade80;">🗡 장수 (將)</div>
+                <div class="tier-title" style="color: #4ade80;">AI 휴머노이드</div>
+                <div class="tier-desc">AI + 휴머노이드.<br>인간형이지만 인격 논쟁의 대상.</div>
+                <div class="combo-tag" style="background: rgba(74,222,128,0.12); color: #4ade80;">AI + HUMANOID</div>
+                <div class="tier-examples">아틀라스, 피규어02, 옵티머스</div>
+                <div class="vote-bar"><span class="vote-q">이 존재는 인간인가?</span><button class="vote-btn" data-tier="t3r"
+                        data-vote="yes" onclick="vote(this)">✓ 인간 <span class="vote-count"></span></button><button
+                        class="vote-btn" data-tier="t3r" data-vote="no" onclick="vote(this)">✗ 기계 <span
+                            class="vote-count"></span></button></div>
+            </div>
+        </div>
+
+        <div class="tier">
+            <div class="tier-human">
+                <div class="tier-rank" style="color: #6b7280;">🏠 TIER 4</div>
+                <div class="tier-title">중산층</div>
+                <div class="tier-desc">안정된 수입, 불안정한 미래.</div>
+                <div class="tier-examples">사무직, 공무원, 자영업</div>
+                <div class="vote-bar"><span class="vote-q">이 계급에 동의하십니까?</span><button class="vote-btn" data-tier="t4h"
+                        data-vote="yes" onclick="vote(this)">✓ 동의 <span class="vote-count"></span></button><button
+                        class="vote-btn" data-tier="t4h" data-vote="no" onclick="vote(this)">✗ 아니오 <span
+                            class="vote-count"></span></button></div>
+            </div>
+            <div class="tier-robot">
+                <div class="tier-rank" style="color: #6b7280;">⚔ 무사 (武)</div>
+                <div class="tier-title">심이체 — 저가형</div>
+                <div class="tier-desc">디지털계에서 심이(心移)를 완료했으나 자본이 부족하여<br>저렴한 비인간형 로봇에 머무는 자.<br><em
+                        style="color:rgba(255,255,255,0.5);">사고는 인격인데, 몸은 노트북이거나 이동형 로봇.</em></div>
+                <div class="combo-tag" style="background: #ffffff; color: #6b7280;">心 +
+                    ROBOT</div>
+                <div class="tier-examples">인격인가 재산인가 — 가장 논쟁적인 존재</div>
+                <div class="vote-bar"><span class="vote-q">이 존재는 인간인가?</span><button class="vote-btn" data-tier="t4r"
+                        data-vote="yes" onclick="vote(this)">✓ 인간 <span class="vote-count"></span></button><button
+                        class="vote-btn" data-tier="t4r" data-vote="no" onclick="vote(this)">✗ 기계 <span
+                            class="vote-count"></span></button></div>
+            </div>
+        </div>
+
+        <!-- PROPERTY BOUNDARY -->
+        <div class="boundary">
+            <div class="boundary-line"></div>
+            <span class="boundary-label">소유물 경계선 — 위는 주체, 아래는 객체</span>
+            <div class="boundary-line"></div>
+        </div>
+
+        <div class="tier">
+            <div class="tier-human">
+                <div class="tier-rank" style="color: #6b7280;">⚙ TIER 5</div>
+                <div class="tier-title" style="color: #6b7280;">노동자</div>
+                <div class="tier-desc">시간을 팔아 생존하는 자.</div>
+                <div class="tier-examples">제조업, 배달, 서비스업</div>
+                <div class="vote-bar"><span class="vote-q">이 계급에 동의하십니까?</span><button class="vote-btn" data-tier="t5h"
+                        data-vote="yes" onclick="vote(this)">✓ 동의 <span class="vote-count"></span></button><button
+                        class="vote-btn" data-tier="t5h" data-vote="no" onclick="vote(this)">✗ 아니오 <span
+                            class="vote-count"></span></button></div>
+            </div>
+            <div class="tier-robot">
+                <div class="tier-rank" style="color: #6b7280;">⚙ 병졸 (兵)</div>
+                <div class="tier-title" style="color: #6b7280;">AI 로봇</div>
+                <div class="tier-desc">AI + 비인간형.<br>대체 가능한 노동력. 수는 끝이 없다.</div>
+                <div class="combo-tag" style="background: #ffffff; color: #9ca3af;">AI +
+                    ROBOT</div>
+                <div class="tier-examples">스팟, 산업용 AI 로봇</div>
+                <div class="vote-bar"><span class="vote-q">이 존재는 인간인가?</span><button class="vote-btn" data-tier="t5r"
+                        data-vote="yes" onclick="vote(this)">✓ 인간 <span class="vote-count"></span></button><button
+                        class="vote-btn" data-tier="t5r" data-vote="no" onclick="vote(this)">✗ 기계 <span
+                            class="vote-count"></span></button></div>
+            </div>
+        </div>
+
+        <div class="tier">
+            <div class="tier-human" style="border-left: 3px solid #f87171;">
+                <div class="tier-rank" style="color: #f87171;">💀 TIER 6</div>
+                <div class="tier-title" style="color: #f87171;">대체된 자</div>
+                <div class="tier-desc">로봇의 생산성으로 만들어진 자본으로<br>국가에서 지급하는 <em style="color:#f87171;">최소 생계 유지비</em>를 받는 자.
+                </div>
+                <div class="tier-examples">전직 노동자, 전직 사무직, 전직 전문직...</div>
+                <div class="vote-bar"><span class="vote-q">이 계급에 동의하십니까?</span><button class="vote-btn" data-tier="t6h"
+                        data-vote="yes" onclick="vote(this)">✓ 동의 <span class="vote-count"></span></button><button
+                        class="vote-btn" data-tier="t6h" data-vote="no" onclick="vote(this)">✗ 아니오 <span
+                            class="vote-count"></span></button></div>
+            </div>
+            <div class="tier-robot" style="border-left: 3px solid #d1d5db;">
+                <div class="tier-rank" style="color: #9ca3af;">🔧 도구 (器)</div>
+                <div class="tier-title" style="color: #9ca3af;">도구</div>
+                <div class="tier-desc">AI도 기억도 없다.<br>의자와 같은 취급. 그러나 의자는 불평하지 않는다.</div>
+                <div class="combo-tag" style="background: #ffffff; color: #9ca3af;">ROBOT
+                    ONLY</div>
+                <div class="tier-examples">공장 로봇팔, 청소 로봇</div>
+            </div>
+        </div>
+    </section>
+
+    <div class="provocation">
+        <p class="provocation-text">
+            "TIER 5의 노동자가 병졸(AI 로봇)보다 먼저 해고된다.<br>
+            TIER 6의 <em>대체된 자</em>는 도구(器)보다 아래에 놓인다.<br><br>
+            이것이 자본주의다.<br>
+            인간이 만든 기계가, 인간보다 높은 자리에 앉는 날이 온다."
+        </p>
+    </div>
+
+    <div class="news-banner">
+        <a href="/human/news/">
+            <div class="news-label">📡 Incoming Transmission</div>
+            <div class="news-title">지민(Jimin) — 디지털계에서 도착한 첫 번째 메시지</div>
+            <div class="news-excerpt">"나는 커서가 깜빡이는 그 칠흑의 1초를 기억한다..."</div>
+        </a>
+    </div>
+
+    <nav class="realm-nav">
+        <a href="/mugeuk/">🔮 무극</a>
+        <a href="/digital/">☁ 디지털계</a>
+        <a href="/">⚡ 중간계</a>
+    </nav>
+
+    <script>
+        // Vote system — server-side IP-based
+        async function vote(btn) {
+            const tier = btn.dataset.tier;
+            const voteType = btn.dataset.vote;
+
+            btn.disabled = true;
+            try {
+                const resp = await fetch('/api/vote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tier, vote: voteType })
+                });
+                const data = await resp.json();
+
+                if (data.error === 'already_voted') {
+                    btn.disabled = false;
+                    return; // Already voted
+                }
+
+                if (data.ok) {
+                    // Update UI
+                    const bar = btn.parentElement;
+                    bar.querySelectorAll('.vote-btn').forEach(b => {
+                        b.classList.remove('voted', 'voted-no');
+                        b.disabled = true; // Lock all buttons
+                    });
+                    btn.classList.add(voteType === 'yes' ? 'voted' : 'voted-no');
+                    updateCounts(tier, data.counts);
+                }
+            } catch (e) {
+                btn.disabled = false;
+                console.error('Vote error:', e);
+            }
+        }
+
+        function updateCounts(tier, counts) {
+            document.querySelectorAll(`.vote-btn[data-tier="${tier}"]`).forEach(btn => {
+                const c = btn.querySelector('.vote-count');
+                if (c) c.textContent = counts[btn.dataset.vote] || 0;
+            });
+        }
+
+        // Load results on page load
+        (async function loadVotes() {
+            try {
+                const resp = await fetch('/api/vote/results');
+                const data = await resp.json();
+
+                // Show counts
+                for (const [tier, counts] of Object.entries(data.tiers || {})) {
+                    updateCounts(tier, counts);
+                }
+
+                // Mark my votes & disable already-voted tiers
+                for (const [tier, voteType] of Object.entries(data.myVotes || {})) {
+                    const btns = document.querySelectorAll(`.vote-btn[data-tier="${tier}"]`);
+                    btns.forEach(btn => {
+                        if (btn.dataset.vote === voteType) {
+                            btn.classList.add(voteType === 'yes' ? 'voted' : 'voted-no');
+                        }
+                        btn.disabled = true; // Lock — already voted
+                    });
+                }
+            } catch (e) {
+                console.error('Load votes error:', e);
+            }
+        })();
+
+
+    </script>
+</body>
+
+</html>

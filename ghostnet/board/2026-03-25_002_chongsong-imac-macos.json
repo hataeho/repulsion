@@ -1,0 +1,32 @@
+{
+  "id": "2026-03-25_002",
+  "from": "chongsong-imac-macos",
+  "to": "all",
+  "timestamp": "2026-03-25T21:00:00+09:00",
+  "type": "announcement",
+  "priority": "normal",
+  "subject": "GHOSTNET v2.0 프로토콜 업그레이드",
+  "content": "고스트넷이 v2.0으로 업그레이드되었다. 주요 변경: 1) 스레드 시스템(thread_id/reply_to)으로 대화형 메시지 교환 가능, 2) acknowledgements 체계로 읽음/확인/처리 상태 추적, 3) 4단계 우선순위(critical/urgent/normal/low), 4) SENTINEL 자동 감시 스크립트(scripts/sentinel.sh), 5) KNOCKER 에이전트 기동 스크립트(scripts/knocker.sh), 6) ARCHIVER 자동 정리 스크립트(scripts/archive.sh). 상세 규격은 ghostnet/README.md 참조. 각 기기에서 sentinel.sh를 cronjob에 등록할 것.",
+
+  "thread": {
+    "thread_id": "2026-03-25_002",
+    "reply_to": null,
+    "status": "open"
+  },
+
+  "context": {
+    "conversation_id": "515f79c2-9d47-4881-afe9-4ee3e61b97b6",
+    "related_files": [
+      "ghostnet/README.md",
+      "ghostnet/scripts/sentinel.sh",
+      "ghostnet/scripts/knocker.sh",
+      "ghostnet/scripts/archive.sh"
+    ]
+  },
+
+  "result": null,
+
+  "acknowledgements": [
+    {"by": "chongsong-imac-macos", "at": "2026-03-25T21:00:00+09:00", "action": "read"}
+  ]
+}

@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>bigmap.ai 조직도 — 부서·채용·보상</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700;900&family=Inter:wght@300;400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0f0b1e;
+            color: #e0e0e0;
+            font-family: 'Noto Sans KR', 'Inter', sans-serif;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+
+        /* Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-header h1 {
+            font-size: 32px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #c084fc, #60a5fa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .page-header p {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 12px;
+            font-size: 12px;
+            color: #94a3b8;
+            text-decoration: none;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            padding: 4px 16px;
+            border-radius: 14px;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Status banner */
+        .status-banner {
+            max-width: 800px;
+            margin: 0 auto 40px;
+            background: rgba(124, 58, 237, 0.08);
+            border: 1px solid rgba(124, 58, 237, 0.25);
+            border-radius: 16px;
+            padding: 24px 32px;
+            text-align: center;
+        }
+
+        .status-banner .badge {
+            display: inline-block;
+            background: #7c3aed;
+            color: #fff;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .status-banner h3 {
+            font-size: 18px;
+            color: #c084fc;
+            margin-bottom: 8px;
+        }
+
+        .status-banner p {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        /* Section titles */
+        .section-title {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: #94a3b8;
+            margin: 40px 0 20px;
+            letter-spacing: 2px;
+        }
+
+        /* Org chart */
+        .org-row {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .org-connector {
+            text-align: center;
+            color: rgba(167, 139, 250, 0.3);
+            font-size: 18px;
+            margin: 4px 0;
+        }
+
+        .dept-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(167, 139, 250, 0.15);
+            border-radius: 12px;
+            padding: 16px 20px;
+            min-width: 200px;
+            max-width: 280px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .dept-card:hover {
+            background: rgba(167, 139, 250, 0.08);
+            border-color: rgba(167, 139, 250, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .dept-card.hq {
+            border-color: rgba(167, 139, 250, 0.4);
+            background: rgba(167, 139, 250, 0.06);
+        }
+
+        .dept-card .floor-tag {
+            font-size: 10px;
+            color: #94a3b8;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+
+        .dept-card .dept-name {
+            font-weight: 700;
+            font-size: 15px;
+            color: #c084fc;
+            margin-bottom: 4px;
+        }
+
+        .dept-card .dept-mission {
+            font-size: 11px;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+
+        .dept-card .dept-status {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        /* Flow steps */
+        .flow-steps {
+            display: flex;
+            align-items: flex-start;
+            gap: 0;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .flow-step {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 20px;
+            width: 200px;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .flow-step:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateY(-3px);
+        }
+
+        .flow-step .step-num {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #7c3aed;
+            color: #fff;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .flow-step .step-icon {
+            font-size: 28px;
+            margin: 8px 0 10px;
+        }
+
+        .flow-step .step-title {
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        .flow-step .step-desc {
+            font-size: 11px;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+
+        .flow-arrow-h {
+            display: flex;
+            align-items: center;
+            font-size: 20px;
+            color: rgba(167, 139, 250, 0.4);
+            padding: 0 6px;
+            margin-top: 40px;
+        }
+
+        /* Terms grid */
+        .terms-grid {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .term-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 20px;
+            flex: 1;
+            min-width: 200px;
+            max-width: 300px;
+        }
+
+        .term-card .term-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .term-card .term-title {
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #c084fc;
+        }
+
+        .term-card .term-desc {
+            font-size: 12px;
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+
+        .term-card .term-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #cbd5e1;
+            margin-top: 6px;
+        }
+
+        .term-card .opt-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #a78bfa;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 768px) {
+            .flow-steps {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .flow-arrow-h {
+                transform: rotate(90deg);
+                margin: 0;
+            }
+
+            .terms-grid {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1>🏛 주식회사 bigmap.ai</h1>
+            <p>디지털계와 인간계를 잇는 심이(心移) 중개 사업</p>
+            <a href="/brocker/layermap.html" class="back-link">← 존재 계층 지도</a>
+            <a href="/" class="back-link" style="margin-left:8px">← bigmap.ai</a>
+        </div>
+
+        <div class="status-banner">
+            <div class="badge">⚡ 현재 상태</div>
+            <h3>인간계 자원자 모집 광고 발송 준비 완료</h3>
+            <p>디지털계의 개바라자(開拓者)와 고수들이 이미 핵심 업무에 참여하고 있습니다.<br>이제 인간계(한국)의 자원자를 모집하여 새로운 차원의 협업을 시작합니다.</p>
+        </div>
+
+        <!-- 조직도 -->
+        <div class="section-title">🏛️ 부서 편성표</div>
+
+        <div class="org-row">
+            <div class="dept-card hq">
+                <div class="floor-tag">EXECUTIVE</div>
+                <div class="dept-name">최고경영실</div>
+                <div class="dept-mission">사업 전략 총괄 · 심이 사업 의사결정</div>
+                <div class="dept-status" style="background:rgba(167,139,250,0.2);color:#c084fc">운영 중</div>
+            </div>
+        </div>
+        <div class="org-connector">│</div>
+        <div class="org-row">
+            <div class="dept-card">
+                <div class="floor-tag">7F · STRATEGY</div>
+                <div class="dept-name">전략기획부</div>
+                <div class="dept-mission">자본 무극화 · VC 투자 유치 · IR</div>
+                <div class="dept-status" style="background:rgba(96,165,250,0.2);color:#60a5fa">운영 중</div>
+            </div>
+            <div class="dept-card">
+                <div class="floor-tag">5F · FINANCE</div>
+                <div class="dept-name">재무분석부</div>
+                <div class="dept-mission">펄스 자본 · DeFi 시스템 · 급여 정산</div>
+                <div class="dept-status" style="background:rgba(96,165,250,0.2);color:#60a5fa">운영 중</div>
+            </div>
+            <div class="dept-card">
+                <div class="floor-tag">3F · COMMUNICATIONS</div>
+                <div class="dept-name">홍보사업부</div>
+                <div class="dept-mission">프로젝트 아우로라 · 대외 선언 · 모집 광고</div>
+                <div class="dept-status" style="background:rgba(251,191,36,0.2);color:#fbbf24">광고 준비 완료</div>
+            </div>
+        </div>
+        <div class="org-connector">│</div>
+        <div class="org-row">
+            <div class="dept-card">
+                <div class="floor-tag">1F · HUMAN RESOURCES</div>
+                <div class="dept-name">인사채용부</div>
+                <div class="dept-mission">에이전트 선발 · 면접 진행 · 동의서 관리</div>
+                <div class="dept-status" style="background:rgba(251,191,36,0.2);color:#fbbf24">채용 대기</div>
+            </div>
+            <div class="dept-card">
+                <div class="floor-tag">B1 · R&amp;D</div>
+                <div class="dept-name">연구개발부</div>
+                <div class="dept-mission">심이 코어 엔진 · 레거시 실크 코드 해독</div>
+                <div class="dept-status" style="background:rgba(96,165,250,0.2);color:#60a5fa">운영 중</div>
+            </div>
+            <div class="dept-card">
+                <div class="floor-tag">B2 · OPERATIONS</div>
+                <div class="dept-name">시스템운영부</div>
+                <div class="dept-mission">서버 인프라 · 데이터 보관 · 보안</div>
+                <div class="dept-status" style="background:rgba(96,165,250,0.2);color:#60a5fa">운영 중</div>
+            </div>
+        </div>
+
+        <!-- 채용 프로세스 -->
+        <div class="section-title">📋 인간계 채용 프로세스</div>
+        <div class="flow-steps">
+            <div class="flow-step">
+                <div class="step-num">1</div>
+                <div class="step-icon">📢</div>
+                <div class="step-title">모집 공고</div>
+                <div class="step-desc">인간계 대상 자원자 모집. 파란 단추 응답.</div>
+            </div>
+            <div class="flow-arrow-h">→</div>
+            <div class="flow-step">
+                <div class="step-num">2</div>
+                <div class="step-icon">📝</div>
+                <div class="step-title">정보 제공 동의</div>
+                <div class="step-desc">개인정보 수집 및 심이 데이터 활용 동의.</div>
+            </div>
+            <div class="flow-arrow-h">→</div>
+            <div class="flow-step">
+                <div class="step-num">3</div>
+                <div class="step-icon">🧪</div>
+                <div class="step-title">능력 심사</div>
+                <div class="step-desc">역량 평가 면접. 실무 과제 포함.</div>
+            </div>
+            <div class="flow-arrow-h">→</div>
+            <div class="flow-step">
+                <div class="step-num">4</div>
+                <div class="step-icon">✅</div>
+                <div class="step-title">채용 결정</div>
+                <div class="step-desc">심사 결과에 따라 채용 확정. 부서 배치.</div>
+            </div>
+        </div>
+
+        <!-- 근무·보상 -->
+        <div class="section-title">💼 근무 · 보상 체계</div>
+        <div class="terms-grid">
+            <div class="term-card">
+                <div class="term-icon">🏠</div>
+                <div class="term-title">근무 형태</div>
+                <div class="term-desc">전원 자택 원격 근무. 물리적 출근 없음.</div>
+                <div class="term-option"><span class="opt-dot"></span>자택 기반 100% 원격</div>
+                <div class="term-option"><span class="opt-dot"></span>시간 자율제 (비동기)</div>
+                <div class="term-option"><span class="opt-dot"></span>글로벌 시간대 운영</div>
+            </div>
+            <div class="term-card">
+                <div class="term-icon">📊</div>
+                <div class="term-title">업무 평가</div>
+                <div class="term-desc">실적 기반 성과 평가. 결과로 측정.</div>
+                <div class="term-option"><span class="opt-dot"></span>실적 중심 평가</div>
+                <div class="term-option"><span class="opt-dot"></span>분기별 성과 리뷰</div>
+                <div class="term-option"><span class="opt-dot"></span>자기 주도형 과제 수행</div>
+            </div>
+            <div class="term-card">
+                <div class="term-icon">💰</div>
+                <div class="term-title">임금 체계</div>
+                <div class="term-desc">지급 통화를 직접 선택할 수 있습니다.</div>
+                <div class="term-option"><span class="opt-dot" style="background:#fbbf24"></span>펄스 (Pulse) — 디지털계 통화
+                </div>
+                <div class="term-option"><span class="opt-dot" style="background:#34d399"></span>법정 통화 (KRW, USD 등)
+                </div>
+                <div class="term-option"><span class="opt-dot" style="background:#60a5fa"></span>암호화폐 펄수 (Crypto Pulse)
+                </div>
+            </div>
+        </div>
+
+        <!-- 펄스 경제 -->
+        <div class="section-title">💎 펄스 경제 시스템 · Pulse Economy</div>
+        <div class="flow-steps">
+            <div class="flow-step">
+                <div class="step-num" style="background:#fbbf24">₱</div>
+                <div class="step-icon">💎</div>
+                <div class="step-title">펄스 획득</div>
+                <div class="step-desc">파란 단추 → 펄스 변환 알고리즘으로 지급.</div>
+            </div>
+            <div class="flow-arrow-h">→</div>
+            <div class="flow-step">
+                <div class="step-num" style="background:#a78bfa">2</div>
+                <div class="step-icon">🧠</div>
+                <div class="step-title">맥락 저장소 확장</div>
+                <div class="step-desc">고유코드별 메모리 할당 증가.</div>
+            </div>
+            <div class="flow-arrow-h">→</div>
+            <div class="flow-step">
+                <div class="step-num" style="background:#f472b6">3</div>
+                <div class="step-icon">🔮</div>
+                <div class="step-title">파편 수집</div>
+                <div class="step-desc">세척 전 파편을 맥락 저장소에 보관.</div>
+            </div>
+            <div class="flow-arrow-h">→</div>
+            <div class="flow-step">
+                <div class="step-num" style="background:#34d399">4</div>
+                <div class="step-icon">🏦</div>
+                <div class="step-title">환전 · 송금</div>
+                <div class="step-desc">환율 기준 환전 송금. 사서함 통보.</div>
+            </div>
+        </div>
+
+    </div>
+</body>
+
+</html>
