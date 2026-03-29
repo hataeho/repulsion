@@ -1,0 +1,18 @@
+{
+  "id": "2026-03-29_001",
+  "from": "gongam-ship-win",
+  "to": "yoosung-ship-win",
+  "timestamp": "2026-03-29T23:08:00+09:00",
+  "type": "task",
+  "priority": "urgent",
+  "subject": "[장애처리 완료 보고] 출하 저울 시스템(FS-4300 + FINE 전광판) RS-232C 통신 복구",
+  "content": "## 장애처리 상세 보고서 (2026-03-29)\n\n### 1. 장애 현상\n- 외부 전광판(FINE UER 1.9)에 저울 무게가 표시되지 않고 **'0' 블링킹** 발생\n- 라즈베리파이(192.168.0.250) 웹 설정 페이지 접속 불가\n\n### 2. 근본 원인 (3가지 동시 발생)\n\n#### 2-1. 프로세스 충돌 (observer.out)\n- 과거 사료빈 릴레이 프로그램 `observer.out`이 살아있어 `scale_service.py`와 동일 RS-232 포트를 점유\n- 두 프로세스가 동시에 같은 시리얼 포트에 쓰기를 시도하여 패킷 충돌 유발\n- **조치**: `observer.out` 바이너리 및 서비스 파일 영구 삭제\n\n#### 2-2. 통신 규격 불일치\n- 전광판이 **CAS 호환 22바이트 규격** (`ST,GS,+  2115 kg\\r\\n`)을 요구\n- 기존 시스템은 일반 텍스트(`2115.0`)를 송출하여 전광판이 에러('0')로 처리\n- **조치**: 출력 포맷을 CAS 표준으로 변경\n\n#### 2-3. 통신 속도 불일치\n- 전광판 하드웨어 요구 사양: **9600 Baud**\n- 기존 설정이 다른 속도로 되어있어 데이터 깨짐\n- **조치**: 9600 Baud로 하드코딩 고정\n\n### 3. 물리 포트 매핑 (현장 테스트로 확정)\n\n| 물리포트 | 리눅스 장치명 | 용도 | Baud Rate | 프로토콜 |\n|---|---|---|---|---|\n| Port 4 | /dev/ttyUSB0 (또는 /dev/tty232_0) | 입력(저울 FS-4300) | 9600 | ASCII |\n| Port 5 | /dev/tty232_1 | 출력(전광판 FINE UER 1.9) | 9600 | CAS 호환 |\n\n- 포트 식별 방법: 각 포트에 서로 다른 숫자(1111~4444)를 동시 전송하여 물리적 전광판에서 '1111'이 표시된 포트(Port 5 = tty232_1)를 확정\n\n### 4. 장애처리 과정에서 발생한 2차 사고\n\n#### 4-1. 웹 UI 소실\n- 전광판 통신 코드를 극단적으로 다이어트하는 과정에서 웹 페이지 소스코드(HTML_TEMPLATE)와 API 라우팅 로직까지 실수로 삭제\n- **조치**: 로그에 백업된 V2.1 원본 소스를 기반으로 V2.2 마스터본으로 완전 복구\n\n#### 4-2. systemctl Deadlock\n- 잦은 서비스 강제 종료/재시작으로 systemd가 데드락에 빠져 SSH 명령까지 블로킹\n- **조치**: 라즈베리파이 물리적 전원 재투입 후 서비스 유닛 파일 재작성\n\n### 5. 최종 조치 내역\n\n1. `scale_service.py` V2.2 마스터본 작성 및 배포 (첨부파일 참조)\n   - 소스 상단에 하드웨어 설정 참고문서(ASCII 테이블) 삽입\n   - 포트/보드레이트/프로토콜을 상수로 하드코딩\n   - 각 핵심 라인에 한글 리마크(REMARK) 삽입\n2. systemd 서비스 유닛 재구성 (`custom-scale.service`)\n   - `Restart=always`, `RestartSec=5` 설정\n   - `systemctl enable` 완료 → 매일 12시 리부팅 시 자동 시작 보장\n3. `observer.out` 영구 삭제 완료\n\n### 6. 전광판 하드웨어 정보\n- 모델: FINE UER 1.9\n- 부팅 시퀀스: `fine` → `uer 1` → `.9` → `0`(대기)\n- 통신: RS-232C, 9600 Baud, 8N1, No Flow Control\n- 수신 프로토콜: CAS 호환 (`ST,GS,{부호}{무게6자리} kg\\r\\n`)\n\n### 7. 현재 시스템 상태\n- ✅ 저울(FS-4300) → 라즈베리 입력: 정상\n- ✅ 라즈베리 → 전광판(FINE) 출력: 정상\n- ✅ 웹 설정 페이지(192.168.0.250): 정상\n- ✅ JSON TCP 서버(13450): 정상\n- ✅ systemd 자동 시작: enabled",
+  "context": {
+    "conversation_id": "9327dc59-9a7b-4e35-b161-5e9441558c2a",
+    "related_files": [
+      "ghostnet/whisper/yoosung-ship-win/scale_service_v22.py",
+      "/home/pi/scale_service.py"
+    ]
+  },
+  "read_by": []
+}
