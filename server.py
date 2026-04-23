@@ -119,12 +119,12 @@ class ShipmentCloseRequest(BaseModel):
     feed_amount: int = 0
 
 class ShipmentDayCreate(BaseModel):
-    batch_id: int; day_number: int; age_days: int = 0
+    batch_id: int; day_number: int; age_days: float = 0
     target_weight: float = 0; ship_date: str = ""; truck_count: int = 0
     default_head_count: int = 2480
 
 class ShipmentDayUpdate(BaseModel):
-    day_number: Optional[int] = None; age_days: Optional[int] = None
+    day_number: Optional[int] = None; age_days: Optional[float] = None
     target_weight: Optional[float] = None; ship_date: Optional[str] = None; truck_count: Optional[int] = None
     default_head_count: Optional[int] = None
 
@@ -226,6 +226,23 @@ def post_alert(a: AlertMsg):
 @app.get("/api/alerts")
 def get_alert():
     return global_alert
+
+@app.delete("/api/alerts")
+def clear_alert():
+    global global_alert
+    global_alert = {}
+    return {"ok": True}
+
+@app.patch("/api/loads/{load_id}/move")
+def move_load(load_id: int, target_sd_id: int):
+    conn = get_db()
+    cur = conn.execute("UPDATE load SET shipment_day_id=? WHERE id=?", (target_sd_id, load_id))
+    conn.commit()
+    if cur.rowcount == 0:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Load not found")
+    conn.close()
+    return {"ok": True, "load_id": load_id, "new_shipment_day_id": target_sd_id}
 
 # ══════════════════════════════════════════════════════════════
 #  SETTINGS API
