@@ -400,6 +400,17 @@ function connectScale(){
     try{const d=JSON.parse(e.data);
       liveScaleWeight=d.weight||0;scaleStable=d.stable||false;
       document.getElementById('live-weight').textContent=fmt(liveScaleWeight);
+      // 상단 배지 상태 업데이트
+      const sb=document.getElementById('scale-badge');
+      if(sb){
+        if(liveScaleWeight>100 && scaleStable){
+          sb.textContent='✅ 안정';sb.className='scale-mode-badge '+(weightMode==='gross'?'gross':'empty');
+        } else if(liveScaleWeight>100){
+          sb.textContent='측정중...';sb.className='scale-mode-badge empty';
+        } else {
+          sb.textContent='대기';sb.className='scale-mode-badge wait';
+        }
+      }
       if(scaleInputMode==='auto') updateAutoWeight(liveScaleWeight,scaleStable);
     }catch(err){}
   };
