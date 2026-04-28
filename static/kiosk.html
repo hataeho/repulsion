@@ -667,9 +667,9 @@ async function confirmWt(){
         const loads = allLoads.filter(l => l.shipment_day_id === activeSD.id);
         const completedCount = loads.filter(l => l.status === 'done').length;
         const pendingCount = loads.filter(l => l.status === 'pending').length;
-        const totalRegistered = completedCount + pendingCount;
-        // 마지막 차량 판단: 등록된 총 차량수 == truck_count 이고, pending이 1대 (이 차량)
-        if(totalRegistered >= activeSD.truck_count && pendingCount <= 1) {
+        
+        // 마지막 차량 판단: 이번 차량을 완료하면 총 완료 대수가 설정된 truck_count 이상이 되는지 확인
+        if(completedCount + 1 >= activeSD.truck_count) {
           const ewText = document.getElementById('pv-empty').textContent.replace(/,/g,'');
           const ew = parseInt(ewText)||0;
           const net = wt - ew;
