@@ -493,6 +493,7 @@ async function init(){try{settings=await api('/api/settings');activeSD=await api
 }catch(e){document.getElementById('k-info').textContent='설정을 확인하세요';}}
 window.onload=init;
 
+let isProcessingEnter=false;
 document.addEventListener('keydown',function(e){
   if(e.target.tagName==='INPUT' || e.target.tagName==='TEXTAREA') return;
   const cs1=document.getElementById('cs-1'), cs2=document.getElementById('cs-2'),
@@ -511,12 +512,21 @@ document.addEventListener('keydown',function(e){
   
   if(e.key>='0'&&e.key<='9'){ if(activeField){NI(activeField,e.key);e.preventDefault();} }
   else if(e.key==='Backspace'){ if(activeField){ND(activeField);e.preventDefault();} }
-  else if(e.key==='Enter' || e.keyCode===13 || e.key==='NumpadEnter'){ if(confirmFn){confirmFn();e.preventDefault();} }
+  else if(e.key==='Enter' || e.keyCode===13 || e.key==='NumpadEnter'){ 
+    if(confirmFn && !isProcessingEnter){
+      const res = confirmFn();
+      if(res instanceof Promise) {
+        isProcessingEnter = true;
+        res.finally(()=>setTimeout(()=>isProcessingEnter=false, 500));
+      }
+      e.preventDefault();
+    } 
+  }
 });
 
 async function resetK(){if(autoResetTimer){clearTimeout(autoResetTimer);autoResetTimer=null;}
   currentDriver=null;pendingLoadId=null;weightMode=null;currentWeight=0;autoConfirmPending=false;editingLoad=null;
-  editingGlobalHeadMode=false;
+  editingGlobalHeadMode=false; isProcessingEnter=false;
   B.vehicle='';B.weight='';B.heads='';
   await updateGlobalPrevHead();
   uLW(liveScaleWeight);clearPreview();goCS(1);}
