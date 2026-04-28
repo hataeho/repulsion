@@ -657,8 +657,33 @@ async function confirmWt(){
     autoResetTimer = setTimeout(() => { resetK(); }, 5000);
   }catch(e){autoConfirmPending=false;alert('오류: '+e.message);}}
   else{
-    const pvHc=parseInt(document.getElementById('pv-heads').textContent.replace(/,/g,''))||0;
-    const hc=pvHc>0?pvHc:(parseInt(settings.default_head_count)||2480);
+    let pvHc=parseInt(document.getElementById('pv-heads').textContent.replace(/,/g,''))||0;
+    let hc=pvHc>0?pvHc:(parseInt(settings.default_head_count)||2480);
+
+    // ── 떨이 모드: 마지막 차량 수수 자동계산 ──
+    if(activeSD && activeSD.shipment_type === '떨이' && activeSD.truck_count > 0) {
+      try {
+        const allLoads = await api(`/api/admin/loads?batch_id=${activeSD.batch_id}&sd_id=${activeSD.id}`);
+        const loads = allLoads.filter(l => l.shipment_day_id === activeSD.id);
+        const completedCount = loads.filter(l => l.status === 'done').length;
+        const pendingCount = loads.filter(l => l.status === 'pending').length;
+        const totalRegistered = completedCount + pendingCount;
+        // 마지막 차량 판단: 등록된 총 차량수 == truck_count 이고, pending이 1대 (이 차량)
+        if(totalRegistered >= activeSD.truck_count && pendingCount <= 1) {
+          const ewText = document.getElementById('pv-empty').textContent.replace(/,/g,'');
+          const ew = parseInt(ewText)||0;
+          const net = wt - ew;
+          // 직전 차량의 평균체중 사용 (recent_3_avg_weight)
+          const prevAvg = parseFloat(activeSD.recent_3_avg_weight || activeSD.target_weight);
+          if(prevAvg > 0 && net > 0) {
+            hc = Math.round((net / prevAvg) / 10) * 10; // 10마리 단위 반올림
+            document.getElementById('pv-heads').textContent = fmt(hc);
+            console.log(`[떨이] 마지막 차량 수수 자동계산: net=${net}kg / avg=${prevAvg}kg = ${hc}수`);
+          }
+        }
+      } catch(e) { console.warn('떨이 판정 오류:', e); }
+    }
+
     B.heads=String(hc);
     
     // 만약 pendingLoadId가 없다면 임의로 공차 기록을 0으로라도 생성해서 통과시켜야 함

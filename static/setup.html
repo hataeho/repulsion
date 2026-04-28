@@ -143,6 +143,15 @@
       <div class="form-group"><label>차량 댓수</label><input type="number" id="sd-trucks" placeholder="36" min="0"></div>
       <div class="form-group"><label>기본 수수 (마리)</label><input type="number" id="sd-heads" placeholder="2480"></div>
     </div>
+    <div class="form-row">
+      <div class="form-group"><label>출하유형</label>
+        <select id="sd-type" style="padding:10px 14px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:16px;font-weight:700;">
+          <option value="솎기">솎기</option>
+          <option value="떨이">떨이</option>
+        </select>
+      </div>
+      <div class="form-group"></div>
+    </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modal-sd')">취소</button>
       <button class="btn btn-primary" id="sd-save-btn" onclick="saveSD()">생성</button>
@@ -220,8 +229,8 @@ async function onBatchSelect(){
     <div class="stat-card"><div class="stat-label">🌾 사료량</div><div class="stat-value" style="font-size:16px;color:${b.feed_amount?'var(--text-primary)':'var(--text-muted)'};">${b.feed_amount ? fmt(b.feed_amount)+'kg' : '미입력'}</div></div>
   </div>`;
   if(d.shipment_days.length){
-    h+=`<div class="table-wrap" style="margin-top:12px;"><table><thead><tr><th>출하일수</th><th>일령</th><th>목표체중</th><th>차량</th><th>출하일</th><th>관리</th></tr></thead><tbody>
-    ${d.shipment_days.map(s=>`<tr><td><strong>${s.day_number}일차</strong></td><td>${s.age_days}일</td><td>${s.target_weight}kg</td><td>${s.truck_count||'-'}대</td><td>${s.ship_date||'-'}</td><td><button class="btn btn-ghost btn-sm" onclick='editSD(${JSON.stringify(s)},${b.id})'>✏️</button> <button class="btn btn-danger btn-sm" onclick="deleteSD(${s.id})">🗑️</button></td></tr>`).join('')}
+    h+=`<div class="table-wrap" style="margin-top:12px;"><table><thead><tr><th>출하일수</th><th>일령</th><th>목표체중</th><th>차량</th><th>유형</th><th>출하일</th><th>관리</th></tr></thead><tbody>
+    ${d.shipment_days.map(s=>`<tr><td><strong>${s.day_number}일차</strong></td><td>${s.age_days}일</td><td>${s.target_weight}kg</td><td>${s.truck_count||'-'}대</td><td><span style="padding:2px 8px;border-radius:6px;font-size:12px;font-weight:700;background:${s.shipment_type==='떨이'?'rgba(239,68,68,.15)':'rgba(59,130,246,.15)'};color:${s.shipment_type==='떨이'?'#ef4444':'#3b82f6'}">${s.shipment_type||'솎기'}</span></td><td>${s.ship_date||'-'}</td><td><button class="btn btn-ghost btn-sm" onclick='editSD(${JSON.stringify(s)},${b.id})'>✏️</button> <button class="btn btn-danger btn-sm" onclick="deleteSD(${s.id})">🗑️</button></td></tr>`).join('')}
     </tbody></table></div>`;
   } else {
     h+='<p style="color:var(--text-muted);font-size:13px;margin-top:12px;">출하일수를 추가하세요</p>';
@@ -273,6 +282,7 @@ function openSDModal(bid){
   document.getElementById('sd-wt').value='';document.getElementById('sd-date').value=new Date().toISOString().slice(0,10);
   document.getElementById('sd-trucks').value='';
   document.getElementById('sd-heads').value='2480';
+  document.getElementById('sd-type').value='솎기';
   openModal('modal-sd');
 }
 function editSD(s,batchId){
@@ -286,6 +296,7 @@ function editSD(s,batchId){
   document.getElementById('sd-date').value=s.ship_date||'';
   document.getElementById('sd-trucks').value=s.truck_count||'';
   document.getElementById('sd-heads').value=s.default_head_count||'2480';
+  document.getElementById('sd-type').value=s.shipment_type||'솎기';
   openModal('modal-sd');
 }
 async function deleteSD(sdId){
@@ -300,7 +311,8 @@ async function saveSD(){
     target_weight:parseFloat(document.getElementById('sd-wt').value)||0,
     ship_date:document.getElementById('sd-date').value,
     truck_count:parseInt(document.getElementById('sd-trucks').value)||0,
-    default_head_count:parseInt(document.getElementById('sd-heads').value)||2480};
+    default_head_count:parseInt(document.getElementById('sd-heads').value)||2480,
+    shipment_type:document.getElementById('sd-type').value||'솎기'};
   if(!d.day_number){toast('출하일수를 입력하세요','error');return;}
   if(editId){
     await api('/api/shipment-days/'+editId,'PUT',d);toast('출하일수 수정 완료');

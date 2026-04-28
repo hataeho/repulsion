@@ -121,12 +121,12 @@ class ShipmentCloseRequest(BaseModel):
 class ShipmentDayCreate(BaseModel):
     batch_id: int; day_number: int; age_days: float = 0
     target_weight: float = 0; ship_date: str = ""; truck_count: int = 0
-    default_head_count: int = 2480
+    default_head_count: int = 2480; shipment_type: str = "솎기"
 
 class ShipmentDayUpdate(BaseModel):
     day_number: Optional[int] = None; age_days: Optional[float] = None
     target_weight: Optional[float] = None; ship_date: Optional[str] = None; truck_count: Optional[int] = None
-    default_head_count: Optional[int] = None
+    default_head_count: Optional[int] = None; shipment_type: Optional[str] = None
 
 class EmptyWeightRecord(BaseModel):
     """공차 등록 (저울값)"""
@@ -379,8 +379,8 @@ def update_batch(batch_id: int, b: BatchCreate):
 def create_shipment_day(sd: ShipmentDayCreate):
     conn = get_db()
     cur = conn.execute(
-        "INSERT INTO shipment_day (batch_id,day_number,age_days,target_weight,ship_date,truck_count,default_head_count) VALUES (?,?,?,?,?,?,?)",
-        (sd.batch_id, sd.day_number, sd.age_days, sd.target_weight, sd.ship_date, sd.truck_count, sd.default_head_count))
+        "INSERT INTO shipment_day (batch_id,day_number,age_days,target_weight,ship_date,truck_count,default_head_count,shipment_type) VALUES (?,?,?,?,?,?,?,?)",
+        (sd.batch_id, sd.day_number, sd.age_days, sd.target_weight, sd.ship_date, sd.truck_count, sd.default_head_count, sd.shipment_type))
     conn.commit(); sid = cur.lastrowid; conn.close()
     return {"id": sid, "message": "출하차수 생성 완료"}
 
@@ -396,6 +396,7 @@ def update_shipment_day(sd_id: int, u: ShipmentDayUpdate):
     if u.ship_date is not None: fields.append("ship_date=?"); vals.append(u.ship_date)
     if u.truck_count is not None: fields.append("truck_count=?"); vals.append(u.truck_count)
     if u.default_head_count is not None: fields.append("default_head_count=?"); vals.append(u.default_head_count)
+    if u.shipment_type is not None: fields.append("shipment_type=?"); vals.append(u.shipment_type)
     if not fields: conn.close(); raise HTTPException(400, "변경 항목 없음")
     vals.append(sd_id)
     conn.execute(f"UPDATE shipment_day SET {','.join(fields)} WHERE id=?", vals)

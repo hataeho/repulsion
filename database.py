@@ -60,6 +60,7 @@ def init_db():
         ship_date TEXT,
         default_head_count INTEGER DEFAULT 2480,
         truck_count INTEGER DEFAULT 0,
+        shipment_type TEXT DEFAULT '솎기',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (batch_id) REFERENCES batch(id)
     );
@@ -101,6 +102,7 @@ def init_db():
         "ALTER TABLE batch ADD COLUMN shipment_closed INTEGER DEFAULT 0;",
         "ALTER TABLE shipment_day ADD COLUMN truck_count INTEGER DEFAULT 0;",
         "ALTER TABLE shipment_day ADD COLUMN default_head_count INTEGER DEFAULT 2480;",
+        "ALTER TABLE shipment_day ADD COLUMN shipment_type TEXT DEFAULT '솎기';",
     ]:
         try:
             cur.execute(col_sql)
