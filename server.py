@@ -381,7 +381,19 @@ def create_shipment_day(sd: ShipmentDayCreate):
     cur = conn.execute(
         "INSERT INTO shipment_day (batch_id,day_number,age_days,target_weight,ship_date,truck_count,default_head_count,shipment_type) VALUES (?,?,?,?,?,?,?,?)",
         (sd.batch_id, sd.day_number, sd.age_days, sd.target_weight, sd.ship_date, sd.truck_count, sd.default_head_count, sd.shipment_type))
-    conn.commit(); sid = cur.lastrowid; conn.close()
+    sid = cur.lastrowid
+    
+    # 공차 계량만 하고 상차하지 않은 차량들을 새 일차로 모두 자동 이동
+    conn.execute("""
+        UPDATE load 
+        SET shipment_day_id = ?, trip_number = 1
+        WHERE status = 'pending' AND shipment_day_id IN (
+            SELECT id FROM shipment_day WHERE batch_id = ?
+        )
+    """, (sid, sd.batch_id))
+    
+    conn.commit()
+    conn.close()
     return {"id": sid, "message": "출하차수 생성 완료"}
 
 @app.put("/api/shipment-days/{sd_id}")
