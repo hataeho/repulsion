@@ -1,0 +1,13 @@
+[Unit]
+Description=modbus
+After=multi-user.target
+
+[Service]
+Type=idle
+ExecStart=/home/pi/modbus/modbus.out
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+
